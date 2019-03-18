@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1552754264723.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2540749725",
+    "id" : "AC3E448B",
+    "lastKnownWriteTime" : 1552872438,
+    "last_content_update" : 1552872438419,
+    "path" : "~/R_UG_Demo/global.R",
+    "project_path" : "global.R",
+    "properties" : {
+        "cursorPosition" : "19,19",
+        "scrollLine" : "7"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1552845480862.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "79B3BBF7",
+    "lastKnownWriteTime" : 1552849456,
+    "last_content_update" : 1552849456128,
+    "path" : "~/R_UG_Demo/ui.R",
+    "project_path" : "ui.R",
+    "properties" : {
+        "cursorPosition" : "31,28",
+        "scrollLine" : "17"
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

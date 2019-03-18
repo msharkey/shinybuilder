@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1552754231493.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "E8853D86",
+    "lastKnownWriteTime" : 1552876240,
+    "last_content_update" : 1552876240071,
+    "path" : "~/R_UG_Demo/server.R",
+    "project_path" : "server.R",
+    "properties" : {
+        "cursorPosition" : "71,39",
+        "scrollLine" : "68"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
