@@ -67,9 +67,9 @@ shinyServer(function(input, output,session) {
     
     tryCatch({
       if(!is.na(str_match(input$email, emailwhitelist))){
-      params <- c(email = input$email,title = input$title)
-     
-     executeSQL("Insert into dbo.Persons values (?email,?title)",params)
+      #params <- c(email = input$email,title = input$title)
+     #executeSQL("Insert into dbo.Persons values (?email,?title)",params)
+        dbGetQuery(myPool,paste0("Insert into dbo.Persons values ('",input$email,"','",input$title,"')"))
       } else {stop("Not a valid email.")}
     }
     ,error =function(e) {

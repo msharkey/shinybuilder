@@ -8,7 +8,7 @@ library(shinyjs)
 library(stringr)
 
 myDriver <- 'SQL Server' # Localhost can be referred to with .
-myServer <- '.'
+myServer <- '.\\snapman'
 myDatabase <- 'Cab_Demo'
 
 myPool <- dbPool(odbc::odbc(),Driver= myDriver,Server = myServer, Database = myDatabase,Trusted_Connection='yes')

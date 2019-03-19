@@ -7,6 +7,15 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+myDriver <- 'SQL Server'
+# Use . for a local connection, otherwise specify Server Machine Name or IP address
+myServer <- '.\\snapman'
+myDatabase <- 'Cab_Demo'
+
+
+trusted_connection <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+                                ,Database = myDatabase,Trusted_Connection='yes')
+
 ```
 
 ### Injection Attacks are Child's Play
@@ -21,9 +30,69 @@ Why is injection at the top?  Hackers can discover vulenrable sites with little 
 
 If large  organizations like Cisco, Instagram, Lenevo, and Texas.Gov are susectable then I'm certain my code is susceptable.  MySQL and Postgres write source code for RDBMs and yet they recently had a SQL injection vulenrability as well.  As long as developers use dynamic code with user input the risk for injection will not disappear.
 
-###  Attacking a Shiny App
+###  Breaking Down a Shiny App
 
-I'll illustrate an injection attack using a sample Shiny App.  The app takes an email address and job title as inputs and saves them to a SQL Server database.  There are several vulenrabilities to the app in it's current state.
+I'll illustrate an injection attack using a sample Shiny App. (Delete Previous Sentenance)  Before I can illustrate an injection attack I'll first need to go over some SQL fundamentals.  The app takes an email address and job title as inputs and saves them to a SQL Server databases.  Users can also update and delete existing records.  The app persists user input in one table named dbo.Persons.  This script creates the dbo.Persons table and then inserts one row consiting of an email adress and job title.  The last statement selects the newly inserted row.
+
+
+
+```{sql checkoutthecons, eval=TRUE,connection = trusted_connection}
+SET NOCOUNT ON;
+DROP TABLE IF EXISTS dbo.Persons;
+CREATE TABLE dbo.Persons (
+  email Varchar(100) PRIMARY KEY, 
+  jobtitle Varchar(100)
+);
+
+INSERT INTO dbo.Persons VALUES ('q1724449@nwytg.net','Analyst');
+
+SELECT email, jobtitle FROM dbo.Persons;
+
+```
+
+Using Shiny UI controls the user essentially has the ability to execute these queries against the database.
+
+
+```{sql checkouttheconsr, eval=FALSE,connection = trusted_connection}
+
+-- Select all rows from the dbo.Persons table
+SELECT * FROM dbo.Persons
+
+--Get the jobtitle where the email address matches the user provided email
+SELECT jobtitle FROM dbo.Persons WHERE email = 'User Input'
+
+--Update the Email and job title where the email address matches the user provided email
+UPDATE dbo.Persons SET Email = 'User Input',jobtitle=  'User Input' WHERE email ='User Input')
+
+--Delete a row where the email matches the user provided email
+DELETE FROM dbo.Persons WHERE Email = 'User Input'
+
+--add a new row to the dbo.Persons table based on user provided email and jobtitle
+INSERT INTO dbo.Persons(email,jobtitle) VALUES ('User Input','User Input')
+
+```
+
+The SELECT, UPDATE, DELETE, and INSERT commands are the fundemental operations of data modification language (DML).  The other types of operations are data control language (DCL) and data definition language (DDL).  The CREATE TABLE query above is an example of DDL.  DCL is commonly executed outside the application during the development phase or by a System Admin during deployment.  The example email app is typical of most app in that it only executes DML.  I'll intergrate the DML queries into the app by dynamically building the query string with the values of user input.
+
+
+```{r badqueries}
+    jt <- dbGetQuery(myPool,
+                     paste0("Select jobtitle From dbo.Persons Where email   ='",input$titled,"'"))
+
+          dbGetQuery(myPool,
+paste0("UPDATE dbo.Persons SET Email = '",input$emailupdate,"',jobtitle=  '",input$titleupdate,"'
+                             Where email ='",input$titled,"'"))
+          
+          dbGetQuery(myPool,
+                     paste0("DELETE From dbo.Persons WHERE Email = '",input$titled,"'"))
+          
+          dbGetQuery(myPool
+                     ,paste0("Insert into dbo.Persons values ('",input$email,"','",input$title,"')"))
+```
+
+
+
+There are several vulenrabilities to the app in it's current state.
 
 
 
