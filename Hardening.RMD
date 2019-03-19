@@ -6,6 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+library(DBI)
 knitr::opts_chunk$set(echo = TRUE)
 myDriver <- 'SQL Server'
 # Use . for a local connection, otherwise specify Server Machine Name or IP address
@@ -25,7 +26,7 @@ The Open Web Aplication Security Project (OWASP) publishes the Top 10 Most Criti
 Why is injection at the top?  Hackers can discover vulenrable sites with little effort.  Automated tools like Havij and search engines like Shodan make injection attacks child's play, ![literally](https://techcrunch.com/2018/08/12/hacking-the-websites-responsible-for-election-information-is-so-easy-an-11-year-old-did-it/).  The potential impact from injection based attacks, espcially SQL injection, is sevre.  SQL injection vulenrabilities allow hackers to circumvent controls and run arbituray scripts against the database.  These scripts might steal data, destroy data, create a backdoor or all the above.  Despite the ease and severity organizations still have trouble eliminating the threat.  The news article featured in the GIF below were all written in the last two years.  They are just a few examples of SQL injection that I found interesting. 
 
 <center>
-![](D:/sqlinjection.gif)
+<!--![](D:/sqlinjection.gif)-->
 </center>
 
 If large  organizations like Cisco, Instagram, Lenevo, and Texas.Gov are susectable then I'm certain my code is susceptable.  MySQL and Postgres write source code for RDBMs and yet they recently had a SQL injection vulenrability as well.  As long as developers use dynamic code with user input the risk for injection will not disappear.
@@ -75,12 +76,12 @@ INSERT INTO dbo.Persons(email,jobtitle) VALUES ('User Input','User Input')
 The SELECT, UPDATE, DELETE, and INSERT commands are the fundemental operations of data modification language (DML).  The other types of operations are data control language (DCL) and data definition language (DDL).  The CREATE TABLE query above is an example of DDL.  DCL is commonly executed outside the application during the development phase or by a System Admin during deployment.  The example email app is typical of most app in that it only executes DML.  I'll intergrate the DML queries into the app by dynamically building the query string with the values of user input.
 
 
-```{r badqueries}
+```{r badqueries, eval=FALSE}
     jt <- dbGetQuery(myPool,
                      paste0("Select jobtitle From dbo.Persons Where email   ='",input$titled,"'"))
 
           dbGetQuery(myPool,
-paste0("UPDATE dbo.Persons SET Email = '",input$emailupdate,"',jobtitle=  '",input$titleupdate,"'
+                     paste0("UPDATE dbo.Persons SET Email = '",input$emailupdate,"',jobtitle=  '",input$titleupdate,"'
                              Where email ='",input$titled,"'"))
           
           dbGetQuery(myPool,
@@ -89,6 +90,40 @@ paste0("UPDATE dbo.Persons SET Email = '",input$emailupdate,"',jobtitle=  '",inp
           dbGetQuery(myPool
                      ,paste0("Insert into dbo.Persons values ('",input$email,"','",input$title,"')"))
 ```
+
+
+There is nothing stoping a user from passing a SQL script to either one of the inputs.  The giff below first shows how a user a suppose to interact with the app.  Then it shows how a hacker can pass a malicus script through the email input field.
+
+
+<center>
+<!--![](D:/shinybuilderInjection.gif)-->
+</center>
+
+
+I set a breakpoint after the user clicks save and before the query appends the the row to the table.  The string executed against the database is two seperate SQL commands. The second command truncates the Persons table.  In a real world production system this might be data loss (if there're no backups) or application downtime.
+
+```{r chrum}
+
+email <- "'','') TRUNCATE TABLE dbo.Persons --"
+title <- "Analyst"
+paste0("Insert into dbo.Persons values ('",email,"','",title,"')")
+
+
+```
+
+###  Defending Against Injection
+
+I mix trusted data with untrusted data and for that my app is vulenrable.  The trusted data is the app and query code.  The untrusted data is user input.  I can start to seperate the trusted and unstrusted data through parametrised queries.  Instead of passing the user input variables directly to the query string, I instead store the user variables into parameters.  I then reference the parameters in the query instead of the user variables directly.
+
+```{r chrum2,eval=FALSE}
+
+  query <- sqlInterpolate(con,"Insert into dbo.Persons values (?email,?title)",input$email,input$title))
+
+  dbGetQuery(myPool, query)
+
+```
+
+
 
 
 
@@ -125,13 +160,4 @@ Keep Database and Webservers patched.
 
 
 
-
-
-
-
-
 --Limit  Account Web Account privelages
-
-```{r cars}
-summary(cars)
-```
