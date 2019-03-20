@@ -10,7 +10,7 @@ library(DBI)
 knitr::opts_chunk$set(echo = TRUE)
 myDriver <- 'SQL Server'
 # Use . for a local connection, otherwise specify Server Machine Name or IP address
-myServer <- '.\\snapman'
+myServer <- './/snapman'
 myDatabase <- 'Cab_Demo'
 
 
@@ -26,7 +26,8 @@ The Open Web Aplication Security Project (OWASP) publishes the Top 10 Most Criti
 Why is injection at the top?  Hackers can discover vulenrable sites with little effort.  Automated tools like Havij and search engines like Shodan make injection attacks child's play, ![literally](https://techcrunch.com/2018/08/12/hacking-the-websites-responsible-for-election-information-is-so-easy-an-11-year-old-did-it/).  The potential impact from injection based attacks, espcially SQL injection, is sevre.  SQL injection vulenrabilities allow hackers to circumvent controls and run arbituray scripts against the database.  These scripts might steal data, destroy data, create a backdoor or all the above.  Despite the ease and severity organizations still have trouble eliminating the threat.  The news article featured in the GIF below were all written in the last two years.  They are just a few examples of SQL injection that I found interesting. 
 
 <center>
-<!--![](D:/sqlinjection.gif)-->
+<!---->
+![](D:/sqlinjection.gif)
 </center>
 
 If large  organizations like Cisco, Instagram, Lenevo, and Texas.Gov are susectable then I'm certain my code is susceptable.  MySQL and Postgres write source code for RDBMs and yet they recently had a SQL injection vulenrability as well.  As long as developers use dynamic code with user input the risk for injection will not disappear.
@@ -96,7 +97,8 @@ There is nothing stoping a user from passing a SQL script to either one of the i
 
 
 <center>
-<!--![](D:/shinybuilderInjection.gif)-->
+<!---->
+![](D:/shinybuilderInjection.gif)
 </center>
 
 
@@ -113,6 +115,8 @@ paste0("Insert into dbo.Persons values ('",email,"','",title,"')")
 
 ###  Defending Against Injection
 
+#### Paramertization and String Escaping
+
 I mix trusted data with untrusted data and for that my app is vulenrable.  The trusted data is the app and query code.  The untrusted data is user input.  I can start to seperate the trusted and unstrusted data through parametrised queries.  Instead of passing the user input variables directly to the query string, I instead store the user variables into parameters.  I then reference the parameters in the query instead of the user variables directly.
 
 ```{r chrum2,eval=FALSE}
@@ -124,40 +128,68 @@ I mix trusted data with untrusted data and for that my app is vulenrable.  The t
 ```
 
 
+Using sqlInterpolate helps isolate the user input from the query string.  Now single tick marks are escaped making it more difficult to execute an ad-hoc script.  I attempted the same injection attack as before.  This time the input was handeled as single text string.
+
+![](C:/Users/mshar/OneDrive/Documents/R_UG_Demo/parameterized.png)
+
+#### Whitelist input
+
+The app should only allow valid characters as input.  For example, if user attempts to pass a string with spaces in the email field then the app should prevent the input from entering the database.  I implemented a email whitelist by comparing the input with a regex pattern.
 
 
+```{r chrum3,eval=FALSE}
 
-There are several vulenrabilities to the app in it's current state.
+emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
 
-
-
-
-
-
-Untrusted data, data that comes from users, vs trusted data, our code
-
-
-Defense techniques:
-White list known inputs,don't be to restrive of the characterset.  Some characters are legit e.g. Lee's Summit.  Don't use a blacklist, it's hard to predict what will be.  Data need to conform to patterns or certain character sets.
-
-Query Parameterization.  Seperate the data from being able to being able to manipulate query logic. Keep query data seperate from the user input data.
-
-* Query can't be changed at run time.
+   if(!is.na(str_match(input$email, emailwhitelist))){
+    query <- sqlInterpolate(con,
+                            "INSERT INTO dbo.Persons 
+                            VALUES(?email,?title)",input$email,input$title))
+  dbGetQuery(myPool, query)
+     } else {stop("Not a valid email.")}
 
 
-Stored Procedure defense
+```
 
-Server Side Defense
-  -Principle of least privelage,only grant execute to stored procs.
+Developers should use a whitelist technique with caution.  Using a restictive character set could block legitimate input.  For example, the regex pattern above blocks email addressed with a single quote.  Are quotes possible in emails?  If they aren't allowed by some email providers will that change in the future?  It's possible.  If implementing a whitelist it may be wise to store the input pattern in a table.  If the whitelist pattern changes then the pattern can be changed on the backend without changing app code.
 
-Network Isolation, Only alow connections through the web app.
+#### Server Side Defense
 
-Use IDS, Intrustion Dection System, WAF like baricuda, CloudFlare
+The database user account should have the minimal permissions needed.  I would have not been able to truncate the table in the example above had I only had permission to SELECT and INSERT.  If I really need to fine tune permissions then I wrap all database commands into stored procedures and then grant execute to just the stored procedures.  Now the user can only has permission to interact with the database in a structured fashion.  For example, instead of directly hard coding the INSERT query in my app code I can instead wrap the INSERT into a stored procedure on the backend.
 
-Keep Database and Webservers patched.
+```{sql storedproc, eval = FALSE,connection = trusted_connection}
+Use Cab_Demo
+GO
 
--Hash and Salt Sensitve Values, If you never need to reference the source system directly why do you need to maintain the original values?  For example passwords.   store passwords in plain text.
+DROP PROCEDURE IF EXISTS dbo.uspInsertEmail;
+GO
+CREATE PROCEDURE dbo.uspInsertEmail
+@email Varchar(100),
+@title Varchar(100)
+AS
+INSERT INTO dbo.Persons
+VALUES (@email,@title)
+
+GO
+
+GRANT EXECUTE ON dbo.uspInsertEmail TO shinybuilder_app 
+
+```
 
 
+The stored procedure provides an interface between the table and the application.
 
---Limit  Account Web Account privelages
+```{r finalR , eval=FALSE}
+  query <- sqlInterpolate(con
+                          ,"EXECUTE dbo.uspInsertEmail ?email,?title",input$email,input$title))
+
+  dbGetQuery(myPool, query)
+
+```
+
+
+A few lines of defense exist outside of the app and database server.  An intrusion detection system (IDS) uses signatures to detect potiental attacks.  Some IDS also provide real time alerting features.
+
+Finally, make sure all technologies involved in the application are patched.  This includes the database server, the webserver, the individual packages and any other systems interacting with the application.
+
+
