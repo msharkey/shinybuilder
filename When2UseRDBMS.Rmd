@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
  
 
-## RDBMS are popular
+## RDBMS the Mighty Hammer
 
 Relational database management systems (RDBMS) are the backbone for many apps and services.  The foundation for relational databases is deeply routed in mathematics and this has enabled them to stay relevant while many other technologies are phased out.  In fact, because of the popularity of relational databases, many new technologies and noSQL systems provide a SQL like interface e.g. Spark SQL, Hive, U-SQL.  Also, on account of the popularity of databases, many individuals have become adept at querying and managing relational databases.  It's a safe assumption that RDBMS will remain relevant for years to come.  Despite their popularity and familiarity, RDBMS are not always the best tool for the job.  If all I need is a place to store data then I probably don't need a database.  Relational databases are great but they are not they right tool just because you have data.  Dumping everything to a RDBMS might be tempting but it will lead to just that, a dump.  Codd once remarked on the situation quite elegantly: 
 

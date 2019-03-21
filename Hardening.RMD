@@ -1,8 +1,11 @@
 ---
-title: "Preventing SQL Injection in Shiny Applications"
+title: "SQL Injection Defense for Shiny Applications"
 author: "Matthew Sharkey"
 date: "March 15, 2019"
-output: html_document
+output:
+    prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
 ---
 
 ```{r setup, include=FALSE}
@@ -10,7 +13,7 @@ library(DBI)
 knitr::opts_chunk$set(echo = TRUE)
 myDriver <- 'SQL Server'
 # Use . for a local connection, otherwise specify Server Machine Name or IP address
-myServer <- './/snapman'
+myServer <- '.\\snapman'
 myDatabase <- 'Cab_Demo'
 
 
@@ -21,9 +24,9 @@ trusted_connection <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
 
 ### Injection Attacks = Child's Play
 
-The Open Web Application Security Project (OWASP) publishes the Top 10 Most Critical Web Application Security Risk.  The list guides developers seeking to improve web-app security.  Injection based attacks have held the number one spot since 2010.
+The Open Web Application Security Project publishes a Top 10 Web Application Security Risks.  The list guides developers seeking to improve web-app security.  Injection based attacks have held the number one spot since 2010.
 
-Why is injection at the top?  For one, Hackers discover vulnerable sites with little effort.  Tools like Havij and Shodan make injection attacks ![child's play]. (https://techcrunch.com/2018/08/12/hacking-the-websites-responsible-for-election-information-is-so-easy-an-11-year-old-did-it/).  The potential impact from injection based attacks, especially SQL injection, is severe.  SQL injection vulnerabilities allow hackers to circumvent security controls. and run arbitrary scripts against the database.  These scripts might steal data, destroy data, create a backdoor or all the above.  Despite the ease and severity organizations still have trouble eliminating the threat.  The news article featured in the GIF below were all written in the last two years.  They are a few examples of SQL injection that I found interesting. 
+Why is injection at the top?  For one, Hackers discover vulnerable sites with little effort.  Tools like [Havij](https://www.darknet.org.uk/2010/09/havij-advanced-automated-sql-injection-tool/) and [Shodan](https://www.shodan.io/) make injection attacks [child's play] (https://techcrunch.com/2018/08/12/hacking-the-websites-responsible-for-election-information-is-so-easy-an-11-year-old-did-it/).  The potential impact from injection based attacks, especially SQL injection, is severe.  SQL injection vulnerabilities allow hackers to circumvent security controls. and run arbitrary scripts against the database.  These scripts might steal data, destroy data, create a backdoor or all the above.  Despite the ease and severity organizations still have trouble eliminating the threat.  The news article featured in the GIF below were all written in the last two years.  They are a few examples of SQL injection that I found interesting. 
 
 <center>
 <!---->
@@ -94,7 +97,7 @@ The code is vulnerable to SQL injection.  There is nothing stopping a user from 
 
 <center>
 <!---->
-![](D:/shinybuilderInjection.gif)
+![](C:/Users/mshar/OneDrive/Documents/R_UG_Demo/shinybuilderInjection.gif)
 </center>
 
 
@@ -123,14 +126,13 @@ The app mixes trusted data with untrusted data.  The trusted data is the app and
 
 ```
 
-
-Using sqlInterpolate helps isolate the user input from the query string.  Now single tick marks are escaped making it more difficult to execute an ad-hoc script.  I attempted the same injection attack as before.  This time the input was handled as single text string.
+The sqlInterpolate function helps isolate the user input from the query string.  Also, sqlinterpolate escapes single tick marks.  This makes it more difficult to execute an ad-hoc scripts.  The injection attack fails because the code handles input as one continuous string.
 
 ![](C:/Users/mshar/OneDrive/Documents/R_UG_Demo/parameterized.png)
 
 #### Whitelist input
 
-The app should only allow valid characters as input.  For example, if user attempts to pass a string with spaces in the email field then the app should prevent the input from entering the database.  I implemented a email whitelist by comparing the input with a Regex pattern.
+The app should only allow valid characters as input.  For example, if a user attempts to enter an email with spaces then the app should reject it.  I implemented a email whitelist by comparing the input with a Regex pattern.
 
 
 ```{r chrum3,eval=FALSE}
@@ -147,11 +149,14 @@ emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
 
 ```
 
-Developers should use a whitelist technique with caution.  Using a restrictive character set could block legitimate input.  For example, the Regex pattern above blocks email addressed with a single quote.  Are quotes possible in emails?  If they aren't allowed by some email providers will that change in the future?  It's possible.  If implementing a whitelist it may be wise to store the input pattern in a table.  If the whitelist pattern changes then the pattern can be changed on the backend without changing app code.
+Developers should whitelist with caution.  Using a restrictive character set could block legitimate input.  The Regex pattern above blocks email addressed with a single quote.  Are quotes possible in emails?  If they aren't allowed will that change in the future?  It's possible.  A whitelist requires balance between security and  useability .
 
 #### Server Side Defense
 
-The database user account should have the minimal permissions needed.  I would have not been able to truncate the table in the example above had I only had permission to SELECT and INSERT.  If I need to fine tune permissions then I wrap all database commands into stored procedures and then grant execute permission to the stored procedures.  Now the user can only has permission to interact with the database in a structured fashion.  For example, instead of  hard coding the INSERT query in my app code I can instead wrap the INSERT into a stored procedure on the backend.
+The database user account should have minimal permissions.  I would have not been able to truncate the table in the example above had I only had permission to SELECT and INSERT.  Interfaces simplify permissions.  Instead of granting permissions on tables I can grant permissions on the interface.  Stored procedures make excellent interfaces.  Developers can grant permissions on stored procedures without granting access to tables.  Thus DB all interactions occur in the manner defined by the stored procedure.
+
+I can wrap the INSERT statement into a stored procedure.  The 
+ shinybuilder_app user cannot run an INSERT statement outside of the stored procedure.
 
 ```{sql storedproc, eval = FALSE,connection = trusted_connection}
 Use Cab_Demo
@@ -171,9 +176,7 @@ GO
 GRANT EXECUTE ON dbo.uspInsertEmail TO shinybuilder_app 
 
 ```
-
-
-The stored procedure provides an interface between the table and the application.
+Now the app calls the stored procedure instead of ad-hoc SQL.
 
 ```{r finalR , eval=FALSE}
   query <- sqlInterpolate(con
@@ -182,10 +185,15 @@ The stored procedure provides an interface between the table and the application
   dbGetQuery(myPool, query)
 
 ```
+ #### Other defense layers
 
+* A few lines of defense exist outside of the app and database server.  An intrusion detection system (IDS) uses signatures to detect potential attacks.  Some IDS also provide real time alerting features.
 
-A few lines of defense exist outside of the app and database server.  An intrusion detection system (IDS) uses signatures to detect potential attacks.  Some IDS also provide real time alerting features.
+* Vendor provided patches often contain security fixes.  System admins or developers should apply security fixes as soon as possible.
 
-Finally, make sure all technologies involved in the application are patched.  This includes the database server, the web server, the individual packages and any other systems interacting with the application.  In an ideal world, software vendors issue patches after immediately after discovering an injection vulnerability.
+### Defense in Depth
+
+The more complicated the app the harder to manage injection risks.  Even the big firms struggle.  No code can guarantee 100% security. But  parametrization  and whitelists are good first lines of defense.
+
 
 
