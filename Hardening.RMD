@@ -19,24 +19,22 @@ trusted_connection <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
 
 ```
 
-### Injection Attacks are Child's Play
+### Injection Attacks = Child's Play
 
-The Open Web Aplication Security Project (OWASP) publishes the Top 10 Most Critical Web Application Security Risk.  The list is a good starting point for developers seeking to improve web-app security.  Injection based attacks have held the number one spot since 2010.
+The Open Web Application Security Project (OWASP) publishes the Top 10 Most Critical Web Application Security Risk.  The list guides developers seeking to improve web-app security.  Injection based attacks have held the number one spot since 2010.
 
-Why is injection at the top?  Hackers can discover vulenrable sites with little effort.  Automated tools like Havij and search engines like Shodan make injection attacks child's play, ![literally](https://techcrunch.com/2018/08/12/hacking-the-websites-responsible-for-election-information-is-so-easy-an-11-year-old-did-it/).  The potential impact from injection based attacks, espcially SQL injection, is sevre.  SQL injection vulenrabilities allow hackers to circumvent controls and run arbituray scripts against the database.  These scripts might steal data, destroy data, create a backdoor or all the above.  Despite the ease and severity organizations still have trouble eliminating the threat.  The news article featured in the GIF below were all written in the last two years.  They are just a few examples of SQL injection that I found interesting. 
+Why is injection at the top?  For one, Hackers discover vulnerable sites with little effort.  Tools like Havij and Shodan make injection attacks ![child's play]. (https://techcrunch.com/2018/08/12/hacking-the-websites-responsible-for-election-information-is-so-easy-an-11-year-old-did-it/).  The potential impact from injection based attacks, especially SQL injection, is severe.  SQL injection vulnerabilities allow hackers to circumvent security controls. and run arbitrary scripts against the database.  These scripts might steal data, destroy data, create a backdoor or all the above.  Despite the ease and severity organizations still have trouble eliminating the threat.  The news article featured in the GIF below were all written in the last two years.  They are a few examples of SQL injection that I found interesting. 
 
 <center>
 <!---->
 ![](D:/sqlinjection.gif)
 </center>
 
-If large  organizations like Cisco, Instagram, Lenevo, and Texas.Gov are susectable then I'm certain my code is susceptable.  MySQL and Postgres write source code for RDBMs and yet they recently had a SQL injection vulenrability as well.  As long as developers use dynamic code with user input the risk for injection will not disappear.
+Large organizations like Cisco, Instagram and Texas.Gov still find injection vulnerabilities.   MySQL and PostgreSQL write source code for database systems but even they are not immune.  If these companies write vulnerable code then I'm capable writing vulnerable code.  Baring a major a coding paradigm shift, the risk for injection will not disappear.
 
 ###  Breaking Down a Shiny App
 
-I'll illustrate an injection attack using a sample Shiny App. (Delete Previous Sentenance)  Before I can illustrate an injection attack I'll first need to go over some SQL fundamentals.  The app takes an email address and job title as inputs and saves them to a SQL Server databases.  Users can also update and delete existing records.  The app persists user input in one table named dbo.Persons.  This script creates the dbo.Persons table and then inserts one row consiting of an email adress and job title.  The last statement selects the newly inserted row.
-
-
+The goal of this post is to show how to defend a Shiny app from SQL injection.  I built a simple shiny app to illustrate.  The app takes an email address and job title as inputs and saves them to a SQL Server database.  Users can also update and delete existing records.  The app persists user input in one table named dbo.Persons.  The following SQL creates dbo.Persons and then inserts one row.  The last statement selects all the rows.
 
 ```{sql checkoutthecons, eval=TRUE,connection = trusted_connection}
 SET NOCOUNT ON;
@@ -52,7 +50,7 @@ SELECT email, jobtitle FROM dbo.Persons;
 
 ```
 
-Using Shiny UI controls the user essentially has the ability to execute these queries against the database.
+The shiny UI controls provide input to the following queries.  R combines the user input and query code.
 
 
 ```{sql checkouttheconsr, eval=FALSE,connection = trusted_connection}
@@ -74,7 +72,7 @@ INSERT INTO dbo.Persons(email,jobtitle) VALUES ('User Input','User Input')
 
 ```
 
-The SELECT, UPDATE, DELETE, and INSERT commands are the fundemental operations of data modification language (DML).  The other types of operations are data control language (DCL) and data definition language (DDL).  The CREATE TABLE query above is an example of DDL.  DCL is commonly executed outside the application during the development phase or by a System Admin during deployment.  The example email app is typical of most app in that it only executes DML.  I'll intergrate the DML queries into the app by dynamically building the query string with the values of user input.
+SELECT, UPDATE, DELETE, and INSERT are the fundamental operations of data modification language (DML).  My sample app only executes DML code.  The other types of query code are data control language (DCL) and data definition language (DDL).  I don't see a lot of apps using DCL and DDL but there're times when it's appropriate.  The CREATE TABLE query above is an example of DDL.  The code below concatenates the user input with query code and the execute the statement.
 
 
 ```{r badqueries, eval=FALSE}
@@ -91,9 +89,7 @@ The SELECT, UPDATE, DELETE, and INSERT commands are the fundemental operations o
           dbGetQuery(myPool
                      ,paste0("Insert into dbo.Persons values ('",input$email,"','",input$title,"')"))
 ```
-
-
-There is nothing stoping a user from passing a SQL script to either one of the inputs.  The giff below first shows how a user a suppose to interact with the app.  Then it shows how a hacker can pass a malicus script through the email input field.
+The code is vulnerable to SQL injection.  There is nothing stopping a user from passing a SQL script to either one of the inputs.  The GIF below first shows how a user a suppose to interact with the app.  Then it shows how a hacker can pass a malicious script through the email input field.
 
 
 <center>
@@ -102,7 +98,7 @@ There is nothing stoping a user from passing a SQL script to either one of the i
 </center>
 
 
-I set a breakpoint after the user clicks save and before the query appends the the row to the table.  The string executed against the database is two seperate SQL commands. The second command truncates the Persons table.  In a real world production system this might be data loss (if there're no backups) or application downtime.
+The string executed against the database is two separate SQL commands. The second command truncates the Persons table.  In a real world production system this might be data loss or application downtime.
 
 ```{r chrum}
 
@@ -117,7 +113,7 @@ paste0("Insert into dbo.Persons values ('",email,"','",title,"')")
 
 #### Paramertization and String Escaping
 
-I mix trusted data with untrusted data and for that my app is vulenrable.  The trusted data is the app and query code.  The untrusted data is user input.  I can start to seperate the trusted and unstrusted data through parametrised queries.  Instead of passing the user input variables directly to the query string, I instead store the user variables into parameters.  I then reference the parameters in the query instead of the user variables directly.
+The app mixes trusted data with untrusted data.  The trusted data is the app and query code.  The untrusted data is user input.  If untrusted data mixes with trusted data then query code becomes changeable at run time.  I can start to separate the trusted and untrusted data through parameterised queries.  Instead of passing the user input variables to the query string, I  store them in parameters.  Then I reference the parameters  instead of the user variables.
 
 ```{r chrum2,eval=FALSE}
 
@@ -128,13 +124,13 @@ I mix trusted data with untrusted data and for that my app is vulenrable.  The t
 ```
 
 
-Using sqlInterpolate helps isolate the user input from the query string.  Now single tick marks are escaped making it more difficult to execute an ad-hoc script.  I attempted the same injection attack as before.  This time the input was handeled as single text string.
+Using sqlInterpolate helps isolate the user input from the query string.  Now single tick marks are escaped making it more difficult to execute an ad-hoc script.  I attempted the same injection attack as before.  This time the input was handled as single text string.
 
 ![](C:/Users/mshar/OneDrive/Documents/R_UG_Demo/parameterized.png)
 
 #### Whitelist input
 
-The app should only allow valid characters as input.  For example, if user attempts to pass a string with spaces in the email field then the app should prevent the input from entering the database.  I implemented a email whitelist by comparing the input with a regex pattern.
+The app should only allow valid characters as input.  For example, if user attempts to pass a string with spaces in the email field then the app should prevent the input from entering the database.  I implemented a email whitelist by comparing the input with a Regex pattern.
 
 
 ```{r chrum3,eval=FALSE}
@@ -151,11 +147,11 @@ emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
 
 ```
 
-Developers should use a whitelist technique with caution.  Using a restictive character set could block legitimate input.  For example, the regex pattern above blocks email addressed with a single quote.  Are quotes possible in emails?  If they aren't allowed by some email providers will that change in the future?  It's possible.  If implementing a whitelist it may be wise to store the input pattern in a table.  If the whitelist pattern changes then the pattern can be changed on the backend without changing app code.
+Developers should use a whitelist technique with caution.  Using a restrictive character set could block legitimate input.  For example, the Regex pattern above blocks email addressed with a single quote.  Are quotes possible in emails?  If they aren't allowed by some email providers will that change in the future?  It's possible.  If implementing a whitelist it may be wise to store the input pattern in a table.  If the whitelist pattern changes then the pattern can be changed on the backend without changing app code.
 
 #### Server Side Defense
 
-The database user account should have the minimal permissions needed.  I would have not been able to truncate the table in the example above had I only had permission to SELECT and INSERT.  If I really need to fine tune permissions then I wrap all database commands into stored procedures and then grant execute to just the stored procedures.  Now the user can only has permission to interact with the database in a structured fashion.  For example, instead of directly hard coding the INSERT query in my app code I can instead wrap the INSERT into a stored procedure on the backend.
+The database user account should have the minimal permissions needed.  I would have not been able to truncate the table in the example above had I only had permission to SELECT and INSERT.  If I need to fine tune permissions then I wrap all database commands into stored procedures and then grant execute permission to the stored procedures.  Now the user can only has permission to interact with the database in a structured fashion.  For example, instead of  hard coding the INSERT query in my app code I can instead wrap the INSERT into a stored procedure on the backend.
 
 ```{sql storedproc, eval = FALSE,connection = trusted_connection}
 Use Cab_Demo
@@ -188,8 +184,8 @@ The stored procedure provides an interface between the table and the application
 ```
 
 
-A few lines of defense exist outside of the app and database server.  An intrusion detection system (IDS) uses signatures to detect potiental attacks.  Some IDS also provide real time alerting features.
+A few lines of defense exist outside of the app and database server.  An intrusion detection system (IDS) uses signatures to detect potential attacks.  Some IDS also provide real time alerting features.
 
-Finally, make sure all technologies involved in the application are patched.  This includes the database server, the webserver, the individual packages and any other systems interacting with the application.
+Finally, make sure all technologies involved in the application are patched.  This includes the database server, the web server, the individual packages and any other systems interacting with the application.  In an ideal world, software vendors issue patches after immediately after discovering an injection vulnerability.
 
 
