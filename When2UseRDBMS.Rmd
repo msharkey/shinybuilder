@@ -1,7 +1,13 @@
 ---
-title: "When Relational Databases are The Right Tool for the Job"
+title: "When to use Relational Databases"
 author: Matt Sharkey
-output: html_document
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+bibliography: ["citation.bib"]
+biblio-style: "apalike"
+link-citations: true
 ---
 
 ```{r setup, include=FALSE}
@@ -10,41 +16,30 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
- 
+### RDBMS - R is for Reliable
 
-## RDBMS the Mighty Hammer
+Relational database management systems (RDBMS) provide a cornerstone for many apps and services.  By technology standards,  RDBMS are ancient.  Strong theoretical underpinnings have kept RDBMS technologies relevant in a volatile industry.  Even non-relational data stores have had to add RDBMS-like features. For example, Hadoop has a SQL interface. 
 
-Relational database management systems (RDBMS) are the backbone for many apps and services.  The foundation for relational databases is deeply routed in mathematics and this has enabled them to stay relevant while many other technologies are phased out.  In fact, because of the popularity of relational databases, many new technologies and noSQL systems provide a SQL like interface e.g. Spark SQL, Hive, U-SQL.  Also, on account of the popularity of databases, many individuals have become adept at querying and managing relational databases.  It's a safe assumption that RDBMS will remain relevant for years to come.  Despite their popularity and familiarity, RDBMS are not always the best tool for the job.  If all I need is a place to store data then I probably don't need a database.  Relational databases are great but they are not they right tool just because you have data.  Dumping everything to a RDBMS might be tempting but it will lead to just that, a dump.  Codd once remarked on the situation quite elegantly: 
+Even though RDBMS are popular and versatile, they don't solve every problem.  If all I need is a place to store data, then I don't need a database.  Dumping data to a relational database might be tempting, but it will lead to just that- a dump.  Codd, the founder of the relational model, once remarked on choosing the right tools: 
 
-IT should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users' requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost?  
- 
- So when are RDBMS the best tool for job?  It depends.  Here are some questions a developer should ask before deciding to use a RDBMS on a project:
-
-* Will the data grow?  Data that grows overtime without changing formats is a good candidate for RDBMS.  An ETL developer can set up automated processes that update the database as new data becomes available.  If data grows and an RDBMS is not used then more complexity will be needed on the client side for processing.
-
-* Will data change?  If  we are building an app to track historical changes then a RDBMs can help.  Temporal tables or slowly changing dimension pattern are highly efficient at tracking changes.  For example, we might want to store product price changes for a p.o.s. system.
-
-* Is the data larger than what our client tool can fit into memory?  A 20 GB relational table is easier to interact with than a 20 GB flat file.
-
-* Can query performance be improved with a database?  It depends on the workload and client tool.  For example, R operations are usually single threaded.  Large data scans benefit from parallel operations. Pushing the query workload to the database instead of the R client might improve performance per parallel data scans.
-
-* Does my organizations have the proper infrastructure and skillets?  Databases, especially those on-premises, need planning and maintenance.  The degree of planning depends on the application workload requirements and existing infrastructure.  For example, if the database workload peaks at 100 batches/sec and the data never grows beyond a few GB then IT probably doesn't need to buy a brand new server or buy more storage.  If existing database servers already exist then they might be able to absorb this workload.  If the app is pushing 10K batches/sec during business hours and/or will grow to terabytes then it's possible new hardware would be provisioned.  This could take weeks.  Database maintenance is another consideration.  Are you performing back-ups, corruption checking, patching, index de-fragmentation, statistics updates?  Cloud databases offloads some of the infrastructure duties but adds new challenges.  For example, a good database as platform cloud service will takes care of backups and patching.  The new challenge is configuring network to reduce latency and optimizing code to prevent unnecessarily egress charges.
-
-* Is the data sensitive?  Database products offer a plethora of encryption, auditing, and alerting features.  For example, SQL Server offers data encryption at rest, encryption over the wire, permission change auditing, query level auditing, and server agent alerts out of the box.  Sure, it's possible to recreate a lot of these features without a database but how long will it take?  It's been my experience so far that clients feel better when they know commercial technologies are involved.  Some have gone as far as to request we use commercial solutions for security.
-
-
-* Do I need ACID compliant transactions? ACID stands for atomic, consistent, isolated and durable.  Atomiticy means that each transaction is an atomic unit of work.  If I transfer \$100 from my savings to checking account the single atomic transaction likely involves two database queries.  One query debits \$100 from the savings ledger and one query credits \$100 to the checking ledger.  These two queries are indivisible.  If one query fails then the entire transaction fails and is rolled back.  Imagine if the queries were not a single transaction and a system failure occurred after the \$100 debit to savings and before the \$100 credit to checking.  I would be out $100.  Consistency means.. Isolation deals with the behavior of concurrent transactions.  Some applications must ensure transactions occur in complete isolation.  For example, Imagine there's one copy left of Crime and Punishment on Amazon. a Carl adds the book to his cart.  This executes a query to add the book to Carl's cart and remove it from inventory.  No other users should be able to look at the inventory until Carl's transaction completes otherwise they would see that one book remains and become frustrated if they attempted to purchase it when Carl already has it.  Durability means that completed transactions persist.  The DBMS logs transaction operations to non-non-volatile memory.  This enables the database to replay or undo operations. 
-
-* How much flexibility do I need?  Frequently updating a relational schema is slow and cumbersome.  If requirements are not known or the project is still in the exploritory phase then holding off from database integration might be prudent.
-
-
-* Frank Cod, the inventor of the relational model once suggested that relational databases are not ideal for analytics.
-
-* Machine generated log data doesn't have a naturally relational aspect.
-
-* Performance optimization can be separated from the programming.  e.g. index selection and generation can occur completely unbeknownst to the developer
+>IT should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy >the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users' requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost? [@codd93]  
 
  
-In conclusion, 
-
  
+ So when are RDBMS the best tool for the job?  It depends.  Here are some questions a developer should ask before deciding to use an RDBMS on a project:
+
+* Will the data grow?  Growing fixed format data is a good candidate for RDBMS.  An ETL developer can build a pipeline to update the database as new data becomes available.
+
+* Will data change?  RDBMS excel at tracking historical changes.  Developers can use temporal tables or slowly changing dimensions for value level changes.  I've written in more detail about tracking historical changes [here]( https://www.hinttank.com/working-with-temporal-data-track-data-changes-through-time-2/ ).
+
+* Is the data bigger than what we can fit into memory?  A 20 GB relational table is more accessible than a 20 GB flat file.
+
+* Does the app need fast data processing?  RDBMS can be faster at data processing than other system depending on the workload.  Workloads sent to the database can use indexes and automatic parallelization for speed.
+
+* Does my organizations have the proper infrastructure and skillets?  Databases, especially on-premises deployments, need planning and maintenance.  The degree of planning depends on the application workload requirements and existing infrastructure.  A small commodity server can handle a database workload of 100 batches/sec under load.  It's another story if the app is pushing 10K batches/sec under load.  Database maintenance is another consideration.  Are you performing back-ups, corruption checking, patching, index de-fragmentation, statistics updates?  Cloud databases offload some of the infrastructure duties like backups and patching, but they are not maintenance free.  
+
+* Is the data sensitive?  Database products offer a plethora of encryption, auditing, and alerting features.  SQL Server, for example, offers data encryption, auditing, and alerting out of the box.  It's possible to recreate a lot of these features without a database but as Codd put it, "at what cost?"  
+
+* Do I need transactions?  A balance transfer of \$100 from my savings to checking account is an atomic transaction made up of two database queries.  One query debits \$100 from the savings ledger and one query credits \$100 to the checking ledger.  These two queries are indivisible.  If one query fails, then the entire transaction fails.  If a system failure occurred between queries, then I would not want the \$100 debit to succeed and the \$100 credit to fail.  Otherwise, I'd lose $100!
+
+* How much flexibility do I need?  Updating a relational schema is slow and cumbersome.  If a project is in the exploratory phase, then a database will add unnecessary complexity.  User requirements should drive the data model.  The data model drives implementation details.  Importing data into a database should not be the end but the means to some end. 

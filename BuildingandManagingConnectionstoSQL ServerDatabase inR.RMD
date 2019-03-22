@@ -1,5 +1,5 @@
 ---
-title: "Building and Managing Connections to SQL Server Databases in R"
+title: "Connecting to SQL Server Databases with R"
 author: "Matthew Sharkey"
 output:
   prettydoc::html_pretty:
@@ -18,7 +18,7 @@ sqlchunk_connection <- DBI::dbConnect(odbc::odbc(),Driver= myDriver,Server = myS
 
 ### Making a connection
 ***
-R users can integrate SQL server databases using the DBI and ODBC packages.  The first step is to build a connection string.  A connection string contains a set of key value pairs.  It tells R where the server is and what user credential to use.  Different driver types need different connection string formats.  Here are two common connection string configurations.
+R users can integrate SQL Server databases using the DBI and ODBC packages.  The first step is to build a connection string.  A connection string contains a set of key-value pairs.  It tells R where the server is and what user credential to use.  Different driver types need different connection string formats.  Here are two common connection string configurations.
 
 
 
@@ -44,26 +44,26 @@ connection <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
 
 
 
-The trusted_connection uses my windows account instead of a username and password.  I prefer windows logins over creating a SQL login because they are easier to manage.  My AD system administrator takes care of securing windows credentials.  If I use a SQL login then I'm responsible for guarding and storing the credentials.  The second connection string shows how to connect with a SQL login.  I use SQL logins for non-windows clients or when connecting to a DB outside the domain.  It's good practice to avoid storing clear text passwords in the client code.  So, I stored an environmental variable and accessed it with the Sys.getenv function.
+The trusted_connection uses my windows account instead of a username and password.  I prefer windows logins over creating a SQL login because they are easier to manage.  My AD system administrator takes care of securing windows credentials.  If I use a SQL login, then I'm responsible for guarding and storing the credentials.  The second connection string shows how to connect with a SQL login.  I use SQL logins for non-windows clients or when connecting to a DB outside the domain.  It's good practice to avoid storing clear text passwords in the client code.  So, I stored an environmental variable and accessed it with the Sys.getenv function.
 
 
 
 ### Common Connection Problems
 ***
 
-I've encountered a fair share of error when attempting the initial connection. They usually stem from one or more of the following:
+I've encountered a wide variety of errors when attempting the initial connection. They usually stem from one or more of the following:
 
 * I didn't build a valid connection string. 
-    + ConnectionStrings.com is a good place to check for that my connection string is well formed. 
+    + ConnectionStrings.com provides a reference for connection string formats. 
 * I misspelled something.
-I botch the server name a lot.  In general, I find it easy to misspell keys and values.  I once read,  "There're two hard thing in programming - naming conventions and spelling."  I can't agree more.
+I need to correct server and database names more than I'd like to admit.
 * I don't have permissions to the SQL Server. 
-    + When I see errors like the "The server principal. is not able to access." then I suspect permissions are the issue.  If I don't own the server then I submit a ticket to the help desk for authorization.  If I own the server then I check the SQL server logs through SQL Server Management Studio.  The logs usually direct me to either create a user or grant permissions.
+    + When I see errors like the "The server principal is not able to access." then I suspect permissions are the issue.  If I don't own the server, then I submit a ticket to the help desk for authorization.  If I own the server, then I check the SQL server logs through SQL Server Management Studio.  The logs usually direct me to either create a user or grant permissions.
 * I don't have the right driver selected.
-    + It's easy to attempt a connection with a driver that doesn't exist on the client.  Windows users can check available drivers by searching Administrative tools -> Double click Data Sources.  If I publish to an external source e.g. ShinyApps.IO then I check their support docs for available driver names.  At the time of this blog post they have SQL Server driver named "SQLServer" available.
+    + It's easy to attempt a connection with a driver that doesn't exist on the client.  Windows users can check available drivers by searching Administrative tools -> Double click Data Sources.  If I publish to an external source, e.g. ShinyApps.IO, then I check their support docs for available driver names.  At the time of this blog post, they have SQL Server driver named "SQLServer" available.
 
 * I need to specify the port number. 
-    + Sometimes the default port is changed from 1433.  In that case, I must specify the port number after the server name e.g. myServer = '.\snapman,2050'
+    + Sometimes the default port is changed from 1433.  In that case, I must specify the port number after the server name, e.g. myServer = '.\snapman,2050'
 * A firewall is blocking the connection. 
     + One of my [previous blog posts](https://www.hinttank.com/troubleshooting-client-connection-issues/) shows how to configure a firewall SQL Server access.
 
@@ -74,7 +74,7 @@ I botch the server name a lot.  In general, I find it easy to misspell keys and 
 
 
 
-Now that I've made a connection I'll verify  it with a simple GetDate() query. 
+Now that I've made a connection I'll verify it with a simple GetDate() query. 
 
 
 
@@ -87,7 +87,7 @@ dbDisconnect(trusted_connection)
 
 
 
-I closed the connection by passing the connection variable to the dbDisconnect function.  Generally, it is a good idea to close connections after use.   Leaving connections open wastes memory and blocks resources for other query sessions.  Too many open connections can overload the server and prevent new connections.  This might crash the application or the database server.
+I closed the connection by passing the connection variable to the dbDisconnect function.  Generally, it is a good idea to close connections after use.   Leaving connections open wastes memory and blocks resources for other query sessions.  Too many open connections can overload the server and prevent new connections.
 
 I'll show what open connections look like on the back-end.  First, I'll make five connections using a for loop without invoking dbDisconnect.
 
@@ -112,7 +112,7 @@ Here's a query that a system admin might use to watch database connections.  It 
 ```{sql checkoutthecons, eval=TRUE,connection = sqlchunk_connection}
 SELECT 
     DB_NAME(p.dbid) as DBName, 
-	program_name as Program,CPU,memusage,status,SPID,nt_username
+    program_name as Program,CPU,memusage,status,SPID,nt_username
 FROM sys.sysprocesses p
 Cross apply sys.dm_exec_sql_text(p.sql_handle) d
 WHERE  program_name = 'Rstudio'
@@ -122,7 +122,7 @@ and text like '%leakedquery%' and text not like '%DB_NAME%'
 
 
 
-I didn't issue a dbDisconnect so the connections will remain open until the client closes or R runs garbage collection.
+I didn't issue a dbDisconnect, so the connections stays open until the client closes or R runs garbage collection.
 
 
 
@@ -130,7 +130,7 @@ I didn't issue a dbDisconnect so the connections will remain open until the clie
 ***
 
 
-The pool package opens and closes connections automatically.  R users establish a connection to a pool.  From then on pool gives the query an iddle connection or opens a new connection.  Besides simplifying client code, pooled connections can also provide a performance boost.  To illustrate, I wrote a sample workload consisting of three queries.  Next, I wrote a funtion to execute the queries using dbConnect/dbDisconnect, and a function to execute the queries using a pool.
+The pool package opens and closes connections automatically.  R users establish a connection to a pool.  From then on pool gives the query an idle connection or opens a new connection.  Besides simplifying client code, pooled connections can also provide a performance boost.  To illustrate, I wrote a sample workload consisting of three queries.  Next, I wrote a function to execute the queries using dbConnect/dbDisconnect, and a function to execute the queries using a pool.
 
 
 
@@ -183,7 +183,7 @@ results
 
 ```
 
-The pooled function connection appears to be 10 times faster.  Profvis shows that most of time spent in dbconnectworkload is on opening connections.
+The pooled function connection appears to be 10 times faster. Profvis shows that most of the time spent in dbconnectworkload is on opening connections.
 
 ```{r profvischeck, eval=TRUE}
 library(profvis)
@@ -195,5 +195,5 @@ profvis({dbconnectworkload ()})
 
 ### dbDisconnect(BlogPost)
 ***
-Database interaction starts with a connection.  I mentioned a few common connection problems and how to troubleshoot them.  Once I have a connection then I begin testing queries.  The DBI function dbGetQuery takes two arguments - 1) the connection 2) a query string.  Finally, I mentioned that it's good to get in the habit of closing connections or use the pool package.  Database integration with R is large topic that I will continue to blog about in future posts.
+Database interaction starts with a connection.  I mentioned a few common connection problems and how to troubleshoot them.  Once I have a connection, then I begin testing queries.  The DBI function dbGetQuery takes two arguments - 1) the connection 2) a query string.  Finally, I mentioned that it's good to get in the habit of closing connections or use the pool package. 
 
