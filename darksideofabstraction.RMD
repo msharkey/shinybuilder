@@ -1,0 +1,27 @@
+---
+title: "The Darkside of DBI and dbplyr abstraction"
+author: "Matt Sharkey"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Abstraction makes life easier.  I don't need to know how an enginer works to use a car.  I don't need to understand the chemical properties of metal oxide semiconductors to use a computer.  And I don't need a PhD in   
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

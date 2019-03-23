@@ -4,10 +4,9 @@
 sidebar <- dashboardSidebar(
 
   sidebarMenu(id="tabs",
-              menuItem("Table", tabName = "table", icon=icon("table"), selected=TRUE),
-              menuItem("Plot", tabName="plot", icon=icon("line-chart")),
-              
-              menuItem("Codes",  icon = icon("file-text-o")),
+              menuItem("Plot", tabName="plot", icon=icon("line-chart"), selected=TRUE),
+              menuItem("Table", tabName = "table", icon=icon("table")),
+              menuItem("Codes", tabName = "table", icon = icon("file-text-o")),
               menuItem("ReadMe", tabName = "readme", icon=icon("mortar-board")),
               menuItem("About", tabName = "about", icon = icon("question"))
   
@@ -19,39 +18,32 @@ body <- dashboardBody(
     tabItem(tabName = "readme"
     ),
     tabItem(tabName = "plot",
+            fluidRow(   uiOutput("query_time"),uiOutput("query_time_heat"),uiOutput("query_time_bars")),
             fluidRow(
-              column(width = 4, 
-                     tabBox( width = NULL,
-                             tabPanel(h5("parameters"),
-                                      conditionalPanel(condition="input.sequential=='1' | input.mixed=='1' | input.first=='1' | input.alpha=='1' ",
-                                                       sliderInput("ka", "ka:", value = 0.5, min = 0.1, max = 3, step=0.1)
-                                      ),
-                                      conditionalPanel(condition="input.sequential=='1' | input.mixed=='1' | input.zero=='1' ",
-                                                       sliderInput("Tk0", "Tk0:", value = 5, min = 0, max = 10, step=0.5)
-                                      ),
-                                      conditionalPanel(condition="input.al=='1'",
-                                                       sliderInput("alpha", "alpha:", value = 0.5, min = 0, max = 2, step=0.1)
-                                      ),
-                                      conditionalPanel(condition="input.sequential=='1' | input.mixed=='1' ",
-                                                       sliderInput("F0", "F0:", value = 0.5, min = 0, max = 1, step=0.1)
-                                      ),
-                                      conditionalPanel(condition="input.saturated=='1'",
-                                                       sliderInput("Vm", "Vm:", value = 0.9, min = 0, max = 2, step=0.1),
-                                                       sliderInput("Km", "Km:", value = 0.2, min = 0, max = 1, step=0.1)
-                                      ),
-                                      sliderInput("k", "k:", value = 0.1, min = 0, max = 2, step=0.05)
-                             ),
-                             tabPanel(h5("dosage"),
-                                      sliderInput("tfd", "Time of first dose:", value=0, min=0, max = 20, step=1),
-                                      sliderInput("nd", "Number of doses:", value=1, min=0, max = 10, step=1),
-                                      sliderInput("ii", "Interdose interval:", value = 9, min = 0.5, max = 15, step=0.5),
-                                      sliderInput("amt", "Amount:", value = 5, min = 0, max = 20, step=1)
-                             )
+              column(width = 2, 
+                    
+                             tabPanel(h5("Filters"),
+                                      dateInput("startdate", "Start Date:", value = "2018-01-01", format = "mm/dd/yy"),
+                                      dateInput("enddate", "End Date:", value = "2018-01-31", format = "mm/dd/yy"),
+                                      sliderInput("trip_distance", "Trip Distance:",  value=c(0,20), min=0, max = 100)
+                             
                      )),
-              column(width = 8,
-                     box(  width = NULL, plotOutput("plot",height="500px"), collapsible = TRUE,
-                           title = "Plot", status = "primary", solidHeader = TRUE)
-              ))
+             column(width = 10,
+                     box(  width = NULL, plotOutput("trips_trended",height="200px"), collapsible = TRUE,
+                           title = "Trip Counts", status = "primary", solidHeader = TRUE)
+              )),
+
+             fluidRow(
+             column(width = 5,offset = 2,
+                    box(  width = NULL, plotOutput("tips_heatmap",height="200px"), collapsible = TRUE,
+                          title = "Average Tips", status = "primary", solidHeader = TRUE)
+             ),
+             column(width = 5,
+                    box(  width = NULL, plotOutput("payment_bar",height="200px"), collapsible = TRUE,
+                          title = "Payment Types", status = "primary", solidHeader = TRUE)
+             )
+            
+          )
     ),
     tabItem(tabName = "table"
            
@@ -80,7 +72,7 @@ body <- dashboardBody(
 )
 
 dashboardPage(
-  dashboardHeader(title = "Yellow Cab Dashboard"),
+  dashboardHeader(title = "Cab Dashboard"),
   sidebar,
   body
 )

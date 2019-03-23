@@ -1,78 +1,84 @@
 
 
-url <- "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-01.csv"
+url <- "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-04.csv"
 
-download.file(url,"bofa_yellow_tripdata_2018-01.csv")
+download.file(url,"D:/Cab_Data/yellow_tripdata_2018-04.csv")
+getwd()
 
 library(dbplyr)
-library(dplyr)
 library(odbc)
 library(DBI)
 library(microbenchmark)
 library(tidyverse)
 
-con <- dbConnect(odbc(),Driver = 'SQL Server',Server = '.', Database = 'Cab_Demo', trusted_connection = TRUE)
 
-trips_db <- tbl(con,"yellow_trip_summary")
-tips_fs <- read_csv('D:/Software/statistics-for-data-scientists/data/yellow_tripdata_2018-01.csv')
+## Load Data
+con <- dbConnect(odbc(),Driver = 'SQL Server',Server = '.\\snapman', Database = 'Cab_Demo', trusted_connection = TRUE)
 
-db_write_table(con,'Harry' ,'numeric',5)
-db_create_table(con,'Harry',) %>% show_query()
+# Need to give breif intro to data set
+# Bad Defaults, generates varchar(255) instead of proper , Allows NULLS for every data type 
+
+trips_fs <- read_csv('D:/Cab_Data/yellow_tripdata_2018-01.csv',n_max = 10)
+if(dbExistsTable(con, "yellow_trip_summary_model")){dbRemoveTable(con , 'yellow_trip_summary_model')}
+dbCreateTable(con,'yellow_trip_summary_model',tips_fs)
+
+## Generate Table with tsql
+
+
+## Each Row is inserted one at a time, not fast at all
+trips_fsf <- read_csv('D:/Cab_Data/yellow_tripdata_2018-01.csv')
+dbWriteTable(con,"yellow_trip_summary",tips_fsf,append =TRUE)
+
+
+# Benchmark dbWrite table with BULK INSERT method
+
+
+
+## Reading from file vs reading from 
+
+trips_db <- tbl(con, "yellow_trip_summary")
+
+fs<- function(){tips_fsf %>%
+  filter(tpep_dropoff_datetime >= '2018-01-02 07:28:00',tpep_dropoff_datetime <= '2018-01-02 07:30:00') %>%
+  summarise(pcount= n())}
+
+db<- function(){tips_db %>%
+  filter(tpep_dropoff_datetime >= '01-02-2018 13:28',tpep_dropoff_datetime <= '01/02/2018 13:30')  %>%
+  summarise(pcount= n())}
+
+#Create Index with DBI, then re-run benchmark, explain 
+
+microbenchmark(print(db()),print(fs()),times = 20)
+
+# Index Phone Book
+
+# What do you need to index? FPOC
+
+#don't forget indexes have overhead
+
+
+
+##covering example
   
-  dbGetQuery(con,'Select payment_type,count(1)
-                  From dbo.yellow_trip_summary
-                  group by payment_type')
-
-executesql <- function(){
-  df <-  dbGetQuery(con,'Select top 10 payment_type as himom,count(1)
-                  From dbo.yellow_trip_summary
-                    group by payment_type')
-  df 
+  trips_db %>% 
+  filter(tpep_dropoff_datetime >= '2018-01-02 07:28:00',tpep_dropoff_datetime <= '2018-01-03 07:30:00') %>%
+  transmute(fair_total = tip_amount+fare_amount) %>% 
+  summarise(sumt = sum(fair_total)) %>%
   
-}
+  ##with cold cache, this query runs in sub seconds with covering query, 15 seconds without 
 
 
-executedplyr <- function(){
-  
- trips_db %>% 
-    group_by(payment_type) %>%
-    summarise(pcount = count()) %>%
-    show_query()
-  
-}
-
-install.packages('nycflights13')
-copy_to(con, nycflights13::flights, "flights",
-  temporary = FALSE, 
-  indexes = list(
-    c("year", "month", "day"), 
-    "carrier", 
-    "tailnum",
-    "dest"
-  )
-)
-
-untrustedRow <- data.frame(5,	21.2	,6.2,	16.0,	110.2,	3.9,
-                           2.62,	16.46,	5.0	,1.0	,4.6,
-                           row.names = "'Rick James',5,2,6,2,1,3,2,1,5,1,4); Create Table dbo.HarrysBar(c1 INT);--")
-
-names(untrustedRow) <- names(mtcars)
-##nmcars <- rbind(mtcars,untrustedRow)
-
-dbWriteTable(con, "mtcars",untrustedRow, append = TRUE)
+## OSHFA Query
+    
+    
 
 
 
-sapply(mtcars, class)
-sapply(nmcars, class)
 
-class(mtcars)
-class(nmcars)
 
-%>% show_query()
-db_write_table(con,table = 'harry',mtcars) %>% show_query()
 
-nrow(tailnum_delay_db)
+
+
 flights_db %>% 
   group_by(dest) %>%
   summarise(delay = mean(dep_time)) %>%
@@ -85,37 +91,25 @@ tailnum_delay_db <- flights_db %>%
     delay = mean(arr_delay),
     n = n()
   ) %>% 
-  arrange(desc(delay)) %>%
+  arrange(desc(tpep_dropoff_datetime)) %>%
   filter(n > 100) %>% show_query()
 
 flights_db <- tbl(con, "flights")
 
 
-sql <- sqlAppendTable(con,"mtcars",untrustedRow)
-
-sanitized <- sqlInterpolate(con,sql)
-
-dbExecute(con,sanitized)
-
-cars_db <- tbl(con,"mtcars")
-
-cars_db %>% select(row_names)
 
 
-%>% show_query()
 
 
 
 Sstart_time <- Sys.time()
 
 ##executesql()
-tips_fs %>%
-  filter(tpep_pickup_datetime > '2018-01-15 00:00:00',trip_distance > 5) %>%
-  
+trips_db  %>%
   group_by(payment_type) %>%
-  summarise(pcount= n())#%>%
-  
-  #show_query()
+  filter(tpep_pickup_datetime > '2018-01-15 00:00:00',trip_distance > 5) %>%
+  summarise(pcount= n(),avgfair = mean(total_amount))%>%
+  show_query()
  # ggplot()+geom_bar(aes(payment_type,pcount),stat="identity")
 Send_time <- Sys.time()
 
@@ -127,13 +121,13 @@ lsf.str("package:dbplyr")
 ##executedplyr()
 
 trips_db %>% 
-  db_list_tables() %>% show_query()
-  #select(tpep_pickup_datetime,trip_distance,payment_type) %>%
+  #db_list_tables() %>% show_query()
+  select(tpep_pickup_datetime,trip_distance,payment_type) %>%
   filter(tpep_pickup_datetime > '2018-01-15 00:00:00',trip_distance > 5) %>%
   group_by(payment_type) %>%
-  summarise(pcount = count())# %>%
+  summarise(pcount = count()) %>%
   
-  #show_query()
+  show_query()
   #ggplot()+geom_bar(aes(payment_type,pcount),stat="identity")
 end_time <- Sys.time()
 Send_time - Sstart_time
