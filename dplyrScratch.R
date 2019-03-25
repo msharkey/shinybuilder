@@ -1,10 +1,15 @@
 
 
-url <- "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-04.csv"
+url <- "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-05.csv"
 
-download.file(url,"D:/Cab_Data/yellow_tripdata_2018-04.csv")
+download.file(url,"D:/Cab_Data/yellow_tripdata_2018-05.csv")
 getwd()
 
+
+
+
+list.files("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/InjectionApp")
+library(kableExtra)
 library(dbplyr)
 library(odbc)
 library(DBI)
@@ -71,11 +76,11 @@ microbenchmark(print(db()),print(fs()),times = 20)
 ## OSHFA Query
     
     
+  if(dbExistsTable(con, "starwars")){dbRemoveTable(con , 'starwars')}
+  dbCreateTable(con,'starwars',starwars)
+  dbWriteTable(con,'starwars',starwars,append=TRUE)
 
-
-
-
-
+head(starwars)
 
 
 

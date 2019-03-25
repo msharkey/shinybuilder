@@ -104,7 +104,7 @@ shinyServer(function(input, output,session) {
     END as Day
     From (
     Select datepart(hh,tpep_dropoff_datetime) as Hour_Range, datepart(dw,tpep_dropoff_datetime) as Day,avg(tip_amount) as tip_amount
-    FROM [Cab_Demo].[dbo].[yellow_trip_summary] 
+    FROM [Cab_Demo].[dbo].[yellow_trip_summary_heap] 
     Where tpep_dropoff_datetime between ?start and ?end
     and trip_distance between ?minlen and ?maxlen
     group by datepart(dw,tpep_dropoff_datetime),datepart(hh,tpep_dropoff_datetime)

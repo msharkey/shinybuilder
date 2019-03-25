@@ -2,8 +2,10 @@
 title: "Building Your First Shiny Database Application"
 author: "Matthew Sharkey | msharkey3434@gmail.com"
 date: "`r Sys.Date()`"
+bibliography: ["citation.bib"]
 output:
   xaringan::moon_reader:
+    #css: [default, metropolis, metropolis-fonts]
     lib_dir: libs
     nature:
       highlightStyle: github
@@ -11,37 +13,30 @@ output:
       countIncrementalSlides: false
 ---
 
-background-image: url(https://upload.wikimedia.org/wikipedia/commons/b/be/Sharingan_triple.svg)
 
 ```{r setup, include=FALSE}
+gc()
+
 options(htmltools.dir.version = FALSE)
+library(DBI)
+library(dbplyr)
+library(tidyverse)
+library(kableExtra)
+myDriver <- 'SQL Server'
+myServer <- '.\\snapman'
+myDatabase <- 'Cab_Demo'
+sqlchunk_connection <- dbConnect(odbc::odbc(),
+                          Driver= myDriver,
+                          Server = myServer,
+                          Database = myDatabase,
+                          Trusted_Connection='yes')
 ```
 
-???
 
-Image credit: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Sharingan_triple.svg)
-
----
-class: center, middle
-
-# xaringan
-
-### /ʃaː.'riŋ.ɡan/
-
----
-class: inverse, center, middle
-
-# Get Started
-
----
 
 # About Me
 
-Matthew Sharkey,MBA,MS-BIA 
-
---
-
-Data Engineer, HDR
+Matthew Sharkey | Data Engineer, HDR
 
 --
 
@@ -51,59 +46,448 @@ Presentation write up on blog [www.hintank.com](https://www.hinttank.com/)
 
 Demo Application on github (update with github link)
 
+---
+
+
+# Agenda
+
+1. Reasons for using a Database
+
+2. Building and Managing Connections
+
+3. Secure Design
+
+4. Performance & Optimization
+
 
 ---
 
-# Why use a database?
+# Reasons to use a Database
 
--Performance, relational data can be indexed, large data scans can be parralized, performance can be seperated from the programming
+
+Potiential performance gains
+--
+
+- Indexing
 
 --
 
--Tranfer $100 dollars from savings to checkings
+- Parallelism
+
+---
+
+# Demo: File vs Table Query
+
+
+```{r bencmark,eval=FALSE}
+
+## Executes against CSV file
+fs<- function(){trips_fs %>%
+  filter(tpep_dropoff_datetime >= '2018-01-02 07:28:00'
+         ,tpep_dropoff_datetime <= '2018-01-02 07:30:00') %>%
+  summarise(pcount= n())}
+## Executes against database table
+db<- function(){trips_db %>%
+  filter(tpep_dropoff_datetime >= '01-02-2018 13:28'
+         ,tpep_dropoff_datetime <= '01/02/2018 13:30')  %>%
+  summarise(pcount= n())}
+
+
+microbenchmark(print(db()),print(fs()),times = 10)
+
+```
+
+---
+
+
+
+# Other Reasons to use a RDBMS
+
+- Stability
 
 --
 
---
-
--Stable, Not going away soon =
+- Security
 
 --
 
--Security, Database products offer plethora of security features out of box
+- Transactions (ACID)
 
 --
 
--Atomic, Consistent, Isolated and Durable Transactions (ACID)
+- Change Tracking
 
 --
 
 - But it's not the right tool for every job!
 
 ---
+<br>
+<br>
+<br>
+<br>
+<center>
+>IT should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users' requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost?
 
-IT (or in this case Shiny Developers) should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users’ requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost?
+E.F. Codd, et al. 1998. Providing Olap to User-Analysts: An It Mandate. https://bit.ly/2Okyz2H.
+<center>
 
+---
+
+# Making a connection
+
+<center>
+<iframe src="https://giphy.com/embed/Ym0zs6Ms4vgwU" width="380" height="227" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/mr-robot-rami-malek-its-so-good-Ym0zs6Ms4vgwU"></a></p>
+</center>
+
+
+--
+
+```{r commonCon, eval=TRUE, warning=FALSE}
+library(DBI)
+myDriver <- 'SQL Server'
+myServer <- '.\\snapman'
+myDatabase <- 'Cab_Demo'
+myconnection <- dbConnect(odbc::odbc(),
+                          Driver= myDriver,
+                          Server = myServer,
+                          Database = myDatabase,
+                          Trusted_Connection='yes')
+
+
+```
+
+---
+
+
+# Common Connection Problems
+--
+
+- Wrong connection string format 
+    
+    + ConnectionStrings.com
+--
+
+- Misspelled something
+
+--
+
+- Permissions
+
+--
+
+- Driver
+
+--
+
+- Wrong port number 
+
+--
+
+- Firewall
+
+---
+
+# Test Query
+
+```{r execQuery, eval=TRUE, warning=FALSE}
+
+dbGetQuery(myconnection,"Select GetDate()")
+dbDisconnect(myconnection)
+
+```
+
+--
+
+```{r lotsofCons, eval=TRUE}
+for (i in 1:5)
+{
+myconnection <- dbConnect(odbc::odbc(),Driver= myDriver
+                          ,Server = myServer,Database = myDatabase
+                          ,Trusted_Connection='yes')
+date <- dbGetQuery(myconnection,paste("Select GetDate() as mydate
+                                      ,\'leakedquery\' as c1,",i))
+}
+
+```
+
+---
+
+# Leaked Connections
+
+```{sql,connection = sqlchunk_connection,output.var = "leakedcns"}
+SELECT 
+    DB_NAME(p.dbid) as DBName, 
+    program_name as Program,CPU,memusage,status,SPID,nt_username
+FROM sys.sysprocesses p
+Cross apply sys.dm_exec_sql_text(p.sql_handle) d
+WHERE  program_name = 'Rstudio'
+and text like '%leakedquery%' and text not like '%DB_NAME%'
+
+```
+
+```{r leakedcons, warning= FALSE}
+knitr::kable(leakedcns, format = 'html')
+```
+
+---
+
+# Manual vs Pool
+
+```{r pool, eval=TRUE,echo=FALSE}
+library(pool)
+queries <- c("SELECT Getdate()","Select Getdate()","Select Getdate()","Select Getdate()")
+
+dbconnectworkload <- function() {
+ for(i in 1:length(queries)){
+   con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+                   ,Database = myDatabase,Trusted_Connection='yes')
+  dbGetQuery(con,queries[i])
+  dbDisconnect(con)
+ }
+}  
+
+poolcon <- dbPool(odbc::odbc(),Driver= myDriver,Server = myServer
+                  ,Database = myDatabase,Trusted_Connection='yes')
+
+dbpoolworkload <- function() {
+ for(i in 1:length(queries)){dbGetQuery(poolcon,queries[i])}
+}
+
+results <- microbenchmark::microbenchmark(dbconnectworkload()
+                                          ,dbpoolworkload(),times = 10)
+
+
+
+```
+
+```{r poolres, eval=TRUE}
+microbenchmark::microbenchmark(dbconnectworkload()
+                              ,dbpoolworkload()
+                              ,times = 10)
+```
+
+--- 
+---
+
+# Secure Design
+
+- OWASP Top 10 - 2017
+
+--
+
+1. Injection
+2. Broker Authentication
+3. Sensitive Data Exposure
+4. XML External Entities (XXE)
+5. Broken Access Control
+6. Security Misconfiguration
+7. Cross-Site Script (XSS)
+8. Insecure Deserialization
+9. Using Components with Known Vulnerabilities
+10. Insufficient Logging and Monitoring
+
+---
+
+# SQL Injection
+
+```{r, out.width = "700px",echo=FALSE}
+knitr::include_graphics("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/sqlinjection.gif")
+```
 
 
 ---
 
-# Agenda
 
-1. Building and Managing Connections
+# Injection Demo
 
-2. Secure design
+```{sql,connection = sqlchunk_connection,echo=FALSE}
+DROP Table IF Exists dbo.Persons
 
-3. Optimizing Performance
+
+CREATE TABLE dbo.Persons (
+	email Varchar(100) NOT NULL PRIMARY KEY,
+	jobtitle Varchar(50)
+	)
+
+	INSERT INTO dbo.Persons
+	VALUES ('msharkey3434@gmail.com','Data Engineer'),
+	       ('q2474554@nwytg.net','Analyst')
+
+
+```
+
+```{r, out.width = "700px",echo=FALSE}
+knitr::include_graphics("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/shinybuilderInjection.gif")
+```
+
+---
+
+
+### SQL Injection Defense Recap
+
+--
+
+- Grant user least possible permissions
+
+--
+
+- Look out for dynamically generated code
+
+--
+
+- Whitelist Input
+
+--
+
+- Let app interact with interface, not implementation
+
+---
+
+
+### Performance
+
+- Abstraction - We find virtue between excess and deficiency
+
+--
+
+```{r, message=FALSE,warning=FALSE}
+trips_fs <- 
+  readr::read_csv('D:/Cab_Data/yellow_tripdata_2018-01.csv'
+                            ,n_max = 3)
+
+trips_fs
+
+```
+
+---
+
+```{r, echo=FALSE}
+   con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+                   ,Database = myDatabase,Trusted_Connection='yes')
+if(dbExistsTable(con, "yellow_trip_summary_model"))
+  {dbRemoveTable(con , 'yellow_trip_summary_model')}
+```
+
+```{r}
+dbCreateTable(con,'yellow_trip_summary_model',trips_fs)
+```
+
+--
+
+```{sql,connection = sqlchunk_connection,echo=FALSE,output.var = "DataTypes" }
+Select c.name as Column_Name 
+,t.name as Default_Type
+,t2.name as Hand_Crafted
+,Byte_Diff as Byte_Difference 
+from sys.columns c
+JOIN sys.types t
+ON c.user_type_id = t.user_type_id
+JOIN sys.columns cs
+ON c.name = cs.name
+and cs.object_id = object_id('yellow_trip_summary_optimized')
+JOIN sys.types t2
+ON cs.user_type_id = t2.user_type_id
+JOIN
+(
+Select 'VendorID' as name,7 as Byte_Diff UNION ALL
+Select 'tpep_pickup_datetime' as name,0 as Byte_Diff UNION ALL
+Select 'tpep_dropoff_datetime' as name,0 as Byte_Diff UNION ALL
+Select 'passenger_count' as name,7 as Byte_Diff UNION ALL
+Select 'trip_distance' as name,6 as Byte_Diff UNION ALL
+Select 'RatecodeID' as name,7 as Byte_Diff UNION ALL
+Select 'store_and_fwd_flag' as name,0 as Byte_Diff UNION ALL
+Select 'PULocationID' as name,6 as Byte_Diff UNION ALL
+Select 'DOLocationID' as name,6 as Byte_Diff UNION ALL
+Select 'payment_type' as name,7 as Byte_Diff UNION ALL
+Select 'fare_amount' as name,3 as Byte_Diff UNION ALL
+Select 'extra' as name,3 as Byte_Diff UNION ALL
+Select 'mta_tax' as name,3 as Byte_Diff UNION ALL
+Select 'tip_amount' as name,3 as Byte_Diff UNION ALL
+Select 'tolls_amount' as name,3 as Byte_Diff UNION ALL
+Select 'improvement_surcharge' as name,3 as Byte_Diff UNION ALL
+Select 'total_amount' as name,3 as Byte_Diff 
+) ch
+ON c.name = ch.name
+Where c.object_id = object_id('yellow_trip_summary_model')
+```
+
+```{r , warning= FALSE,echo= FALSE}
+knitr::kable(DataTypes,  format="html") %>% 
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+
+# 67 Bytes Per Row?  So What?
+
+--
+
+- One year of data = 100 million rows
+
+--
+
+- 6.7 GB of wasted space, compounded by:
+
+  * Memory
+  * Network
+  * Backups
+  * Indexes
+  * Replication
+  
+  
+--
+
+# Indexes - The Keys to Performance
+
+
+Good columns for indexing
+
+--
+
+- Remember FPOC
+
+--
+
+F - Filtering (Columns used in joins and the filter/WHERE clause)
+
+--
+
+P - Partitioning (columns used in partitioning functions)
+
+--
+
+O- Ordering (ARRANGE/ORDER BY)
+
+--
+
+C- Covering (Any remaining column in the SELECT)
 
 
 ---
 
-.footnote[
-[1] 中文用户请看[这份教程](http://slides.yihui.name/xaringan/zh-CN.html)
+# Best index for this query?
 
-[2] See [#2](https://github.com/yihui/xaringan/issues/2) if you do not see the template or addin in RStudio.
-]
+```{r,eval= FALSE}
+trips_db %>%
+      mutate(Trip_Date = as.Date(tpep_dropoff_datetime))  %>% 
+      filter(tpep_dropoff_datetime >= '01/01/2018',
+             tpep_dropoff_datetime < '01/04/2018',
+             trip_distance >= 0,
+             trip_distance <= 5)  %>%
+      group_by(Trip_Date) %>%
+      summarise(Trip_Count= n())
+
+```
+
+
+--
+
+- Per FPOC, I'd start with tpep_dropoff_datetime and trip_distance
+
+--
+
+- Test performance before and after index
 
 ---
 background-image: url(`r xaringan:::karl`)
@@ -237,7 +621,7 @@ Limitations:
 # a boring regression
 fit = lm(dist ~ 1 + speed, data = cars)
 coef(summary(fit))
-dojutsu = c('地爆天星', '天照', '加具土命', '神威', '須佐能乎', '無限月読')
+dojutsu = c('地爆天星', '天照', '加具土命', '神威', '須佐能乎', '無限月�?')
 grep('天', dojutsu, value = TRUE)
 ```
 
@@ -620,13 +1004,13 @@ The **xaringan** package borrowed a few terms from Naruto, such as
 
 - [Sharingan](http://naruto.wikia.com/wiki/Sharingan) (写輪眼; the package name)
 
-- The [moon reader](http://naruto.wikia.com/wiki/Moon_Reader) (月読; an attractive R Markdown output format)
+- The [moon reader](http://naruto.wikia.com/wiki/Moon_Reader) (月�?; an attractive R Markdown output format)
 
 - [Chakra](http://naruto.wikia.com/wiki/Chakra) (查克拉; the path to the remark.js library, which is the power to drive the presentation)
 
 - [Nature transformation](http://naruto.wikia.com/wiki/Nature_Transformation) (性質変化; transform the chakra by setting different options)
 
-- The [infinite moon reader](http://naruto.wikia.com/wiki/Infinite_Tsukuyomi) (無限月読; start a local web server to continuously serve your slides)
+- The [infinite moon reader](http://naruto.wikia.com/wiki/Infinite_Tsukuyomi) (無限月�?; start a local web server to continuously serve your slides)
 
 - The [summoning technique](http://naruto.wikia.com/wiki/Summoning_Technique) (download remark.js from the web)
 
@@ -650,4 +1034,4 @@ class: center, middle
 
 Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
 
-The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](http://yihui.name/knitr), and [R Markdown](https://rmarkdown.rstudio.com).
+

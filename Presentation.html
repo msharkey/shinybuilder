@@ -4,9 +4,10 @@
     <title>Building Your First Shiny Database Application</title>
     <meta charset="utf-8" />
     <meta name="author" content="Matthew Sharkey | msharkey3434@gmail.com" />
-    <meta name="date" content="2019-03-17" />
+    <meta name="date" content="2019-03-24" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+    <script src="libs/kePrint/kePrint.js"></script>
     <script src="libs/htmlwidgets/htmlwidgets.js"></script>
     <script src="libs/jquery/jquery.min.js"></script>
     <link href="libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
@@ -23,40 +24,19 @@ class: center, middle, inverse, title-slide
 
 # Building Your First Shiny Database Application
 ### Matthew Sharkey | <a href="mailto:msharkey3434@gmail.com">msharkey3434@gmail.com</a>
-### 2019-03-17
+### 2019-03-24
 
 ---
 
 
-background-image: url(https://upload.wikimedia.org/wikipedia/commons/b/be/Sharingan_triple.svg)
 
 
 
-???
 
-Image credit: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Sharingan_triple.svg)
-
----
-class: center, middle
-
-# xaringan
-
-### /ʃaː.'riŋ.ɡan/
-
----
-class: inverse, center, middle
-
-# Get Started
-
----
 
 # About Me
 
-Matthew Sharkey,MBA,MS-BIA 
-
---
-
-Data Engineer, HDR
+Matthew Sharkey | Data Engineer, HDR
 
 --
 
@@ -66,59 +46,457 @@ Presentation write up on blog [www.hintank.com](https://www.hinttank.com/)
 
 Demo Application on github (update with github link)
 
+---
+
+
+# Agenda
+
+1. Reasons for using a Database
+
+2. Building and Managing Connections
+
+3. Secure Design
+
+4. Performance &amp; Optimization
+
 
 ---
 
-# Why use a database?
+# Reasons to use a Database
 
--Performance, relational data can be indexed, large data scans can be parralized, performance can be seperated from the programming
+
+Potiential performance gains
+--
+
+- Indexing
 
 --
 
--Tranfer $100 dollars from savings to checkings
+- Parallelism
+
+---
+
+# Demo: File vs Table Query
+
+
+
+```r
+## Executes against CSV file
+fs&lt;- function(){trips_fs %&gt;%
+  filter(tpep_dropoff_datetime &gt;= '2018-01-02 07:28:00'
+         ,tpep_dropoff_datetime &lt;= '2018-01-02 07:30:00') %&gt;%
+  summarise(pcount= n())}
+## Executes against database table
+db&lt;- function(){trips_db %&gt;%
+  filter(tpep_dropoff_datetime &gt;= '01-02-2018 13:28'
+         ,tpep_dropoff_datetime &lt;= '01/02/2018 13:30')  %&gt;%
+  summarise(pcount= n())}
+
+
+microbenchmark(print(db()),print(fs()),times = 10)
+```
+
+---
+
+
+
+# Other Reasons to use a RDBMS
+
+- Stability
 
 --
 
---
-
--Stable, Not going away soon =
+- Security
 
 --
 
--Security, Database products offer plethora of security features out of box
+- Transactions (ACID)
 
 --
 
--Atomic, Consistent, Isolated and Durable Transactions (ACID)
+- Change Tracking
 
 --
 
 - But it's not the right tool for every job!
 
 ---
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;center&gt;
+&gt;IT should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users' requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost?
 
-IT (or in this case Shiny Developers) should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users’ requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost?
+E.F. Codd, et al. 1998. Providing Olap to User-Analysts: An It Mandate. https://bit.ly/2Okyz2H.
+&lt;center&gt;
 
+---
+
+# Making a connection
+
+&lt;center&gt;
+&lt;iframe src="https://giphy.com/embed/Ym0zs6Ms4vgwU" width="380" height="227" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;p&gt;&lt;a href="https://giphy.com/gifs/mr-robot-rami-malek-its-so-good-Ym0zs6Ms4vgwU"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/center&gt;
+
+
+--
+
+
+```r
+library(DBI)
+myDriver &lt;- 'SQL Server'
+myServer &lt;- '.\\snapman'
+myDatabase &lt;- 'Cab_Demo'
+myconnection &lt;- dbConnect(odbc::odbc(),
+                          Driver= myDriver,
+                          Server = myServer,
+                          Database = myDatabase,
+                          Trusted_Connection='yes')
+```
+
+---
+
+
+# Common Connection Problems
+--
+
+- Wrong connection string format 
+    
+    + ConnectionStrings.com
+--
+
+- Misspelled something
+
+--
+
+- Permissions
+
+--
+
+- Driver
+
+--
+
+- Wrong port number 
+
+--
+
+- Firewall
+
+---
+
+# Test Query
+
+
+```r
+dbGetQuery(myconnection,"Select GetDate()")
+```
+
+```
+##                      
+## 1 2019-03-24 22:12:28
+```
+
+```r
+dbDisconnect(myconnection)
+```
+
+--
+
+
+```r
+for (i in 1:5)
+{
+myconnection &lt;- dbConnect(odbc::odbc(),Driver= myDriver
+                          ,Server = myServer,Database = myDatabase
+                          ,Trusted_Connection='yes')
+date &lt;- dbGetQuery(myconnection,paste("Select GetDate() as mydate
+                                      ,\'leakedquery\' as c1,",i))
+}
+```
+
+---
+
+# Leaked Connections
+
+
+```sql
+SELECT 
+    DB_NAME(p.dbid) as DBName, 
+    program_name as Program,CPU,memusage,status,SPID,nt_username
+FROM sys.sysprocesses p
+Cross apply sys.dm_exec_sql_text(p.sql_handle) d
+WHERE  program_name = 'Rstudio'
+and text like '%leakedquery%' and text not like '%DB_NAME%'
+
+```
+
+
+```r
+knitr::kable(leakedcns, format = 'html')
+```
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; DBName &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Program &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; CPU &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; memusage &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; status &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; SPID &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; nt_username &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+
+# Manual vs Pool
+
+
+
+
+```r
+microbenchmark::microbenchmark(dbconnectworkload()
+                              ,dbpoolworkload()
+                              ,times = 10)
+```
+
+```
+## Unit: milliseconds
+##                 expr       min        lq      mean    median        uq
+##  dbconnectworkload() 25.550972 26.487662 30.225651 29.455361 34.761822
+##     dbpoolworkload()  3.412538  3.709623  4.028083  3.807402  4.186067
+##       max neval
+##  35.40380    10
+##   5.29619    10
+```
+
+--- 
+---
+
+# Secure Design
+
+- OWASP Top 10 - 2017
+
+--
+
+1. Injection
+2. Broker Authentication
+3. Sensitive Data Exposure
+4. XML External Entities (XXE)
+5. Broken Access Control
+6. Security Misconfiguration
+7. Cross-Site Script (XSS)
+8. Insecure Deserialization
+9. Using Components with Known Vulnerabilities
+10. Insufficient Logging and Monitoring
+
+---
+
+# SQL Injection
+
+&lt;img src="C:/Users/mshar/OneDrive/Documents/R_UG_Demo/sqlinjection.gif" width="700px" /&gt;
 
 
 ---
 
-# Agenda
 
-1. Building and Managing Connections
+# Injection Demo
 
-2. Secure design
 
-3. Optimizing Performance
 
+&lt;img src="C:/Users/mshar/OneDrive/Documents/R_UG_Demo/shinybuilderInjection.gif" width="700px" /&gt;
 
 ---
 
-.footnote[
-[1] 中文用户请看[这份教程](http://slides.yihui.name/xaringan/zh-CN.html)
 
-[2] See [#2](https://github.com/yihui/xaringan/issues/2) if you do not see the template or addin in RStudio.
-]
+### SQL Injection Defense Recap
+
+--
+
+- Grant user least possible permissions
+
+--
+
+- Look out for dynamically generated code
+
+--
+
+- Whitelist Input
+
+--
+
+- Let app interact with interface, not implementation
+
+---
+
+
+### Performance
+
+- Abstraction - We find virtue between excess and deficiency
+
+--
+
+
+```r
+trips_fs &lt;- 
+  readr::read_csv('D:/Cab_Data/yellow_tripdata_2018-01.csv'
+                            ,n_max = 3)
+
+trips_fs
+```
+
+```
+## # A tibble: 3 x 17
+##   VendorID tpep_pickup_dateti~ tpep_dropoff_datet~ passenger_count
+##      &lt;dbl&gt; &lt;dttm&gt;              &lt;dttm&gt;                        &lt;dbl&gt;
+## 1        1 2018-01-01 00:21:05 2018-01-01 00:24:23               1
+## 2        1 2018-01-01 00:44:55 2018-01-01 01:03:05               1
+## 3        1 2018-01-01 00:08:26 2018-01-01 00:14:21               2
+## # ... with 13 more variables: trip_distance &lt;dbl&gt;, RatecodeID &lt;dbl&gt;,
+## #   store_and_fwd_flag &lt;chr&gt;, PULocationID &lt;dbl&gt;, DOLocationID &lt;dbl&gt;,
+## #   payment_type &lt;dbl&gt;, fare_amount &lt;dbl&gt;, extra &lt;dbl&gt;, mta_tax &lt;dbl&gt;,
+## #   tip_amount &lt;dbl&gt;, tolls_amount &lt;dbl&gt;, improvement_surcharge &lt;dbl&gt;,
+## #   total_amount &lt;dbl&gt;
+```
+
+---
+
+
+
+
+```r
+dbCreateTable(con,'yellow_trip_summary_model',trips_fs)
+```
+
+--
+
+
+
+&lt;div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:500px; overflow-x: scroll; width:100%; "&gt;&lt;table class="table" style="margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Column_Name &lt;/th&gt;
+   &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Default_Type &lt;/th&gt;
+   &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Hand_Crafted &lt;/th&gt;
+   &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Byte_Difference &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; VendorID &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; tinyint &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; tpep_pickup_datetime &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; datetime &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; datetime &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; tpep_dropoff_datetime &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; datetime &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; datetime &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; passenger_count &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; tinyint &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; trip_distance &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; smallint &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; RatecodeID &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; tinyint &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; store_and_fwd_flag &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; varchar &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; char &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; PULocationID &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; smallint &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; DOLocationID &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; smallint &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; payment_type &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; tinyint &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; fare_amount &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; extra &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; mta_tax &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; tip_amount &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; tolls_amount &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; improvement_surcharge &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; total_amount &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;&lt;/div&gt;
+
+
 
 ---
 background-image: url(https://github.com/yihui/xaringan/releases/download/v0.0.2/karl-moustache.jpg)
@@ -262,12 +640,12 @@ coef(summary(fit))
 ```
 
 ```r
-dojutsu = c('地爆天星', '天照', '加具土命', '神威', '須佐能乎', '無限月読')
-grep('天', dojutsu, value = TRUE)
+dojutsu = c('å°çå¤©æ', 'å¤©ç§', 'å å·åå½', 'ç¥å¨', 'é ä½è½ä¹', 'ç¡éæèª?')
+grep('å¤©', dojutsu, value = TRUE)
 ```
 
 ```
-# character(0)
+# [1] "å°ç\210å¤©æ\230" "å¤©ç§"
 ```
 
 ---
@@ -378,8 +756,8 @@ DT::datatable(
 )
 ```
 
-<div id="htmlwidget-73b511270a407729e47d" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-73b511270a407729e47d">{"x":{"filter":"none","fillContainer":false,"data":[["1","2","3","4","5","6","7","8","9","10"],[5.1,4.9,4.7,4.6,5,5.4,4.6,5,4.4,4.9],[3.5,3,3.2,3.1,3.6,3.9,3.4,3.4,2.9,3.1],[1.4,1.4,1.3,1.5,1.4,1.7,1.4,1.5,1.4,1.5],[0.2,0.2,0.2,0.2,0.2,0.4,0.3,0.2,0.2,0.1],["setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Sepal.Length<\/th>\n      <th>Sepal.Width<\/th>\n      <th>Petal.Length<\/th>\n      <th>Petal.Width<\/th>\n      <th>Species<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":8,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-ddbf4ff8368987b9f361" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ddbf4ff8368987b9f361">{"x":{"filter":"none","fillContainer":false,"data":[["1","2","3","4","5","6","7","8","9","10"],[5.1,4.9,4.7,4.6,5,5.4,4.6,5,4.4,4.9],[3.5,3,3.2,3.1,3.6,3.9,3.4,3.4,2.9,3.1],[1.4,1.4,1.3,1.5,1.4,1.7,1.4,1.5,1.4,1.5],[0.2,0.2,0.2,0.2,0.2,0.4,0.3,0.2,0.2,0.1],["setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Sepal.Length<\/th>\n      <th>Sepal.Width<\/th>\n      <th>Petal.Length<\/th>\n      <th>Petal.Width<\/th>\n      <th>Species<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":8,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 
 ---
 
@@ -717,7 +1095,7 @@ background-position: 90% 8%
 
 # Sharingan
 
-The R package name **xaringan** was derived&lt;sup&gt;1&lt;/sup&gt; from **Sharingan**, a dōjutsu in the Japanese anime _Naruto_ with two abilities:
+The R package name **xaringan** was derived&lt;sup&gt;1&lt;/sup&gt; from **Sharingan**, a dÅjutsu in the Japanese anime _Naruto_ with two abilities:
 
 - the "Eye of Insight"
 
@@ -726,7 +1104,7 @@ The R package name **xaringan** was derived&lt;sup&gt;1&lt;/sup&gt; from **Shari
 I think a presentation is basically a way to communicate insights to the audience, and a great presentation may even "hypnotize" the audience.&lt;sup&gt;2,3&lt;/sup&gt;
 
 .footnote[
-[1] In Chinese, the pronounciation of _X_ is _Sh_ /ʃ/ (as in _shrimp_). Now you should have a better idea of how to pronounce my last name _Xie_.
+[1] In Chinese, the pronounciation of _X_ is _Sh_ /Ê/ (as in _shrimp_). Now you should have a better idea of how to pronounce my last name _Xie_.
 
 [2] By comparison, bad presentations only put the audience to sleep.
 
@@ -739,15 +1117,15 @@ I think a presentation is basically a way to communicate insights to the audienc
 
 The **xaringan** package borrowed a few terms from Naruto, such as
 
-- [Sharingan](http://naruto.wikia.com/wiki/Sharingan) (写輪眼; the package name)
+- [Sharingan](http://naruto.wikia.com/wiki/Sharingan) (åè¼ªç¼; the package name)
 
-- The [moon reader](http://naruto.wikia.com/wiki/Moon_Reader) (月読; an attractive R Markdown output format)
+- The [moon reader](http://naruto.wikia.com/wiki/Moon_Reader) (æèª?; an attractive R Markdown output format)
 
-- [Chakra](http://naruto.wikia.com/wiki/Chakra) (查克拉; the path to the remark.js library, which is the power to drive the presentation)
+- [Chakra](http://naruto.wikia.com/wiki/Chakra) (æ¥åæ; the path to the remark.js library, which is the power to drive the presentation)
 
-- [Nature transformation](http://naruto.wikia.com/wiki/Nature_Transformation) (性質変化; transform the chakra by setting different options)
+- [Nature transformation](http://naruto.wikia.com/wiki/Nature_Transformation) (æ§è³ªå¤å; transform the chakra by setting different options)
 
-- The [infinite moon reader](http://naruto.wikia.com/wiki/Infinite_Tsukuyomi) (無限月読; start a local web server to continuously serve your slides)
+- The [infinite moon reader](http://naruto.wikia.com/wiki/Infinite_Tsukuyomi) (ç¡éæèª?; start a local web server to continuously serve your slides)
 
 - The [summoning technique](http://naruto.wikia.com/wiki/Summoning_Technique) (download remark.js from the web)
 
@@ -757,7 +1135,7 @@ You can click the links to know more about them if you want. The jutsu "Moon Rea
 
 class: center
 
-# Hand seals (印)
+# Hand seals (å°)
 
 Press `h` or `?` to see the possible ninjutsu you can use in remark.js.
 

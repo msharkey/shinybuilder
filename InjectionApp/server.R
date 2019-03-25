@@ -5,8 +5,7 @@
 shinyServer(function(input, output,session) {
   
   output$statustable <- renderTable({
-    df <- dbGetQuery(myPool,'Select * From dbo.Persons')
-    #df <- executeSQL('Select * From dbo.Persons')
+    df <- executeSQL('Select email,jobtitle From dbo.Persons')
   })
 
   output$emails_menu <- renderUI({
@@ -17,10 +16,9 @@ shinyServer(function(input, output,session) {
   
   observeEvent(input$titled,{
     updateTextInput(session,inputId = 'emailupdate',value = input$titled)
-    jt <- dbGetQuery(myPool,paste0("Select jobtitle From dbo.Persons Where email ='",input$titled,"'"))
-   
-    #params <- c(emailtitle = input$titled)
-    #jt <- executeSQL("Select jobtitle From dbo.Persons Where email =?emailtitle",params)
+  
+    params <- c(emailtitle = input$titled)
+    jt <- executeSQL("Select jobtitle From dbo.Persons Where email =?emailtitle",params)
     
    updateSelectInput(session,inputId = 'titleupdate',selected =   jt$jobtitle)
   })
@@ -30,8 +28,7 @@ shinyServer(function(input, output,session) {
                                                   jobtitle=  '",input$titleupdate,"'
                              Where email ='",input$titled,"'"))
     output$statustable <- renderTable({
-      df <- dbGetQuery(myPool,'Select * From dbo.Persons')
-      #df <- executeSQL('Select * From dbo.Persons')
+      df <- executeSQL('Select * From dbo.Persons')
     })
     output$emails_menu <- renderUI({
       emails <- dbGetQuery(myPool,'Select email From dbo.Persons')
@@ -52,8 +49,7 @@ shinyServer(function(input, output,session) {
     dbGetQuery(myPool,paste0("DELETE From dbo.Persons WHERE Email = '",input$titled,"'"))
     
     output$statustable <- renderTable({
-      df <- dbGetQuery(myPool,'Select * From dbo.Persons')
-      #df <- executeSQL('Select * From dbo.Persons')
+      df <- executeSQL('Select * From dbo.Persons')
     })
     
     updateSelectInput(session,inputId = 'titled',selected = '')
@@ -64,28 +60,16 @@ shinyServer(function(input, output,session) {
   })
   
   observeEvent(input$save,{
-    tryCatch({
-     if(!is.na(str_match(input$email, emailwhitelist))){
-      params <- c(email = input$email,title = input$title)
-     executeSQL("Insert into dbo.Persons values (?email,?title)",params)
-      #browser()
-        #dbGetQuery(myPool,paste0("Insert into dbo.Persons values ('",input$email,"','",input$title,"')"))
-     } else {stop("Not a valid email.")}
-    }
-    ,error =function(e) {
-      showModal(modalDialog(
-      if(length(grep('PRIMARY KEY constraint',e$message))==1){h5('Email Already Exists')} else{e$message}
-      ))}
-  
-    )
+    #unsecureInsert(input$email,input$title)
+    #saferInsert(input$email,input$title)
+    saferInsert_whitelist(input$email,input$title)
     
     output$statustable <- renderTable({
       df <- executeSQL('Select Email,Jobtitle From dbo.Persons')
       })
     
     output$emails_menu <- renderUI({
-      emails <- dbGetQuery(myPool,'Select email From dbo.Persons')
-      #emails <- executeSQL('Select email From dbo.Persons')
+      emails <- executeSQL('Select email From dbo.Persons')
       selectInput('titled','Email',c("Select One"= '',emails$email))
     })
     

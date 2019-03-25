@@ -25,7 +25,7 @@ ExecuteSQL <- function(Query,Parameters=NA) {
 }
 
 
-trips_db <- tbl(pool, "yellow_trip_summary")
-#trips_db <- tbl(pool, "yellow_trip_summary_heap")
+#trips_db <- tbl(pool, "yellow_trip_summary")
+trips_db <- tbl(pool, "yellow_trip_summary_heap")
 
 

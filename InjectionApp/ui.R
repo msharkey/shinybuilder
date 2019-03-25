@@ -3,8 +3,6 @@
 shinyUI(fluidPage(
    br(),
     mainPanel(
-      tabsetPanel( type = "tabs",
-                   tabPanel("Insecure",
                             br(),
                             fluidRow( h3("Add New Attendee"),
                             br(),
@@ -22,17 +20,10 @@ shinyUI(fluidPage(
                                        selectInput('titleupdate','Job Title',c("Select One"= '','Analyst','Data Engineer','Data Scientist','BI Developer')),
                                        actionButton('updateRow','Update Attendee',icon("edit")),actionButton('DeleteRow','Delete Attendee',icon("trash-alt"))
                                      )
-                                     ))
-                            ),
-                   tabPanel("Better",
-                            br(),
-                           #uiOutput('emails_menu'),
-                            hr()
-                         
+                                     )
+                                   )
                             
-                            
-                            )
-      )
+      
     )
   )
 )
