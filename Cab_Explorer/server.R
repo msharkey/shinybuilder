@@ -1,9 +1,3 @@
-
-
-#rsconnect::deployApp('C:/users/masharkey/OneDrive - HDR, Inc/Projects/OnPremExplorer',account='hdrd3')
-#rsconnect::deployApp('C:/users/masharkey/OneDrive - HDR, Inc/Projects/OnPremExplorer',account='msharkey')
-#shinyapps::setAccountInfo(name= '')
-
 shinyServer(function(input, output,session) {
   
 
@@ -34,10 +28,6 @@ shinyServer(function(input, output,session) {
       geom_line( size = 2,color= "#5DBCD2") +
       theme_minimal()+
       theme(axis.title.x=element_blank(),axis.title.y=element_blank() )
-      
-
-    
- 
     })
 
 
@@ -81,41 +71,35 @@ shinyServer(function(input, output,session) {
     weekday_labels <- c('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat')
     cut_levels <- c(1, 5, 9, 12, 16, 18, 22)
     hour_labels <- c('1AM-5AM', '5AM-9AM', '9AM-12PM', '12PM-4PM', '4PM-6PM', '6PM-10PM', '10PM-1AM')
-    
-    myquery <- "
-      Select tip_amount as Avg_Tip,
-    Case 
-    when Hour_Range between 1 and 4 THEN \'1AM-5AM\'
-    when Hour_Range between 5 and 8 THEN \'5AM-9AM\'
-    when Hour_Range between 9 and 11 THEN \'9AM-12PM\'
-    when Hour_Range between 12 and 15 THEN \'12PM-4PM\'
-    when Hour_Range between 16 and 17 THEN \'4PM-6PM\'
-    when Hour_Range between 18 and 21 THEN \'6PM-10PM\'
-    when Hour_Range >= 22 or datepart(hh,Hour_Range) < 1 THEN \'10PM-1AM\'
-    END as Hour_Range,
-    Case 
-    when Day  = 1 THEN \'Sun\'
-    when Day  = 2 THEN \'Mon\'
-    when Day  = 3  THEN \'Tue\'
-    when Day  = 4  THEN \'Wed\'
-    when Day  = 5 THEN \'Thu\'
-    when Day  = 6  THEN \'Fri\'
-    when Day = 7  THEN \'Sat\'
-    END as Day
-    From (
-    Select datepart(hh,tpep_dropoff_datetime) as Hour_Range, datepart(dw,tpep_dropoff_datetime) as Day,avg(tip_amount) as tip_amount
-    FROM [Cab_Demo].[dbo].[yellow_trip_summary_heap] 
-    Where tpep_dropoff_datetime between ?start and ?end
-    and trip_distance between ?minlen and ?maxlen
-    group by datepart(dw,tpep_dropoff_datetime),datepart(hh,tpep_dropoff_datetime)
-    ) as ch
-    
-    "
-    
-    myparams <- c(start = as.character(input$startdate),end = as.character(input$enddate) ,minlen = input$trip_distance[1],maxlen = input$trip_distance[2])
-    
+    enddate  <- input$enddate+1
     heatmapStart <- Sys.time()
-    cut_df <- ExecuteSQL(myquery,Parameters = myparams)
+    heatdata <- trips_db  %>%
+      filter(tpep_dropoff_datetime >= input$startdate,tpep_dropoff_datetime < enddate,
+             trip_distance >= input$trip_distance[1],trip_distance <= input$trip_distance[2])  %>%
+      mutate(Hour_Range_Raw = DatePart(hh,tpep_dropoff_datetime),Day_Raw= DatePart(dw,tpep_dropoff_datetime)) %>% 
+      group_by(Hour_Range_Raw,Day_Raw) %>%
+      summarise(Avg_Tip = mean(tip_amount)) %>%
+      mutate(Hour_Range = case_when(Hour_Range_Raw >= 1 & Hour_Range_Raw <= 4 ~ "1AM-5AM",
+                                    Hour_Range_Raw >= 5 & Hour_Range_Raw <= 8 ~ "5AM-9AM",
+                                    Hour_Range_Raw >= 9 & Hour_Range_Raw <= 11 ~ "9AM-12PM",
+                                    Hour_Range_Raw >= 12 & Hour_Range_Raw <= 15 ~ "12PM-4PM",
+                                    Hour_Range_Raw >= 16 & Hour_Range_Raw <= 17 ~ "4PM-6PM",
+                                    Hour_Range_Raw >= 18 & Hour_Range_Raw <= 21 ~ "6PM-10PM",
+                                    Hour_Range_Raw >= 22 | Hour_Range_Raw < 1 ~ "10PM-1AM"
+                                    ),
+             Day = case_when(Day_Raw == 1 ~ "Sun",
+                             Day_Raw == 2 ~ "Mon",
+                             Day_Raw == 3 ~ "Tue",
+                             Day_Raw == 4 ~ "Wed",
+                             Day_Raw == 5 ~ "Thu",
+                             Day_Raw == 6 ~ "Fri",
+                             Day_Raw == 7 ~ "Sat"
+                             )
+                                    
+             )
+        
+        
+    compute(heatdata)
     HeatmapTime <- Sys.time() - heatmapStart
     
     output$query_time_heat <- renderUI({
@@ -126,10 +110,10 @@ shinyServer(function(input, output,session) {
         
       )})
 
-    cut_df$Hour_Range <- factor(cut_df$Hour_Range,levels = c('1AM-5AM', '5AM-9AM', '9AM-12PM', '12PM-4PM', '4PM-6PM', '6PM-10PM', '10PM-1AM'))
-    cut_df$Day <- factor(cut_df$Day,levels = c('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat') )
+    heatdata$Hour_Range <- factor(heatdata$Hour_Range,levels = c('1AM-5AM', '5AM-9AM', '9AM-12PM', '12PM-4PM', '4PM-6PM', '6PM-10PM', '10PM-1AM'))
+    heatdata$Day <- factor(heatdata$Day,levels = c('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat') )
     
-    ggplot(cut_df, aes(Day, Hour_Range)) +
+    ggplot(heatdata, aes(Day, Hour_Range)) +
       geom_tile(aes(fill = Avg_Tip), colour = "white") +
       theme(
         axis.text=element_text(size=12),
