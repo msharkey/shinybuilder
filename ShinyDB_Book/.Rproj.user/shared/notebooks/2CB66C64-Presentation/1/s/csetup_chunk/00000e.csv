@@ -1,0 +1,11 @@
+"0","BibOptions(check.entries = FALSE, 
+           bib.style = ""authoryear"", 
+           cite.style = 'alphabetic', 
+           style = ""markdown"",
+           hyperlink = FALSE, 
+           dashed = FALSE)
+myBib <- ReadBib(""./citation.bib"", check = FALSE)
+"
+"2","Error in do_read_bib(file, encoding = .Encoding, srcfile) : 
+  String too long for 131072-character buffer
+"

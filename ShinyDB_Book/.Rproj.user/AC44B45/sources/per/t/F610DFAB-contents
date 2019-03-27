@@ -1,0 +1,215 @@
+---
+title: "SQL Injection Defense for Shiny Applications"
+author: "Matthew Sharkey"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+library(DBI)
+knitr::opts_chunk$set(echo = TRUE)
+myDriver <- 'SQL Server'
+# Use . for a local connection, otherwise specify Server Machine Name or IP address
+myServer <- '.\\snapman'
+myDatabase <- 'Cab_Demo'
+
+if(file.exists('C:/Users/MaSharkey/OneDrive - HDR, Inc/shinybuilder/shinybuilderInjection.gif')){
+    setwd('C:/Users/MaSharkey/OneDrive - HDR, Inc/shinybuilder/')} else {
+    setwd('C:/')
+    }
+
+trusted_connection <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+                                ,Database = myDatabase,Trusted_Connection='yes')
+
+```
+
+### Injection Attacks = Child's Play
+
+Injection based attacks have been the number one security risk to Web-apps since 2010.  Why is injection at the top?  For one, Hackers discover vulnerable sites with little effort.  Tools like [Havij](https://www.darknet.org.uk/2010/09/havij-advanced-automated-sql-injection-tool/) and [Shodan](https://www.shodan.io/) make injection attacks [child's play](https://techcrunch.com/2018/08/12/hacking-the-websites-responsible-for-election-information-is-so-easy-an-11-year-old-did-it/).  The potential impact from injection-based attacks, especially SQL injection, is severe.  SQL injection vulnerabilities allow hackers to circumvent security controls and run arbitrary scripts against the database.  These scripts might steal data, destroy data, create a backdoor or all the above.  Despite the awareness of injection risks, organizations have trouble eliminating the threat.  The news article featured in the GIF below were all written in the last two years.  They are a few examples of SQL injection that I found interesting. 
+
+<center>
+<!---->
+![](sqlinjection.gif)
+</center>
+
+Large organizations like Cisco, Instagram, and Texas.Gov discovered injection vulnerabilities since 2018.   MySQL and PostgreSQL write source code for database systems, and even they are not immune.  
+
+###  Breaking Down a Shiny App
+
+I built a simple shiny app to illustrate how injection works.  The app takes an email address and job title as inputs and saves them to a SQL Server database.  Users can also update and delete existing records.  The app persists user input in one table named dbo.Persons.  The following SQL creates dbo.Persons and then inserts one row.  The last statement selects all the rows.
+
+```{sql checkoutthecons, eval=TRUE,connection = trusted_connection}
+SET NOCOUNT ON;
+DROP TABLE IF EXISTS dbo.Persons;
+CREATE TABLE dbo.Persons (
+  email Varchar(100) PRIMARY KEY, 
+  jobtitle Varchar(100)
+);
+
+INSERT INTO dbo.Persons VALUES ('q1724449@nwytg.net','Analyst');
+
+SELECT email, jobtitle FROM dbo.Persons;
+
+```
+
+The shiny UI controls provide input to the following queries.  R combines the user input and query code.
+
+
+```{sql checkouttheconsr, eval=FALSE,connection = trusted_connection}
+
+-- Select all rows from the dbo.Persons table
+SELECT * 
+FROM dbo.Persons
+
+--Get the jobtitle where the email address matches the user-provided email
+SELECT jobtitle 
+FROM dbo.Persons 
+WHERE email = 'User Input'
+
+--Update the Email and job title where the email address matches the user-provided email
+UPDATE dbo.Persons 
+SET Email = 'User Input',jobtitle=  'User Input' 
+WHERE email ='User Input')
+
+--Delete a row where the email matches user input
+DELETE 
+FROM dbo.Persons 
+WHERE Email = 'User Input'
+
+--add a new row to the dbo.Persons table based on user-provided email and jobtitle
+INSERT INTO dbo.Persons(email,jobtitle) 
+VALUES ('User Input','User Input')
+
+```
+
+SELECT, UPDATE, DELETE, and INSERT are the fundamental operations of data modification language (DML).  My sample app only executes DML code.  The other types of query code are data control language (DCL) and data definition language (DDL).  I have not seen many apps use DCL and DDL, but there're times when it's useful.  The CREATE TABLE query above is an example of DDL.  The code below concatenates the user input with query code and executes the statement.
+
+
+```{r badqueries, eval=FALSE}
+    dbGetQuery(myPool,
+               paste0("Select jobtitle 
+                      From dbo.Persons 
+                      Where email   ='",input$titled,"'"))
+
+    dbGetQuery(myPool,
+               paste0("UPDATE dbo.Persons 
+                       SET Email = '",input$emailupdate,"',jobtitle=  '",input$titleupdate,"'
+                       Where email ='",input$titled,"'"))
+    
+    dbGetQuery(myPool,
+               paste0("DELETE 
+                       From dbo.Persons 
+                       WHERE Email = '",input$titled,"'"))
+    
+    dbGetQuery(myPool
+               ,paste0("Insert into dbo.Persons 
+                        values ('",input$email,"','",input$title,"')"))
+```
+The code is vulnerable to SQL injection.  Nothing is stopping a user from passing a SQL script to either one of the inputs.  The GIF below first shows how a user a suppose to interact with the app.  Then it shows how a hacker can pass a malicious script through the email input field.
+
+
+<center>
+<!---->
+![](shinybuilderInjection.gif)
+</center>
+
+
+The string executed against the database is two separate SQL commands. The second command truncates the Persons table.  In a real-world production system, this might be data loss or application downtime.
+
+```{r chrum}
+
+email <- "'','') TRUNCATE TABLE dbo.Persons --"
+title <- "Analyst"
+paste0("Insert into dbo.Persons values ('",email,"','",title,"')")
+
+
+```
+
+###  Defending Against Injection
+
+#### Paramertization and String Escaping
+
+The app mixes trusted data with untrusted data.  Trusted data is the query code, and untrusted data is user input.  If untrusted data mixes with trusted data, then query code becomes changeable at run time.  I can start to separate the trusted and untrusted data through parameterized queries.  Instead of passing the user input variables to the query string, I  store them in parameters.  Then I reference the parameters instead of the user variables.
+
+```{r chrum2,eval=FALSE}
+
+query <- sqlInterpolate(con,"INSERT INTO dbo.Persons 
+                             VALUES (?email,?title)",input$email,input$title))
+
+dbGetQuery(myPool, query)
+
+```
+
+The sqlInterpolate function helps isolate the user input from the query string.  Also, sqlinterpolate escapes single tick marks making it difficult to execute ad-hoc scripts.  The injection attack fails this time because the code handles input as one continuous string.
+
+![](parameterized.png)
+
+#### Whitelist input
+
+The app should only allow valid characters as input.  If a user enters an email with spaces, then the app should reject it.  I implemented an email whitelist by comparing the input with a Regex pattern.
+
+
+```{r chrum3,eval=FALSE}
+
+emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
+
+   if(!is.na(str_match(input$email, emailwhitelist))){
+    query <- sqlInterpolate(con,
+                            "INSERT INTO dbo.Persons 
+                            VALUES(?email,?title)",input$email,input$title))
+  dbGetQuery(myPool, query)
+     } else {stop("Not a valid email.")}
+
+
+```
+
+Developers should whitelist with caution.  Using a restrictive character set could block legitimate input.  The Regex pattern above blocks email addressed with a single quote.  Are quotes possible in emails?  If they aren't allowed will that change in the future?  It's possible.  A whitelist requires a balance between security and usability.
+
+#### Server Side Defense
+
+The database user account should have minimal permissions.  I would not have been able to truncate the table in the example above had I only had permission to SELECT and INSERT.  Interfaces simplify permissions.  Instead of granting permissions on tables I can grant permissions on the interface.  Stored procedures make great interfaces.  Developers can grant permissions on stored procedures without granting access to tables.  Thus DB all interactions occur in the manner defined by the stored procedure.
+
+I can wrap the INSERT statement into a stored procedure.  The 
+ shinybuilder_app user cannot run an INSERT statement outside of the stored procedure.
+
+```{sql storedproc, eval = FALSE,connection = trusted_connection}
+Use Cab_Demo
+GO
+
+DROP PROCEDURE IF EXISTS dbo.uspInsertEmail;
+GO
+CREATE PROCEDURE dbo.uspInsertEmail
+@email Varchar(100),
+@title Varchar(100)
+AS
+INSERT INTO dbo.Persons
+VALUES (@email,@title)
+
+GO
+
+GRANT EXECUTE ON dbo.uspInsertEmail TO shinybuilder_app 
+
+```
+Now the app calls the stored procedure instead of ad-hoc SQL.
+
+```{r finalR , eval=FALSE}
+  query <- sqlInterpolate(con
+                          ,"EXECUTE dbo.uspInsertEmail ?email,?title",input$email,input$title))
+
+  dbGetQuery(myPool, query)
+
+```
+#### Other defense layers
+
+* A few lines of defense exist outside of the app and database server.  An intrusion detection system (IDS) uses signatures to detect potential attacks.  Some IDS also provide real-time alerting features.
+
+* Vendor provided patches often contain security fixes.  System admins or developers should apply security fixes as soon as possible.
+
+### Defense in Depth
+
+Even big firms struggle to manage injection risks, and no code is 100% secure. However, parametrization and whitelists are good first lines of defense.
+
+
+

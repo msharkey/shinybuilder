@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Chapter 3 Methods | Building Web Applications with Shiny and SQL Server</title>
+  <meta name="description" content="A guide to building scalable Shiny Datbase applications">
+  <meta name="generator" content="bookdown  and GitBook 2.6.7">
+
+  <meta property="og:title" content="Chapter 3 Methods | Building Web Applications with Shiny and SQL Server" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="A guide to building scalable Shiny Datbase applications" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 3 Methods | Building Web Applications with Shiny and SQL Server" />
+  
+  <meta name="twitter:description" content="A guide to building scalable Shiny Datbase applications" />
+  
+
+<meta name="author" content="Matthew Sharkey">
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="building-and-managing-connections.html">
+<link rel="next" href="applications.html">
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">A Minimal Book Example</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a><ul>
+<li class="chapter" data-level="" data-path="why-read-this-book.html"><a href="why-read-this-book.html"><i class="fa fa-check"></i>Why read this book</a></li>
+<li class="chapter" data-level="" data-path="structure-of-the-book.html"><a href="structure-of-the-book.html"><i class="fa fa-check"></i>Structure of the book</a></li>
+<li class="chapter" data-level="" data-path="software-information-and-conventions.html"><a href="software-information-and-conventions.html"><i class="fa fa-check"></i>Software information and conventions</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Use Cases for a Relational Database</a></li>
+<li class="chapter" data-level="2" data-path="building-and-managing-connections.html"><a href="building-and-managing-connections.html"><i class="fa fa-check"></i><b>2</b> Building and Managing Connections</a><ul>
+<li class="chapter" data-level="2.0.1" data-path="building-and-managing-connections.html"><a href="building-and-managing-connections.html#making-a-connection"><i class="fa fa-check"></i><b>2.0.1</b> Making a connection</a></li>
+<li class="chapter" data-level="2.0.2" data-path="building-and-managing-connections.html"><a href="building-and-managing-connections.html#common-connection-problems"><i class="fa fa-check"></i><b>2.0.2</b> Common Connection Problems</a></li>
+<li class="chapter" data-level="2.0.3" data-path="building-and-managing-connections.html"><a href="building-and-managing-connections.html#executing-a-query"><i class="fa fa-check"></i><b>2.0.3</b> Executing a Query</a></li>
+<li class="chapter" data-level="2.0.4" data-path="building-and-managing-connections.html"><a href="building-and-managing-connections.html#one-more-connection-package-to-consider"><i class="fa fa-check"></i><b>2.0.4</b> One more connection package to consider</a></li>
+<li class="chapter" data-level="2.0.5" data-path="building-and-managing-connections.html"><a href="building-and-managing-connections.html#dbdisconnectblogpost"><i class="fa fa-check"></i><b>2.0.5</b> dbDisconnect(BlogPost)</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="methods.html"><a href="methods.html"><i class="fa fa-check"></i><b>3</b> Methods</a><ul>
+<li class="chapter" data-level="3.0.1" data-path="methods.html"><a href="methods.html#injection-attacks-childs-play"><i class="fa fa-check"></i><b>3.0.1</b> Injection Attacks = Child’s Play</a></li>
+<li class="chapter" data-level="3.0.2" data-path="methods.html"><a href="methods.html#breaking-down-a-shiny-app"><i class="fa fa-check"></i><b>3.0.2</b> Breaking Down a Shiny App</a></li>
+<li class="chapter" data-level="3.0.3" data-path="methods.html"><a href="methods.html#defending-against-injection"><i class="fa fa-check"></i><b>3.0.3</b> Defending Against Injection</a></li>
+<li class="chapter" data-level="3.0.4" data-path="methods.html"><a href="methods.html#defense-in-depth"><i class="fa fa-check"></i><b>3.0.4</b> Defense in Depth</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="applications.html"><a href="applications.html"><i class="fa fa-check"></i><b>4</b> Applications</a><ul>
+<li class="chapter" data-level="4.1" data-path="example-one.html"><a href="example-one.html"><i class="fa fa-check"></i><b>4.1</b> Example one</a></li>
+<li class="chapter" data-level="4.2" data-path="example-two.html"><a href="example-two.html"><i class="fa fa-check"></i><b>4.2</b> Example two</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>5</b> Final Words</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Building Web Applications with Shiny and SQL Server</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="methods" class="section level1">
+<h1><span class="header-section-number">Chapter 3</span> Methods</h1>
+<div id="injection-attacks-childs-play" class="section level3">
+<h3><span class="header-section-number">3.0.1</span> Injection Attacks = Child’s Play</h3>
+<p>Injection based attacks have been the number one security risk to Web-apps since 2010. Why is injection at the top? For one, Hackers discover vulnerable sites with little effort. Tools like <a href="https://www.darknet.org.uk/2010/09/havij-advanced-automated-sql-injection-tool/">Havij</a> and <a href="https://www.shodan.io/">Shodan</a> make injection attacks <a href="https://techcrunch.com/2018/08/12/hacking-the-websites-responsible-for-election-information-is-so-easy-an-11-year-old-did-it/">child’s play</a>. The potential impact from injection-based attacks, especially SQL injection, is severe. SQL injection vulnerabilities allow hackers to circumvent security controls and run arbitrary scripts against the database. These scripts might steal data, destroy data, create a backdoor or all the above. Despite the awareness of injection risks, organizations have trouble eliminating the threat. The news article featured in the GIF below were all written in the last two years. They are a few examples of SQL injection that I found interesting.</p>
+<center>
+<!---->
+<img src="sqlinjection.gif" />
+</center>
+<p>Large organizations like Cisco, Instagram, and Texas.Gov discovered injection vulnerabilities since 2018. MySQL and PostgreSQL write source code for database systems, and even they are not immune.</p>
+</div>
+<div id="breaking-down-a-shiny-app" class="section level3">
+<h3><span class="header-section-number">3.0.2</span> Breaking Down a Shiny App</h3>
+<p>I built a simple shiny app to illustrate how injection works. The app takes an email address and job title as inputs and saves them to a SQL Server database. Users can also update and delete existing records. The app persists user input in one table named dbo.Persons. The following SQL creates dbo.Persons and then inserts one row. The last statement selects all the rows.</p>
+<pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">SET</span> NOCOUNT <span class="kw">ON</span>;
+<span class="kw">DROP</span> <span class="kw">TABLE</span> <span class="cf">IF</span> <span class="kw">EXISTS</span> dbo.Persons;
+<span class="kw">CREATE</span> <span class="kw">TABLE</span> dbo.Persons (
+  email <span class="dt">Varchar</span>(<span class="dv">100</span>) <span class="kw">PRIMARY</span> <span class="kw">KEY</span>, 
+  jobtitle <span class="dt">Varchar</span>(<span class="dv">100</span>)
+);
+
+<span class="kw">INSERT</span> <span class="kw">INTO</span> dbo.Persons <span class="kw">VALUES</span> (<span class="st">&#39;q1724449@nwytg.net&#39;</span>,<span class="st">&#39;Analyst&#39;</span>);
+
+<span class="kw">SELECT</span> email, jobtitle <span class="kw">FROM</span> dbo.Persons;</code></pre>
+<p>The shiny UI controls provide input to the following queries. R combines the user input and query code.</p>
+<pre class="sourceCode sql"><code class="sourceCode sql">
+<span class="co">-- Select all rows from the dbo.Persons table</span>
+<span class="kw">SELECT</span> <span class="op">*</span> 
+<span class="kw">FROM</span> dbo.Persons
+
+<span class="co">--Get the jobtitle where the email address matches the user-provided email</span>
+<span class="kw">SELECT</span> jobtitle 
+<span class="kw">FROM</span> dbo.Persons 
+<span class="kw">WHERE</span> email <span class="op">=</span> <span class="st">&#39;User Input&#39;</span>
+
+<span class="co">--Update the Email and job title where the email address matches the user-provided email</span>
+<span class="kw">UPDATE</span> dbo.Persons 
+<span class="kw">SET</span> Email <span class="op">=</span> <span class="st">&#39;User Input&#39;</span>,jobtitle<span class="op">=</span>  <span class="st">&#39;User Input&#39;</span> 
+<span class="kw">WHERE</span> email <span class="op">=</span><span class="st">&#39;User Input&#39;</span>)
+
+<span class="co">--Delete a row where the email matches user input</span>
+<span class="kw">DELETE</span> 
+<span class="kw">FROM</span> dbo.Persons 
+<span class="kw">WHERE</span> Email <span class="op">=</span> <span class="st">&#39;User Input&#39;</span>
+
+<span class="co">--add a new row to the dbo.Persons table based on user-provided email and jobtitle</span>
+<span class="kw">INSERT</span> <span class="kw">INTO</span> dbo.Persons(email,jobtitle) 
+<span class="kw">VALUES</span> (<span class="st">&#39;User Input&#39;</span>,<span class="st">&#39;User Input&#39;</span>)</code></pre>
+<p>SELECT, UPDATE, DELETE, and INSERT are the fundamental operations of data modification language (DML). My sample app only executes DML code. The other types of query code are data control language (DCL) and data definition language (DDL). I have not seen many apps use DCL and DDL, but there’re times when it’s useful. The CREATE TABLE query above is an example of DDL. The code below concatenates the user input with query code and executes the statement.</p>
+<pre class="sourceCode r"><code class="sourceCode r">    <span class="kw">dbGetQuery</span>(myPool,
+               <span class="kw">paste0</span>(<span class="st">&quot;Select jobtitle </span>
+<span class="st">                      From dbo.Persons </span>
+<span class="st">                      Where email   =&#39;&quot;</span>,input<span class="op">$</span>titled,<span class="st">&quot;&#39;&quot;</span>))
+
+    <span class="kw">dbGetQuery</span>(myPool,
+               <span class="kw">paste0</span>(<span class="st">&quot;UPDATE dbo.Persons </span>
+<span class="st">                       SET Email = &#39;&quot;</span>,input<span class="op">$</span>emailupdate,<span class="st">&quot;&#39;,jobtitle=  &#39;&quot;</span>,input<span class="op">$</span>titleupdate,<span class="st">&quot;&#39;</span>
+<span class="st">                       Where email =&#39;&quot;</span>,input<span class="op">$</span>titled,<span class="st">&quot;&#39;&quot;</span>))
+    
+    <span class="kw">dbGetQuery</span>(myPool,
+               <span class="kw">paste0</span>(<span class="st">&quot;DELETE </span>
+<span class="st">                       From dbo.Persons </span>
+<span class="st">                       WHERE Email = &#39;&quot;</span>,input<span class="op">$</span>titled,<span class="st">&quot;&#39;&quot;</span>))
+    
+    <span class="kw">dbGetQuery</span>(myPool
+               ,<span class="kw">paste0</span>(<span class="st">&quot;Insert into dbo.Persons </span>
+<span class="st">                        values (&#39;&quot;</span>,input<span class="op">$</span>email,<span class="st">&quot;&#39;,&#39;&quot;</span>,input<span class="op">$</span>title,<span class="st">&quot;&#39;)&quot;</span>))</code></pre>
+<p>The code is vulnerable to SQL injection. Nothing is stopping a user from passing a SQL script to either one of the inputs. The GIF below first shows how a user a suppose to interact with the app. Then it shows how a hacker can pass a malicious script through the email input field.</p>
+<center>
+<!---->
+<img src="shinybuilderInjection.gif" />
+</center>
+<p>The string executed against the database is two separate SQL commands. The second command truncates the Persons table. In a real-world production system, this might be data loss or application downtime.</p>
+<pre class="sourceCode r"><code class="sourceCode r">email &lt;-<span class="st"> &quot;&#39;&#39;,&#39;&#39;) TRUNCATE TABLE dbo.Persons --&quot;</span>
+title &lt;-<span class="st"> &quot;Analyst&quot;</span>
+<span class="kw">paste0</span>(<span class="st">&quot;Insert into dbo.Persons values (&#39;&quot;</span>,email,<span class="st">&quot;&#39;,&#39;&quot;</span>,title,<span class="st">&quot;&#39;)&quot;</span>)</code></pre>
+</div>
+<div id="defending-against-injection" class="section level3">
+<h3><span class="header-section-number">3.0.3</span> Defending Against Injection</h3>
+<div id="paramertization-and-string-escaping" class="section level4">
+<h4><span class="header-section-number">3.0.3.1</span> Paramertization and String Escaping</h4>
+<p>The app mixes trusted data with untrusted data. Trusted data is the query code, and untrusted data is user input. If untrusted data mixes with trusted data, then query code becomes changeable at run time. I can start to separate the trusted and untrusted data through parameterized queries. Instead of passing the user input variables to the query string, I store them in parameters. Then I reference the parameters instead of the user variables.</p>
+<pre class="sourceCode r"><code class="sourceCode r">query &lt;-<span class="st"> </span><span class="kw">sqlInterpolate</span>(con,<span class="st">&quot;INSERT INTO dbo.Persons </span>
+<span class="st">                             VALUES (?email,?title)&quot;</span>,input<span class="op">$</span>email,input<span class="op">$</span>title)<span class="er">)</span>
+
+<span class="kw">dbGetQuery</span>(myPool, query)</code></pre>
+<p>The sqlInterpolate function helps isolate the user input from the query string. Also, sqlinterpolate escapes single tick marks making it difficult to execute ad-hoc scripts. The injection attack fails this time because the code handles input as one continuous string.</p>
+<p><img src="parameterized.png" /></p>
+</div>
+<div id="whitelist-input" class="section level4">
+<h4><span class="header-section-number">3.0.3.2</span> Whitelist input</h4>
+<p>The app should only allow valid characters as input. If a user enters an email with spaces, then the app should reject it. I implemented an email whitelist by comparing the input with a Regex pattern.</p>
+<pre class="sourceCode r"><code class="sourceCode r">emailwhitelist &lt;-<span class="st"> &quot;^[[:alnum:].-_]+@[[:alnum:].-]+$&quot;</span>
+
+   <span class="cf">if</span>(<span class="op">!</span><span class="kw">is.na</span>(<span class="kw">str_match</span>(input<span class="op">$</span>email, emailwhitelist))){
+    query &lt;-<span class="st"> </span><span class="kw">sqlInterpolate</span>(con,
+                            <span class="st">&quot;INSERT INTO dbo.Persons </span>
+<span class="st">                            VALUES(?email,?title)&quot;</span>,input<span class="op">$</span>email,input<span class="op">$</span>title)<span class="er">)</span>
+  <span class="kw">dbGetQuery</span>(myPool, query)
+     } <span class="cf">else</span> {<span class="kw">stop</span>(<span class="st">&quot;Not a valid email.&quot;</span>)}</code></pre>
+<p>Developers should whitelist with caution. Using a restrictive character set could block legitimate input. The Regex pattern above blocks email addressed with a single quote. Are quotes possible in emails? If they aren’t allowed will that change in the future? It’s possible. A whitelist requires a balance between security and usability.</p>
+</div>
+<div id="server-side-defense" class="section level4">
+<h4><span class="header-section-number">3.0.3.3</span> Server Side Defense</h4>
+<p>The database user account should have minimal permissions. I would not have been able to truncate the table in the example above had I only had permission to SELECT and INSERT. Interfaces simplify permissions. Instead of granting permissions on tables I can grant permissions on the interface. Stored procedures make great interfaces. Developers can grant permissions on stored procedures without granting access to tables. Thus DB all interactions occur in the manner defined by the stored procedure.</p>
+<p>I can wrap the INSERT statement into a stored procedure. The
+shinybuilder_app user cannot run an INSERT statement outside of the stored procedure.</p>
+<pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">Use</span> Cab_Demo
+GO
+
+<span class="kw">DROP</span> <span class="kw">PROCEDURE</span> <span class="cf">IF</span> <span class="kw">EXISTS</span> dbo.uspInsertEmail;
+GO
+<span class="kw">CREATE</span> <span class="kw">PROCEDURE</span> dbo.uspInsertEmail
+<span class="ot">@email Varchar(100),</span>
+<span class="ot">@title Varchar(100)</span>
+<span class="kw">AS</span>
+<span class="kw">INSERT</span> <span class="kw">INTO</span> dbo.Persons
+<span class="kw">VALUES</span> (@email,@title)
+
+GO
+
+<span class="kw">GRANT</span> <span class="kw">EXECUTE</span> <span class="kw">ON</span> dbo.uspInsertEmail <span class="kw">TO</span> shinybuilder_app </code></pre>
+<p>Now the app calls the stored procedure instead of ad-hoc SQL.</p>
+<pre class="sourceCode r"><code class="sourceCode r">  query &lt;-<span class="st"> </span><span class="kw">sqlInterpolate</span>(con
+                          ,<span class="st">&quot;EXECUTE dbo.uspInsertEmail ?email,?title&quot;</span>,input<span class="op">$</span>email,input<span class="op">$</span>title)<span class="er">)</span>
+
+  <span class="kw">dbGetQuery</span>(myPool, query)</code></pre>
+</div>
+<div id="other-defense-layers" class="section level4">
+<h4><span class="header-section-number">3.0.3.4</span> Other defense layers</h4>
+<ul>
+<li><p>A few lines of defense exist outside of the app and database server. An intrusion detection system (IDS) uses signatures to detect potential attacks. Some IDS also provide real-time alerting features.</p></li>
+<li><p>Vendor provided patches often contain security fixes. System admins or developers should apply security fixes as soon as possible.</p></li>
+</ul>
+</div>
+</div>
+<div id="defense-in-depth" class="section level3">
+<h3><span class="header-section-number">3.0.4</span> Defense in Depth</h3>
+<p>Even big firms struggle to manage injection risks, and no code is 100% secure. However, parametrization and whitelists are good first lines of defense.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="building-and-managing-connections.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="applications.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["ShinyDB_Book.pdf", "ShinyDB_Book.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

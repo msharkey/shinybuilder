@@ -1,0 +1,5 @@
+"0","myBib <- ReadBib(""./book.bib"", check = FALSE)
+"
+"2","Error in do_read_bib(file, encoding = .Encoding, srcfile) : 
+  unable to open file to read
+"

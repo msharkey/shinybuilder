@@ -1,0 +1,109 @@
+"0","options(
+  htmltools.dir.version = FALSE, formatR.indent = 2,
+  width = 55, digits = 4, warnPartialMatchAttr = FALSE, warnPartialMatchDollar = FALSE
+)
+local({
+  r = getOption('repos')
+  if (!length(r) || identical(unname(r['CRAN']), '@CRAN@'))
+    r['CRAN'] = 'https://cran.rstudio.com' 
+  options(repos = r)
+})
+lapply(c('DT', 'citr', 'formatR', 'svglite'), function(pkg) {
+  if (system.file(package = pkg) == '') install.packages(pkg)
+})
+"
+"2","Installing package into ‘C:/Users/MaSharkey/Documents/R/win-library/3.5’
+(as ‘lib’ is unspecified)
+"
+"2","also installing the dependencies ‘RefManageR’, ‘bibtex’, ‘miniUI’
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/3.5/RefManageR_1.2.0.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 765271 bytes (747 KB)
+"
+"2","downloaded 747 KB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/3.5/bibtex_0.4.2.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 130520 bytes (127 KB)
+"
+"2","downloaded 127 KB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/3.5/miniUI_0.1.1.1.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 36135 bytes (35 KB)
+"
+"2","downloaded 35 KB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/3.5/citr_0.3.0.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 71238 bytes (69 KB)
+"
+"2","downloaded 69 KB
+
+"
+"1","package â€˜RefManageRâ€™ successfully unpacked and MD5 sums checked
+"
+"1","package â€˜bibtexâ€™ successfully unpacked and MD5 sums checked
+"
+"1","package â€˜miniUIâ€™ successfully unpacked and MD5 sums checked
+"
+"1","package â€˜citrâ€™ successfully unpacked and MD5 sums checked
+"
+"1","
+"
+"1","The downloaded binary packages are in
+	C:\Users\MaSharkey\AppData\Local\Temp\RtmpWcOrv0\downloaded_packages"
+"1","
+"
+"2","Installing package into ‘C:/Users/MaSharkey/Documents/R/win-library/3.5’
+(as ‘lib’ is unspecified)
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/3.5/formatR_1.6.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 151128 bytes (147 KB)
+"
+"2","downloaded 147 KB
+
+"
+"1","package â€˜formatRâ€™ successfully unpacked and MD5 sums checked
+"
+"1","
+"
+"1","The downloaded binary packages are in
+	C:\Users\MaSharkey\AppData\Local\Temp\RtmpWcOrv0\downloaded_packages"
+"1","
+"
+"1","[[1]]
+"
+"1","NULL
+"
+"1","
+"
+"1","[[2]]
+"
+"1","NULL
+"
+"1","
+"
+"1","[[3]]
+"
+"1","NULL
+"
+"1","
+"
+"1","[[4]]
+"
+"1","NULL
+"
+"1","
+"

@@ -1,0 +1,16 @@
+"0","library(RefManageR)
+BibOptions(check.entries = FALSE, 
+           bib.style = ""authoryear"", 
+           cite.style = 'alphabetic', 
+           style = ""markdown"",
+           hyperlink = FALSE, 
+           dashed = FALSE)
+myBib <- ReadBib(""./citation.bib"", check = FALSE)
+"
+"2","
+./citation.bib:7:1
+	syntax error, unexpected TOKEN_VALUE, expecting TOKEN_LBRACE
+	Dropping the entry `R-dbplyr` (starting at line 8) "
+"2","Error in do_read_bib(file, encoding = .Encoding, srcfile) : 
+  String too long for 131072-character buffer
+"

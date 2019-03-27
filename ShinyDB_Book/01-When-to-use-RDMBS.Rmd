@@ -1,0 +1,27 @@
+# Use Cases for a Relational Database{#intro}
+
+Relational database management systems (RDBMS) provide a cornerstone for many apps and services.  By technology standards,  RDBMS are ancient.  Strong theoretical underpinnings have kept RDBMS technologies relevant in a volatile industry.  Even non-relational data stores have had to add RDBMS-like features. For example, Hadoop has a SQL interface. 
+
+Even though RDBMS are popular and versatile, they don't solve every problem.  If all I need is a place to store data, then I don't need a database.  Dumping data to a relational database might be tempting, but it will lead to just that- a dump.  Codd, the founder of the relational model, once remarked on choosing the right tools: 
+
+>IT should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy >the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users' requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost? [@codd93]  
+
+ 
+ 
+ So when are RDBMS the best tool for the job?  It depends.  Here are some questions a developer should ask before deciding to use an RDBMS on a project:
+
+* Will the data grow?  Growing fixed format data is a good candidate for RDBMS.  An ETL developer can build a pipeline to update the database as new data becomes available.
+
+* Will data change?  RDBMS excel at tracking historical changes.  Developers can use temporal tables or slowly changing dimensions for value level changes.  I've written in more detail about tracking historical changes [here]( https://www.hinttank.com/working-with-temporal-data-track-data-changes-through-time-2/ ).
+
+* Is the data bigger than what we can fit into memory?  A 20 GB relational table is more accessible than a 20 GB flat file.
+
+* Does the app need fast data processing?  RDBMS can be faster at data processing than other system depending on the workload.  Workloads sent to the database can use indexes and automatic parallelization for speed.
+
+* Does my organizations have the proper infrastructure and skillets?  Databases, especially on-premises deployments, need planning and maintenance.  The degree of planning depends on the application workload requirements and existing infrastructure.  A small commodity server can handle a database workload of 100 batches/sec under load.  It's another story if the app is pushing 10K batches/sec under load.  Database maintenance is another consideration.  Are you performing back-ups, corruption checking, patching, index de-fragmentation, statistics updates?  Cloud databases offload some of the infrastructure duties like backups and patching, but they are not maintenance free.  
+
+* Is the data sensitive?  Database products offer a plethora of encryption, auditing, and alerting features.  SQL Server, for example, offers data encryption, auditing, and alerting out of the box.  It's possible to recreate a lot of these features without a database but as Codd put it, "at what cost?"  
+
+* Do I need transactions?  A balance transfer of \$100 from my savings to checking account is an atomic transaction made up of two database queries.  One query debits \$100 from the savings ledger and one query credits \$100 to the checking ledger.  These two queries are indivisible.  If one query fails, then the entire transaction fails.  If a system failure occurred between queries, then I would not want the \$100 debit to succeed and the \$100 credit to fail.  Otherwise, I'd lose $100!
+
+* How much flexibility do I need?  Updating a relational schema is slow and cumbersome.  If a project is in the exploratory phase, then a database will add unnecessary complexity.  User requirements should drive the data model.  The data model drives implementation details.  Importing data into a database should not be the end but the means to some end. 

@@ -1,0 +1,348 @@
+"0","bookdown::gitbook(split_by = ""section"")"
+"1","$knitr
+"
+"1","$knitr$opts_knit
+"
+"1","$knitr$opts_knit$bookdown.internal.label
+"
+"1","[1]"
+"1"," TRUE"
+"1","
+"
+"1","
+"
+"1","$knitr$opts_knit$kable.force.latex
+"
+"1","[1]"
+"1"," TRUE"
+"1","
+"
+"1","
+"
+"1","
+"
+"1","$knitr$opts_chunk
+"
+"1","$knitr$opts_chunk$dev
+"
+"1","[1]"
+"1"," ""png"""
+"1","
+"
+"1","
+"
+"1","$knitr$opts_chunk$dpi
+"
+"1","[1]"
+"1"," 96"
+"1","
+"
+"1","
+"
+"1","$knitr$opts_chunk$fig.width
+"
+"1","[1]"
+"1"," 7"
+"1","
+"
+"1","
+"
+"1","$knitr$opts_chunk$fig.height
+"
+"1","[1]"
+"1"," 5"
+"1","
+"
+"1","
+"
+"1","$knitr$opts_chunk$fig.retina
+"
+"1","[1]"
+"1"," 2"
+"1","
+"
+"1","
+"
+"1","
+"
+"1","$knitr$knit_hooks
+"
+"1","NULL
+"
+"1","
+"
+"1","$knitr$opts_hooks
+"
+"1","NULL
+"
+"1","
+"
+"1","$knitr$opts_template
+"
+"1","NULL
+"
+"1","
+"
+"1","
+"
+"1","$pandoc
+"
+"1","$pandoc$to
+"
+"1","[1]"
+"1"," ""html"""
+"1","
+"
+"1","
+"
+"1","$pandoc$from
+"
+"1","[1]"
+"1"," ""markdown+autolink_bare_uris+ascii_identifiers+tex_math_single_backslash+smart"""
+"1","
+"
+"1","
+"
+"1","$pandoc$args
+"
+"1"," [1]"
+"1"," ""--email-obfuscation""                                                                    "
+"1","
+"
+"1"," [2]"
+"1"," ""none""                                                                                   "
+"1","
+"
+"1"," [3]"
+"1"," ""--wrap""                                                                                 "
+"1","
+"
+"1"," [4]"
+"1"," ""preserve""                                                                               "
+"1","
+"
+"1"," [5]"
+"1"," ""--standalone""                                                                           "
+"1","
+"
+"1"," [6]"
+"1"," ""--section-divs""                                                                         "
+"1","
+"
+"1"," [7]"
+"1"," ""--table-of-contents""                                                                    "
+"1","
+"
+"1"," [8]"
+"1"," ""--toc-depth""                                                                            "
+"1","
+"
+"1"," [9]"
+"1"," ""3""                                                                                      "
+"1","
+"
+"1","[10]"
+"1"," ""--template""                                                                             "
+"1","
+"
+"1","[11]"
+"1"," ""C:\\Users\\MaSharkey\\Documents\\R\\win-library\\3.5\\bookdown\\templates\\gitbook.html"""
+"1","
+"
+"1","[12]"
+"1"," ""--highlight-style""                                                                      "
+"1","
+"
+"1","[13]"
+"1"," ""pygments""                                                                               "
+"1","
+"
+"1","[14]"
+"1"," ""--number-sections""                                                                      "
+"1","
+"
+"1","
+"
+"1","$pandoc$keep_tex
+"
+"1","[1]"
+"1"," FALSE"
+"1","
+"
+"1","
+"
+"1","$pandoc$latex_engine
+"
+"1","[1]"
+"1"," ""pdflatex"""
+"1","
+"
+"1","
+"
+"1","$pandoc$ext
+"
+"1","NULL
+"
+"1","
+"
+"1","
+"
+"1","$keep_md
+"
+"1","[1]"
+"1"," FALSE"
+"1","
+"
+"1","
+"
+"1","$clean_supporting
+"
+"1","[1]"
+"1"," FALSE"
+"1","
+"
+"1","
+"
+"1","$df_print
+"
+"1","[1]"
+"1"," ""default"""
+"1","
+"
+"1","
+"
+"1","$pre_knit
+"
+"1","function (...) 
+"
+"1","{
+"
+"1","    op(base(...), overlay(...))
+"
+"1","}
+"
+"1","<bytecode: 0x0000000017aadef8>
+"
+"1","<environment: 0x0000000007868d98>
+"
+"1","
+"
+"1","$post_knit
+"
+"1","function (...) 
+"
+"1","{
+"
+"1","    op(base(...), overlay(...))
+"
+"1","}
+"
+"1","<bytecode: 0x0000000017aadef8>
+"
+"1","<environment: 0x000000000786fb90>
+"
+"1","
+"
+"1","$pre_processor
+"
+"1","function (...) 
+"
+"1","{
+"
+"1","    op(base(...), overlay(...))
+"
+"1","}
+"
+"1","<bytecode: 0x0000000017aadef8>
+"
+"1","<environment: 0x0000000007871f00>
+"
+"1","
+"
+"1","$intermediates_generator
+"
+"1","function (original_input, encoding, intermediates_dir) 
+"
+"1","{
+"
+"1","    return(copy_render_intermediates(original_input, encoding, 
+"
+"1","        intermediates_dir, !self_contained))
+"
+"1","}
+"
+"1","<bytecode: 0x0000000017a64e48>
+"
+"1","<environment: 0x0000000007abe7b8>
+"
+"1","
+"
+"1","$post_processor
+"
+"1","function (metadata, input, output, clean, verbose) 
+"
+"1","{
+"
+"1","    if (is.function(post)) 
+"
+"1","        output = post(metadata, input, output, clean, verbose)
+"
+"1","    on.exit(write_search_data(), add = TRUE)
+"
+"1","    move_files_html(output, lib_dir)
+"
+"1","    output2 = split_chapters(output, gitbook_page, number_sections, 
+"
+"1","        split_by, split_bib, gb_config, split_by)
+"
+"1","    if (file.exists(output) && !same_path(output, output2)) 
+"
+"1","        file.remove(output)
+"
+"1","    output2
+"
+"1","}
+"
+"1","<bytecode: 0x0000000017a02920>
+"
+"1","<environment: 0x0000000004d9dca8>
+"
+"1","
+"
+"1","$on_exit
+"
+"1","function () 
+"
+"1","{
+"
+"1","    if (is.function(base)) 
+"
+"1","        base()
+"
+"1","    if (is.function(overlay)) 
+"
+"1","        overlay()
+"
+"1","}
+"
+"1","<bytecode: 0x0000000017ab05d0>
+"
+"1","<environment: 0x00000000078824a0>
+"
+"1","
+"
+"1","$bookdown_output_format
+"
+"1","[1]"
+"1"," ""html"""
+"1","
+"
+"1","
+"
+"1","attr(,""class"")"
+"1","
+"
+"1","[1]"
+"1"," ""rmarkdown_output_format"""
+"1","
+"
