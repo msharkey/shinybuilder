@@ -14,9 +14,17 @@ output:
 ---
 
 
-```{r setup, include=FALSE}
+```{r setup, echo=FALSE}
 gc()
-
+library(RefManageR)
+BibOptions(check.entries = FALSE, 
+           bib.style = "authoryear", 
+           cite.style = 'alphabetic', 
+           style = "markdown",
+           hyperlink = FALSE, 
+           dashed = FALSE)
+myBib <- ReadBib("./citation.bib", check = FALSE)
+PrintBibliography(myBib)
 options(htmltools.dir.version = FALSE)
 library(DBI)
 library(dbplyr)
@@ -79,29 +87,23 @@ Potiential performance gains
 # Demo: File vs Table Query
 
 
-```{r bencmark,eval=FALSE}
+> If your data fits in memory there is no advantage to putting it in a database: it will only be slower and more frustrating.
 
-## Executes against CSV file
-fs<- function(){trips_fs %>%
-  filter(tpep_dropoff_datetime >= '2018-01-02 07:28:00'
-         ,tpep_dropoff_datetime <= '2018-01-02 07:30:00') %>%
-  summarise(pcount= n())}
-## Executes against database table
-db<- function(){trips_db %>%
-  filter(tpep_dropoff_datetime >= '01-02-2018 13:28'
-         ,tpep_dropoff_datetime <= '01/02/2018 13:30')  %>%
-  summarise(pcount= n())}
+Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A ’Dplyr’ Back End for Databases. https://CRAN.R-project.org/package=dbplyr.
 
+--
 
-microbenchmark(print(db()),print(fs()),times = 10)
+- frustrating --> Possibly
 
-```
+--
+
+- slower --> It depends
 
 ---
 
 
 
-# Other Reasons to use a RDBMS
+# Reasons to use a RDBMS
 
 - Stability
 
