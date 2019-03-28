@@ -77,27 +77,9 @@ shinyServer(function(input, output,session) {
       filter(tpep_dropoff_datetime >= input$startdate,tpep_dropoff_datetime < enddate,
              trip_distance >= input$trip_distance[1],trip_distance <= input$trip_distance[2])  %>%
       mutate(Hour_Range_Raw = DatePart(hh,tpep_dropoff_datetime),Day_Raw= DatePart(dw,tpep_dropoff_datetime)) %>% 
-      group_by(Hour_Range_Raw,Day_Raw) %>%
-      summarise(Avg_Tip = mean(tip_amount)) %>%
-      mutate(Hour_Range = case_when(Hour_Range_Raw >= 1 & Hour_Range_Raw <= 4 ~ "1AM-5AM",
-                                    Hour_Range_Raw >= 5 & Hour_Range_Raw <= 8 ~ "5AM-9AM",
-                                    Hour_Range_Raw >= 9 & Hour_Range_Raw <= 11 ~ "9AM-12PM",
-                                    Hour_Range_Raw >= 12 & Hour_Range_Raw <= 15 ~ "12PM-4PM",
-                                    Hour_Range_Raw >= 16 & Hour_Range_Raw <= 17 ~ "4PM-6PM",
-                                    Hour_Range_Raw >= 18 & Hour_Range_Raw <= 21 ~ "6PM-10PM",
-                                    Hour_Range_Raw >= 22 | Hour_Range_Raw < 1 ~ "10PM-1AM"
-                                    ),
-             Day = case_when(Day_Raw == 1 ~ "Sun",
-                             Day_Raw == 2 ~ "Mon",
-                             Day_Raw == 3 ~ "Tue",
-                             Day_Raw == 4 ~ "Wed",
-                             Day_Raw == 5 ~ "Thu",
-                             Day_Raw == 6 ~ "Fri",
-                             Day_Raw == 7 ~ "Sat"
-                             )
+      group_by(Hour_Range,Day) %>%
+      summarise(Avg_Tip = mean(tip_amount))
                                     
-             )
-        
         
     compute(heatdata)
     HeatmapTime <- Sys.time() - heatmapStart

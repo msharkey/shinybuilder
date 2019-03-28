@@ -14,17 +14,7 @@ output:
 ---
 
 
-```{r setup, echo=FALSE}
-gc()
-library(RefManageR)
-BibOptions(check.entries = FALSE, 
-           bib.style = "authoryear", 
-           cite.style = 'alphabetic', 
-           style = "markdown",
-           hyperlink = FALSE, 
-           dashed = FALSE)
-myBib <- ReadBib("./citation.bib", check = FALSE)
-PrintBibliography(myBib)
+```{r setup, echo=FALSE,warning=FALSE,message=FALSE}
 options(htmltools.dir.version = FALSE)
 library(DBI)
 library(dbplyr)
@@ -84,12 +74,13 @@ Potiential performance gains
 
 ---
 
-# Demo: File vs Table Query
+## File vs Table Query
 
-
+<br>
+<br>
 > If your data fits in memory there is no advantage to putting it in a database: it will only be slower and more frustrating.
 
-Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A ’Dplyr’ Back End for Databases. https://CRAN.R-project.org/package=dbplyr.
+Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A dplyr Back End for Databases. https://CRAN.R-project.org/package=dbplyr.
 
 --
 
@@ -101,9 +92,96 @@ Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A ’Dplyr’ Back End for Da
 
 ---
 
+## Demo File Storage vs SQL Table
+```{r,echo=FALSE,message=FALSE}
+packages <- list('odbc','DBI','tidyverse','microbenchmark')
+aa <-lapply(packages, require, character.only = TRUE,quietly = TRUE)
+
+con <- dbConnect(odbc(),Driver = 'SQL Server',Server = '.\\snapman'
+                 , Database = 'Cab_Demo', trusted_connection = TRUE)
+#drop index for demo
+dm <- dbExecute(con,"DROP INDEX IF EXISTS nc_yellow_trip
+              ON [yellow_tripdata_2018-01] ")
+```
+ Same data but one stored as CSV and one stored as sql table 
+ <div>
+ Data source:NYC Yellow Taxi Trips https://www1.nyc.gov/site/
+ 
+--
+```{r,message=FALSE,echo=FALSE}
+if(exists("trips_fs") == FALSE | exists("trips_db") == FALSE)
+{
+trips_fs <- read_csv('D:/Cab_data/yellow_tripdata_2018-01.csv')
+trips_db <- tbl(con, "yellow_tripdata_2018-01")
+}
+```
+
+```{r,message=FALSE,eval=FALSE}
+trips_fs <- read_csv('D:/Cab_data/yellow_tripdata_2018-01.csv')
+trips_db <- tbl(con, "yellow_tripdata_2018-01")
+```
+--
+```{r,message=FALSE}
+fs <- function(){csvquery<- trips_fs %>%
+    filter(tpep_dropoff_datetime >= '2018-01-02 07:28:00'
+          ,tpep_dropoff_datetime <= '2018-01-02 07:30:00') %>%
+    summarise(pcount= n())
+  # Need to force eval per 
+  rs<- suppressMessages(compute(csvquery))
+  }
+```
+--
+```{r}
+db <- function(){sqltable <- trips_db %>%
+    filter(tpep_dropoff_datetime >= '01-02-2018 13:28'
+           ,tpep_dropoff_datetime <= '01/02/2018 13:30')  %>%
+    summarise(pcount= n())
+  rs1<-suppressMessages(compute(sqltable))
+  }
+
+```
 
 
-# Reasons to use a RDBMS
+---
+
+## Benchmarking
+
+File storage is faster
+
+```{r}
+microbenchmark(db(),fs(),times = 10)
+```
+
+
+
+---
+
+## But...
+
+Add an index and table outperforms file
+
+--
+
+```{r,message=FALSE}
+dbExecute(con,
+'CREATE NONCLUSTERED INDEX nc_yellow_trip
+ ON [yellow_tripdata_2018-01](tpep_dropoff_datetime)'
+ )
+```
+--
+```{r,message=FALSE}
+microbenchmark(db(),fs(),times = 10)
+```
+
+```{r,echo=FALSE}
+dbDisconnect(con)
+```
+
+
+
+---
+
+## Other Reasons to use a RDBMS
 
 - Stability
 
@@ -124,8 +202,8 @@ Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A ’Dplyr’ Back End for Da
 - But it's not the right tool for every job!
 
 ---
-<br>
-<br>
+## So Help Me Codd!
+
 <br>
 <br>
 <center>
@@ -162,7 +240,7 @@ myconnection <- dbConnect(odbc::odbc(),
 ---
 
 
-# Common Connection Problems
+## Common Connection Problems
 --
 
 - Wrong connection string format 
@@ -190,7 +268,7 @@ myconnection <- dbConnect(odbc::odbc(),
 
 ---
 
-# Test Query
+## Test Query
 
 ```{r execQuery, eval=TRUE, warning=FALSE}
 
@@ -215,9 +293,9 @@ date <- dbGetQuery(myconnection,paste("Select GetDate() as mydate
 
 ---
 
-# Leaked Connections
+## Leaked Connections
 
-```{sql,connection = sqlchunk_connection,output.var = "leakedcns"}
+```{sql,connection = sqlchunk_connection,output.var = "leakedcns", echo=FALSE}
 SELECT 
     DB_NAME(p.dbid) as DBName, 
     program_name as Program,CPU,memusage,status,SPID,nt_username
@@ -228,13 +306,16 @@ and text like '%leakedquery%' and text not like '%DB_NAME%'
 
 ```
 
-```{r leakedcons, warning= FALSE}
+```{r leakedcons, warning= FALSE,echo=FALSE}
 knitr::kable(leakedcns, format = 'html')
+dbDisconnect(myconnection)
+gc()
 ```
+
 
 ---
 
-# Manual vs Pool
+## Manual vs Pool
 
 ```{r pool, eval=TRUE,echo=FALSE}
 library(pool)
@@ -263,6 +344,21 @@ results <- microbenchmark::microbenchmark(dbconnectworkload()
 
 ```
 
+```{r,eval=FALSE}
+  dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+                   ,Database = myDatabase,Trusted_Connection='yes')
+  dbGetQuery(con,query)
+  dbDisconnect(con)
+ }
+}  
+```
+--
+```{r,eval=FALSE}
+poolcon <- dbPool(odbc::odbc(),Driver= myDriver,Server = myServer
+                  ,Database = myDatabase,Trusted_Connection='yes')
+
+```
+--
 ```{r poolres, eval=TRUE}
 microbenchmark::microbenchmark(dbconnectworkload()
                               ,dbpoolworkload()
@@ -291,7 +387,7 @@ microbenchmark::microbenchmark(dbconnectworkload()
 
 ---
 
-# SQL Injection
+## SQL Injection
 
 ```{r, out.width = "700px",echo=FALSE}
 knitr::include_graphics("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/sqlinjection.gif")
@@ -301,7 +397,7 @@ knitr::include_graphics("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/sqlinjectio
 ---
 
 
-# Injection Demo
+## Injection Demo
 
 ```{sql,connection = sqlchunk_connection,echo=FALSE}
 DROP Table IF Exists dbo.Persons
@@ -325,8 +421,50 @@ knitr::include_graphics("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/shinybuilde
 
 ---
 
+## Why Injection works
 
-### SQL Injection Defense Recap
+Unsecure
+
+```{r,eval=FALSE}
+dbGetQuery(myPool
+    ,paste0("Insert into dbo.Persons 
+            values ('",input$usr_email,"','",input$usr_title,"')"))
+```
+
+--
+
+Better
+
+```{r,eval=FALSE}
+    params <- c(email = usr_email,title = usr_title)
+
+    query <- "Insert into dbo.Persons values (?email,?title)"
+    
+    queryint <- sqlInterpolate(myPool, query, .dots = params)
+    
+    dbGetQuery(myPool, queryint)
+```
+
+---
+
+## Whitelist
+
+```{r,eval=FALSE}
+
+emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
+
+if(!is.na(str_match(input$usr_email, emailwhitelist))){
+  
+  params <- c(email = input$usr_email,title = input$usr_title)
+  
+  executeSQL("Insert into dbo.Persons values (?email,?title)",params)
+  
+} else {stop("Not a valid email.")}
+```
+
+
+
+## SQL Injection Defense Recap
 
 --
 
@@ -347,7 +485,7 @@ knitr::include_graphics("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/shinybuilde
 ---
 
 
-### Performance
+# Performance
 
 - Abstraction - We find virtue between excess and deficiency
 
@@ -387,7 +525,7 @@ JOIN sys.types t
 ON c.user_type_id = t.user_type_id
 JOIN sys.columns cs
 ON c.name = cs.name
-and cs.object_id = object_id('yellow_trip_summary_optimized')
+and cs.object_id = object_id('yellow_trip_summary_partitioned')
 JOIN sys.types t2
 ON cs.user_type_id = t2.user_type_id
 JOIN
@@ -421,7 +559,7 @@ knitr::kable(DataTypes,  format="html") %>%
 ```
 
 
-# 67 Bytes Per Row?  So What?
+## 67 Bytes Per Row?  So What?
 
 --
 
@@ -438,9 +576,9 @@ knitr::kable(DataTypes,  format="html") %>%
   * Replication
   
   
---
+---
 
-# Indexes - The Keys to Performance
+## Indexes - The Keys to Query Performance
 
 
 Good columns for indexing
@@ -468,7 +606,7 @@ C- Covering (Any remaining column in the SELECT)
 
 ---
 
-# Best index for this query?
+## Best index for this query?
 
 ```{r,eval= FALSE}
 trips_db %>%
@@ -495,7 +633,7 @@ trips_db %>%
 
 ---
 
-# Demo
+## Demo
 
 - Yellow Cab Dashboard
 
@@ -504,8 +642,11 @@ trips_db %>%
 # Recap
 
 - Use the right tool for the job
+--
 - Troubleshooting connections
+--
 - Preventing SQL Injection
+--
 - Peformance
 
 --

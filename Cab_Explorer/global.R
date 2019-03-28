@@ -24,11 +24,11 @@ ExecuteSQL <- function(Query,Parameters=NA) {
   return(results)
 }
 
-trips_db <- tbl(pool, "yellow_trip_summary_heap")
+#trips_db <- tbl(pool, "yellow_trip_summary_heap")
 ### Indexed
 #trips_db <- tbl(pool, "yellow_trip_summary")
 ### Indexed and Partitioned
-#trips_db <- tbl(pool, "yellow_trip_summary_partitioned")
+trips_db <- tbl(pool, "yellow_trip_summary_partitioned")
 
 
 
