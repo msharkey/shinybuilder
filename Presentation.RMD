@@ -20,6 +20,7 @@ library(DBI)
 library(dbplyr)
 library(tidyverse)
 library(kableExtra)
+library(microbenchmark)
 myDriver <- 'SQL Server'
 myServer <- '.\\snapman'
 myDatabase <- 'Cab_Demo'
@@ -28,6 +29,11 @@ sqlchunk_connection <- dbConnect(odbc::odbc(),
                           Server = myServer,
                           Database = myDatabase,
                           Trusted_Connection='yes')
+comp <- Sys.info()
+if(comp["nodename"]=="OMC-5CG6151GZF"){
+  cab_fileloc <- "C:/Users/MaSharkey/Cab_Data/yellow_tripdata_2018-12.csv"} else {
+  cab_fileloc <- "D:/Cab_data/yellow_tripdata_2018-01.csv"
+  }
 ```
 
 
@@ -49,7 +55,7 @@ Demo Application on github (update with github link)
 
 # Agenda
 
-1. Reasons for using a Database
+1. RDBMS Use Cases
 
 2. Building and Managing Connections
 
@@ -60,7 +66,7 @@ Demo Application on github (update with github link)
 
 ---
 
-# Reasons to use a Database
+# Why use an RDBMS?
 
 
 Potiential performance gains
@@ -77,10 +83,12 @@ Potiential performance gains
 ## File vs Table Query
 
 <br>
-<br>
 > If your data fits in memory there is no advantage to putting it in a database: it will only be slower and more frustrating.
 
+<br>
 Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A dplyr Back End for Databases. https://CRAN.R-project.org/package=dbplyr.
+
+<br>
 
 --
 
@@ -88,11 +96,12 @@ Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A dplyr Back End for Database
 
 --
 
-- slower --> It depends
+- slower --> It Depends
 
 ---
 
-## Demo File Storage vs SQL Table
+## File Storage vs Table
+
 ```{r,echo=FALSE,message=FALSE}
 packages <- list('odbc','DBI','tidyverse','microbenchmark')
 aa <-lapply(packages, require, character.only = TRUE,quietly = TRUE)
@@ -103,42 +112,38 @@ con <- dbConnect(odbc(),Driver = 'SQL Server',Server = '.\\snapman'
 dm <- dbExecute(con,"DROP INDEX IF EXISTS nc_yellow_trip
               ON [yellow_tripdata_2018-01] ")
 ```
- Same data but one stored as CSV and one stored as sql table 
+ Same data but one stored as CSV and one stored as table 
  <div>
- Data source:NYC Yellow Taxi Trips https://www1.nyc.gov/site/
+ Data source:NYC Yellow Taxi Trips https://on.nyc.gov/2tn71Qq
  
 --
 ```{r,message=FALSE,echo=FALSE}
-if(exists("trips_fs") == FALSE | exists("trips_db") == FALSE)
+if(exists("trips_fs") == FALSE)
 {
-trips_fs <- read_csv('D:/Cab_data/yellow_tripdata_2018-01.csv')
+trips_fs <- read_csv(cab_fileloc)
 trips_db <- tbl(con, "yellow_tripdata_2018-01")
 }
 ```
 
 ```{r,message=FALSE,eval=FALSE}
-trips_fs <- read_csv('D:/Cab_data/yellow_tripdata_2018-01.csv')
+trips_fs <- read_csv(cab_fileloc)
 trips_db <- tbl(con, "yellow_tripdata_2018-01")
 ```
 --
 ```{r,message=FALSE}
-fs <- function(){csvquery<- trips_fs %>%
+fs <- function(){csvquery<- trips_fs %>% 
     filter(tpep_dropoff_datetime >= '2018-01-02 07:28:00'
           ,tpep_dropoff_datetime <= '2018-01-02 07:30:00') %>%
     summarise(pcount= n())
-  # Need to force eval per 
-  rs<- suppressMessages(compute(csvquery))
-  }
+  rs<- suppressMessages(compute(csvquery))}
 ```
 --
 ```{r}
-db <- function(){sqltable <- trips_db %>%
+db <- function(){sqltable <- trips_db %>% 
     filter(tpep_dropoff_datetime >= '01-02-2018 13:28'
            ,tpep_dropoff_datetime <= '01/02/2018 13:30')  %>%
     summarise(pcount= n())
-  rs1<-suppressMessages(compute(sqltable))
-  }
-
+  rs1<-suppressMessages(compute(sqltable))}
 ```
 
 
@@ -156,13 +161,19 @@ microbenchmark(db(),fs(),times = 10)
 
 ---
 
-## But...
+## Indexing
 
-Add an index and table outperforms file
+Indexing makes a difference
 
 --
+```{r,echo=FALSE,message=FALSE}
+ms<-dbExecute(con,
+'CREATE NONCLUSTERED INDEX nc_yellow_trip
+ ON [yellow_tripdata_2018-01](tpep_dropoff_datetime)'
+ )
+```
 
-```{r,message=FALSE}
+```{r,eval=FALSE}
 dbExecute(con,
 'CREATE NONCLUSTERED INDEX nc_yellow_trip
  ON [yellow_tripdata_2018-01](tpep_dropoff_datetime)'
@@ -178,6 +189,9 @@ dbDisconnect(con)
 ```
 
 
+--
+
+The tables have turned.
 
 ---
 
@@ -204,24 +218,28 @@ dbDisconnect(con)
 ---
 ## So Help Me Codd!
 
-<br>
+
 <br>
 <center>
 >IT should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users' requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost?
 
-E.F. Codd, et al. 1998. Providing Olap to User-Analysts: An It Mandate. https://bit.ly/2Okyz2H.
+<br>
 <center>
+E.F. Codd, et al. 1998. Providing Olap to User-Analysts: An It Mandate. https://bit.ly/2Okyz2H.
+
 
 ---
 
-# Making a connection
+class: inverse, center, middle
 
-<center>
-<iframe src="https://giphy.com/embed/Ym0zs6Ms4vgwU" width="380" height="227" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/mr-robot-rami-malek-its-so-good-Ym0zs6Ms4vgwU"></a></p>
-</center>
+# Building and Managing Connections
 
 
---
+---
+
+
+
+
 
 ```{r commonCon, eval=TRUE, warning=FALSE}
 library(DBI)
@@ -237,38 +255,7 @@ myconnection <- dbConnect(odbc::odbc(),
 
 ```
 
----
-
-
-## Common Connection Problems
 --
-
-- Wrong connection string format 
-    
-    + ConnectionStrings.com
---
-
-- Misspelled something
-
---
-
-- Permissions
-
---
-
-- Driver
-
---
-
-- Wrong port number 
-
---
-
-- Firewall
-
----
-
-## Test Query
 
 ```{r execQuery, eval=TRUE, warning=FALSE}
 
@@ -277,9 +264,36 @@ dbDisconnect(myconnection)
 
 ```
 
---
+---
 
-```{r lotsofCons, eval=TRUE}
+
+## Common Connection Problems
+
+.pull-left[
+1. Wrong connection string format 
+    
+1. Misspelled something
+
+1. Permissions
+
+1. Driver
+
+1. Wrong port number
+
+1. Firewall
+]
+
+.pull-right[
+<center>
+<iframe src="https://giphy.com/embed/Ym0zs6Ms4vgwU" width="380" height="227" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/mr-robot-rami-malek-its-so-good-Ym0zs6Ms4vgwU"></a></p>
+</center>
+]
+
+
+---
+
+
+```{r lotsofCons, eval=TRUE,echo=FALSE}
 for (i in 1:5)
 {
 myconnection <- dbConnect(odbc::odbc(),Driver= myDriver
@@ -291,7 +305,6 @@ date <- dbGetQuery(myconnection,paste("Select GetDate() as mydate
 
 ```
 
----
 
 ## Leaked Connections
 
@@ -309,7 +322,7 @@ and text like '%leakedquery%' and text not like '%DB_NAME%'
 ```{r leakedcons, warning= FALSE,echo=FALSE}
 knitr::kable(leakedcns, format = 'html')
 dbDisconnect(myconnection)
-gc()
+nn <- gc()
 ```
 
 
@@ -337,40 +350,40 @@ dbpoolworkload <- function() {
  for(i in 1:length(queries)){dbGetQuery(poolcon,queries[i])}
 }
 
-results <- microbenchmark::microbenchmark(dbconnectworkload()
-                                          ,dbpoolworkload(),times = 10)
+results <- microbenchmark(dbconnectworkload(),dbpoolworkload(),times = 10)
 
 
 
 ```
 
 ```{r,eval=FALSE}
-  dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
-                   ,Database = myDatabase,Trusted_Connection='yes')
+  {{dbConnect}}(
+    odbc::odbc(),Driver= myDriver,Server = myServer
+                ,Database = myDatabase,Trusted_Connection='yes')
   dbGetQuery(con,query)
-  dbDisconnect(con)
- }
-}  
+  dbDisconnect(con)  
 ```
 --
 ```{r,eval=FALSE}
-poolcon <- dbPool(odbc::odbc(),Driver= myDriver,Server = myServer
+  {{dbPool}}(
+     odbc::odbc(),Driver= myDriver,Server = myServer
                   ,Database = myDatabase,Trusted_Connection='yes')
-
 ```
 --
 ```{r poolres, eval=TRUE}
-microbenchmark::microbenchmark(dbconnectworkload()
-                              ,dbpoolworkload()
-                              ,times = 10)
+microbenchmark(dbconnectworkload() ,dbpoolworkload(),times = 10)
 ```
 
 --- 
 ---
 
+class: inverse, center, middle
+
 # Secure Design
 
-- OWASP Top 10 - 2017
+---
+
+## OWASP Top 10 - 2017
 
 --
 
@@ -436,12 +449,9 @@ dbGetQuery(myPool
 Better
 
 ```{r,eval=FALSE}
-    params <- c(email = usr_email,title = usr_title)
-
+    params <- c(email = input$usr_email,title = input$usr_title)
     query <- "Insert into dbo.Persons values (?email,?title)"
-    
     queryint <- sqlInterpolate(myPool, query, .dots = params)
-    
     dbGetQuery(myPool, queryint)
 ```
 
@@ -450,19 +460,17 @@ Better
 ## Whitelist
 
 ```{r,eval=FALSE}
-
-emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
+{{emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"}}
 
 if(!is.na(str_match(input$usr_email, emailwhitelist))){
-  
-  params <- c(email = input$usr_email,title = input$usr_title)
-  
-  executeSQL("Insert into dbo.Persons values (?email,?title)",params)
-  
+ params <- c(email = usr_email,title = usr_title)
+ query <- "Insert into dbo.Persons values (?email,?title)"
+ queryint <- sqlInterpolate(myPool, query, .dots = params)
+ dbGetQuery(myPool, queryint)
 } else {stop("Not a valid email.")}
 ```
 
-
+---
 
 ## SQL Injection Defense Recap
 
@@ -484,23 +492,15 @@ if(!is.na(str_match(input$usr_email, emailwhitelist))){
 
 ---
 
+class: inverse, center, middle
 
-# Performance
-
-- Abstraction - We find virtue between excess and deficiency
-
---
-
-```{r, message=FALSE,warning=FALSE}
-trips_fs <- 
-  readr::read_csv('D:/Cab_Data/yellow_tripdata_2018-01.csv'
-                            ,n_max = 3)
-
-trips_fs
-
-```
+# Performance & Optimization
 
 ---
+
+
+## Abstraction - We find virtue between excess and deficiency
+
 
 ```{r, echo=FALSE}
    con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
@@ -558,6 +558,7 @@ knitr::kable(DataTypes,  format="html") %>%
   scroll_box(width = "100%", height = "500px")
 ```
 
+---
 
 ## 67 Bytes Per Row?  So What?
 
@@ -623,13 +624,20 @@ trips_db %>%
 
 --
 
-- Per FPOC, I'd start with tpep_dropoff_datetime and trip_distance
+- Per FPOC, start with tpep_dropoff_datetime and trip_distance
+
+--
+
+```{sql,eval=FALSE,connection=sqlchunk_connection}
+CREATE INDEX ix_yellow_cab 
+ON yellow_trip(tpep_dropoff_datetime,trip_distance)
+```
 
 --
 
 - Test performance before and after index
 
-- Indexing Trade-offs = Writes Slower
+- Indexing trade-off = faster reads, slower writes
 
 ---
 
@@ -642,11 +650,17 @@ trips_db %>%
 # Recap
 
 - Use the right tool for the job
+
 --
+
 - Troubleshooting connections
+
 --
+
 - Preventing SQL Injection
+
 --
+
 - Peformance
 
 --
@@ -657,7 +671,7 @@ More in-depth look @ hinttank.com
 
 class: center, middle
 
-# Thanks!
+# Thank You
 
 Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
 

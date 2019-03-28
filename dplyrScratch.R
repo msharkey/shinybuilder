@@ -11,10 +11,11 @@ download.file(url,"D:/Cab_Data/yellow_tripdata_2018-10.csv")
 url <- "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-11.csv"
 download.file(url,"D:/Cab_Data/yellow_tripdata_2018-11.csv")
 url <- "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-12.csv"
-download.file(url,"D:/Cab_Data/yellow_tripdata_2018-12.csv")
+download.file(url,"C:/Users/MaSharkey/Cab_Data/yellow_tripdata_2018-12.csv")
 getwd()
 
 
+library(xaringan)
 
 
 list.files("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/InjectionApp")
@@ -32,16 +33,16 @@ con <- dbConnect(odbc(),Driver = 'SQL Server',Server = '.\\snapman', Database = 
 # Need to give breif intro to data set
 # Bad Defaults, generates varchar(255) instead of proper , Allows NULLS for every data type 
 
-trips_fs <- read_csv('D:/Cab_Data/yellow_tripdata_2018-01.csv',n_max = 10)
+trips_fs <- read_csv('C:/Users/MaSharkey/Cab_Data/yellow_tripdata_2018-12.csv',n_max = 10)
 if(dbExistsTable(con, "yellow_trip_summary_model")){dbRemoveTable(con , 'yellow_trip_summary_model')}
-dbCreateTable(con,'yellow_trip_summary_model',tips_fs)
+dbCreateTable(con,'yellow_trip_summary_model',trips_fs)
 
 ## Generate Table with tsql
 
 
 ## Each Row is inserted one at a time, not fast at all
-trips_fsf <- read_csv('D:/Cab_Data/yellow_tripdata_2018-01.csv')
-dbWriteTable(con,"yellow_trip_summary",tips_fsf,append =TRUE)
+trips_fsf <- read_csv('C:/Users/MaSharkey/Cab_Data/yellow_tripdata_2018-12.csv')
+dbWriteTable(con,"yellow_tripdata_2018-01",trips_fsf,append =TRUE)
 
 
 # Benchmark dbWrite table with BULK INSERT method

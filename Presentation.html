@@ -4,7 +4,7 @@
     <title>Building Your First Shiny Database Application</title>
     <meta charset="utf-8" />
     <meta name="author" content="Matthew Sharkey | msharkey3434@gmail.com" />
-    <meta name="date" content="2019-03-27" />
+    <meta name="date" content="2019-03-28" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
     <script src="libs/kePrint/kePrint.js"></script>
@@ -14,8 +14,8 @@
 class: center, middle, inverse, title-slide
 
 # Building Your First Shiny Database Application
-### Matthew Sharkey | <a href="mailto:msharkey3434@gmail.com">msharkey3434@gmail.com</a>
-### 2019-03-27
+### Matthew Sharkey | <a href="mailto:msharkey3434@gmail.com" class="email">msharkey3434@gmail.com</a>
+### 2019-03-28
 
 ---
 
@@ -42,7 +42,7 @@ Demo Application on github (update with github link)
 
 # Agenda
 
-1. Reasons for using a Database
+1. RDBMS Use Cases
 
 2. Building and Managing Connections
 
@@ -53,7 +53,7 @@ Demo Application on github (update with github link)
 
 ---
 
-# Reasons to use a Database
+# Why use an RDBMS?
 
 
 Potiential performance gains
@@ -70,10 +70,12 @@ Potiential performance gains
 ## File vs Table Query
 
 &lt;br&gt;
-&lt;br&gt;
 &gt; If your data fits in memory there is no advantage to putting it in a database: it will only be slower and more frustrating.
 
+&lt;br&gt;
 Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A dplyr Back End for Databases. https://CRAN.R-project.org/package=dbplyr.
+
+&lt;br&gt;
 
 --
 
@@ -81,44 +83,42 @@ Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A dplyr Back End for Database
 
 --
 
-- slower --&gt; It depends
+- slower --&gt; It Depends
 
 ---
 
-## Demo File Storage vs SQL Table
+## File Storage vs Table
 
- Same data but one stored as CSV and one stored as sql table 
+
+ Same data but one stored as CSV and one stored as table 
  &lt;div&gt;
- Data source:NYC Yellow Taxi Trips https://www1.nyc.gov/site/
+ Data source:NYC Yellow Taxi Trips https://on.nyc.gov/2tn71Qq
  
 --
 
 
 
 ```r
-trips_fs &lt;- read_csv('D:/Cab_data/yellow_tripdata_2018-01.csv')
+trips_fs &lt;- read_csv(cab_fileloc)
 trips_db &lt;- tbl(con, "yellow_tripdata_2018-01")
 ```
 --
 
 ```r
-fs &lt;- function(){csvquery&lt;- trips_fs %&gt;%
+fs &lt;- function(){csvquery&lt;- trips_fs %&gt;% 
     filter(tpep_dropoff_datetime &gt;= '2018-01-02 07:28:00'
           ,tpep_dropoff_datetime &lt;= '2018-01-02 07:30:00') %&gt;%
     summarise(pcount= n())
-  # Need to force eval per 
-  rs&lt;- suppressMessages(compute(csvquery))
-  }
+  rs&lt;- suppressMessages(compute(csvquery))}
 ```
 --
 
 ```r
-db &lt;- function(){sqltable &lt;- trips_db %&gt;%
+db &lt;- function(){sqltable &lt;- trips_db %&gt;% 
     filter(tpep_dropoff_datetime &gt;= '01-02-2018 13:28'
            ,tpep_dropoff_datetime &lt;= '01/02/2018 13:30')  %&gt;%
     summarise(pcount= n())
-  rs1&lt;-suppressMessages(compute(sqltable))
-  }
+  rs1&lt;-suppressMessages(compute(sqltable))}
 ```
 
 
@@ -135,20 +135,21 @@ microbenchmark(db(),fs(),times = 10)
 
 ```
 ## Unit: milliseconds
-##  expr      min       lq     mean   median       uq      max neval
-##  db() 249.6644 250.5853 263.8809 263.0479 267.5800 298.1190    10
-##  fs() 120.8314 122.6831 134.9648 129.8220 131.2251 176.3928    10
+##  expr       min        lq      mean    median        uq       max neval
+##  db()  40.37431  42.94708  56.69288  49.01285  65.55456  87.35977    10
+##  fs() 121.61525 122.19982 129.04402 123.08853 123.88132 179.56676    10
 ```
 
 
 
 ---
 
-## But...
+## The "Tables"" Have Turned
 
-Add an index and table outperforms file
+Indexing makes a difference
 
 --
+
 
 
 ```r
@@ -156,10 +157,6 @@ dbExecute(con,
 'CREATE NONCLUSTERED INDEX nc_yellow_trip
  ON [yellow_tripdata_2018-01](tpep_dropoff_datetime)'
  )
-```
-
-```
-## [1] 0
 ```
 --
 
@@ -169,9 +166,9 @@ microbenchmark(db(),fs(),times = 10)
 
 ```
 ## Unit: milliseconds
-##  expr       min       lq      mean    median        uq      max neval
-##  db()  36.90029  37.8429  53.57198  38.61564  48.44595 123.9228    10
-##  fs() 118.95606 120.3897 127.10739 124.42805 132.61016 142.2722    10
+##  expr       min        lq     mean    median        uq      max neval
+##  db()  40.66605  43.84599  60.2600  46.29823  47.45479 131.9862    10
+##  fs() 118.87438 121.15613 125.3852 122.41005 123.14432 155.3584    10
 ```
 
 
@@ -203,24 +200,28 @@ microbenchmark(db(),fs(),times = 10)
 ---
 ## So Help Me Codd!
 
-&lt;br&gt;
+
 &lt;br&gt;
 &lt;center&gt;
 &gt;IT should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users' requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost?
 
-E.F. Codd, et al. 1998. Providing Olap to User-Analysts: An It Mandate. https://bit.ly/2Okyz2H.
+&lt;br&gt;
 &lt;center&gt;
+E.F. Codd, et al. 1998. Providing Olap to User-Analysts: An It Mandate. https://bit.ly/2Okyz2H.
+
 
 ---
 
-# Making a connection
+class: inverse, center, middle
 
-&lt;center&gt;
-&lt;iframe src="https://giphy.com/embed/Ym0zs6Ms4vgwU" width="380" height="227" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;p&gt;&lt;a href="https://giphy.com/gifs/mr-robot-rami-malek-its-so-good-Ym0zs6Ms4vgwU"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;/center&gt;
+# Building and Managing Connections
 
 
---
+---
+
+
+
+
 
 
 ```r
@@ -235,38 +236,7 @@ myconnection &lt;- dbConnect(odbc::odbc(),
                           Trusted_Connection='yes')
 ```
 
----
-
-
-## Common Connection Problems
 --
-
-- Wrong connection string format 
-    
-    + ConnectionStrings.com
---
-
-- Misspelled something
-
---
-
-- Permissions
-
---
-
-- Driver
-
---
-
-- Wrong port number 
-
---
-
-- Firewall
-
----
-
-## Test Query
 
 
 ```r
@@ -275,28 +245,44 @@ dbGetQuery(myconnection,"Select GetDate()")
 
 ```
 ##                      
-## 1 2019-03-27 22:29:07
+## 1 2019-03-28 15:46:44
 ```
 
 ```r
 dbDisconnect(myconnection)
 ```
 
---
+---
 
 
-```r
-for (i in 1:5)
-{
-myconnection &lt;- dbConnect(odbc::odbc(),Driver= myDriver
-                          ,Server = myServer,Database = myDatabase
-                          ,Trusted_Connection='yes')
-date &lt;- dbGetQuery(myconnection,paste("Select GetDate() as mydate
-                                      ,\'leakedquery\' as c1,",i))
-}
-```
+## Common Connection Problems
+
+.pull-left[
+1. Wrong connection string format 
+    
+1. Misspelled something
+
+1. Permissions
+
+1. Driver
+
+1. Wrong port number;
+
+1. Firewall
+]
+
+.pull-right[
+&lt;center&gt;
+&lt;iframe src="https://giphy.com/embed/Ym0zs6Ms4vgwU" width="380" height="227" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;p&gt;&lt;a href="https://giphy.com/gifs/mr-robot-rami-malek-its-so-good-Ym0zs6Ms4vgwU"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/center&gt;
+]
+
 
 ---
+
+
+
+
 
 ## Leaked Connections
 
@@ -321,12 +307,6 @@ date &lt;- dbGetQuery(myconnection,paste("Select GetDate() as mydate
 &lt;/tbody&gt;
 &lt;/table&gt;
 
-```
-##             used   (Mb) gc trigger   (Mb)  max used   (Mb)
-## Ncells   1054077   56.3    2066321  110.4   2066321  110.4
-## Vcells 163771438 1249.5  269523764 2056.4 251608877 1919.7
-```
-
 
 ---
 
@@ -336,43 +316,45 @@ date &lt;- dbGetQuery(myconnection,paste("Select GetDate() as mydate
 
 
 ```r
-  dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
-                   ,Database = myDatabase,Trusted_Connection='yes')
+*  dbConnect(
+    odbc::odbc(),Driver= myDriver,Server = myServer
+                ,Database = myDatabase,Trusted_Connection='yes')
   dbGetQuery(con,query)
-  dbDisconnect(con)
- }
-}  
+  dbDisconnect(con)  
 ```
 --
 
 ```r
-poolcon &lt;- dbPool(odbc::odbc(),Driver= myDriver,Server = myServer
+*  dbPool(
+     odbc::odbc(),Driver= myDriver,Server = myServer
                   ,Database = myDatabase,Trusted_Connection='yes')
 ```
 --
 
 ```r
-microbenchmark::microbenchmark(dbconnectworkload()
-                              ,dbpoolworkload()
-                              ,times = 10)
+microbenchmark(dbconnectworkload() ,dbpoolworkload(),times = 10)
 ```
 
 ```
 ## Unit: milliseconds
-##                 expr       min        lq      mean    median        uq
-##  dbconnectworkload() 27.987314 29.109683 30.655043 29.766669 30.183458
-##     dbpoolworkload()  4.210562  4.302216  4.619726  4.629129  4.822906
+##                 expr       min        lq     mean    median       uq
+##  dbconnectworkload() 35.098967 37.522943 43.00674 41.716126 44.90136
+##     dbpoolworkload()  4.404146  6.400727  6.57566  6.820282  7.11439
 ##        max neval
-##  39.461468    10
-##   5.145276    10
+##  62.600718    10
+##   7.724851    10
 ```
 
 --- 
 ---
 
+class: inverse, center, middle
+
 # Secure Design
 
-- OWASP Top 10 - 2017
+---
+
+## OWASP Top 10 - 2017
 
 --
 
@@ -422,12 +404,9 @@ Better
 
 
 ```r
-    params &lt;- c(email = usr_email,title = usr_title)
-
+    params &lt;- c(email = input$usr_email,title = input$usr_title)
     query &lt;- "Insert into dbo.Persons values (?email,?title)"
-    
     queryint &lt;- sqlInterpolate(myPool, query, .dots = params)
-    
     dbGetQuery(myPool, queryint)
 ```
 
@@ -437,18 +416,17 @@ Better
 
 
 ```r
-emailwhitelist &lt;- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
+*emailwhitelist &lt;- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
 
 if(!is.na(str_match(input$usr_email, emailwhitelist))){
-  
-  params &lt;- c(email = input$usr_email,title = input$usr_title)
-  
-  executeSQL("Insert into dbo.Persons values (?email,?title)",params)
-  
+ params &lt;- c(email = usr_email,title = usr_title)
+ query &lt;- "Insert into dbo.Persons values (?email,?title)"
+ queryint &lt;- sqlInterpolate(myPool, query, .dots = params)
+ dbGetQuery(myPool, queryint)
 } else {stop("Not a valid email.")}
 ```
 
-
+---
 
 ## SQL Injection Defense Recap
 
@@ -470,37 +448,15 @@ if(!is.na(str_match(input$usr_email, emailwhitelist))){
 
 ---
 
+class: inverse, center, middle
 
-# Performance
-
-- Abstraction - We find virtue between excess and deficiency
-
---
-
-
-```r
-trips_fs &lt;- 
-  readr::read_csv('D:/Cab_Data/yellow_tripdata_2018-01.csv'
-                            ,n_max = 3)
-
-trips_fs
-```
-
-```
-## # A tibble: 3 x 17
-##   VendorID tpep_pickup_dateti~ tpep_dropoff_datet~ passenger_count
-##      &lt;dbl&gt; &lt;dttm&gt;              &lt;dttm&gt;                        &lt;dbl&gt;
-## 1        1 2018-01-01 00:21:05 2018-01-01 00:24:23               1
-## 2        1 2018-01-01 00:44:55 2018-01-01 01:03:05               1
-## 3        1 2018-01-01 00:08:26 2018-01-01 00:14:21               2
-## # ... with 13 more variables: trip_distance &lt;dbl&gt;, RatecodeID &lt;dbl&gt;,
-## #   store_and_fwd_flag &lt;chr&gt;, PULocationID &lt;dbl&gt;, DOLocationID &lt;dbl&gt;,
-## #   payment_type &lt;dbl&gt;, fare_amount &lt;dbl&gt;, extra &lt;dbl&gt;, mta_tax &lt;dbl&gt;,
-## #   tip_amount &lt;dbl&gt;, tolls_amount &lt;dbl&gt;, improvement_surcharge &lt;dbl&gt;,
-## #   total_amount &lt;dbl&gt;
-```
+# Performance &amp; Optimization
 
 ---
+
+
+## Abstraction - We find virtue between excess and deficiency
+
 
 
 
@@ -524,110 +480,12 @@ dbCreateTable(con,'yellow_trip_summary_model',trips_fs)
  &lt;/thead&gt;
 &lt;tbody&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; VendorID &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; tinyint &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; tpep_pickup_datetime &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; datetime &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; datetime &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; tpep_dropoff_datetime &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; datetime &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; datetime &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; passenger_count &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; tinyint &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; trip_distance &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; smallint &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; RatecodeID &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; tinyint &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; store_and_fwd_flag &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; varchar &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; char &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; PULocationID &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; smallint &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; DOLocationID &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; smallint &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; payment_type &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; tinyint &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; fare_amount &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; extra &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; mta_tax &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; tip_amount &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; tolls_amount &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; improvement_surcharge &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; total_amount &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; float &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; decimal &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;&lt;/div&gt;
 
+---
 
 ## 67 Bytes Per Row?  So What?
 
@@ -693,13 +551,21 @@ trips_db %&gt;%
 
 --
 
-- Per FPOC, I'd start with tpep_dropoff_datetime and trip_distance
+- Per FPOC, start with tpep_dropoff_datetime and trip_distance
+
+--
+
+
+```sql
+CREATE INDEX ix_yellow_cab 
+ON yellow_trip(tpep_dropoff_datetime,trip_distance)
+```
 
 --
 
 - Test performance before and after index
 
-- Indexing Trade-offs = Writes Slower
+- Indexing trade-off = faster reads, slower writes
 
 ---
 
@@ -712,11 +578,17 @@ trips_db %&gt;%
 # Recap
 
 - Use the right tool for the job
+
 --
+
 - Troubleshooting connections
+
 --
+
 - Preventing SQL Injection
+
 --
+
 - Peformance
 
 --
@@ -727,7 +599,7 @@ More in-depth look @ hinttank.com
 
 class: center, middle
 
-# Thanks!
+# Thank You
 
 Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
     </textarea>
