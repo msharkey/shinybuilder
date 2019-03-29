@@ -5,11 +5,11 @@
 
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Chapter 4 Methods | Building Web Applications with Shiny and SQL Server</title>
+  <title>4.3 Defending Against Injection | Building Web Applications with Shiny and SQL Server</title>
   <meta name="description" content="A guide to building scalable Shiny Datbase applications">
   <meta name="generator" content="bookdown  and GitBook 2.6.7">
 
-  <meta property="og:title" content="Chapter 4 Methods | Building Web Applications with Shiny and SQL Server" />
+  <meta property="og:title" content="4.3 Defending Against Injection | Building Web Applications with Shiny and SQL Server" />
   <meta property="og:type" content="book" />
   
   
@@ -17,7 +17,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 4 Methods | Building Web Applications with Shiny and SQL Server" />
+  <meta name="twitter:title" content="4.3 Defending Against Injection | Building Web Applications with Shiny and SQL Server" />
   
   <meta name="twitter:description" content="A guide to building scalable Shiny Datbase applications" />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="host-resources.html">
-<link rel="next" href="injection-attacks-childs-play.html">
+<link rel="prev" href="breaking-down-a-shiny-app.html">
+<link rel="next" href="final-words.html">
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -180,16 +180,78 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="methods" class="section level1">
-<h1><span class="header-section-number">Chapter 4</span> Methods</h1> 
+<div id="defending-against-injection" class="section level2">
+<h2><span class="header-section-number">4.3</span> Defending Against Injection</h2>
+<div id="paramertization-and-string-escaping" class="section level3">
+<h3><span class="header-section-number">4.3.1</span> Paramertization and String Escaping</h3>
+<p>The app mixes trusted data with untrusted data. Trusted data is the query code, and untrusted data is user input. If untrusted data mixes with trusted data, then query code becomes changeable at run time. I can start to separate the trusted and untrusted data through parameterized queries. Instead of passing the user input variables to the query string, I store them in parameters. Then I reference the parameters instead of the user variables.</p>
+<pre class="sourceCode r"><code class="sourceCode r">query &lt;-<span class="st"> </span><span class="kw">sqlInterpolate</span>(con,<span class="st">&quot;INSERT INTO dbo.Persons </span>
+<span class="st">                             VALUES (?email,?title)&quot;</span>,input<span class="op">$</span>email,input<span class="op">$</span>title)<span class="er">)</span>
+
+<span class="kw">dbGetQuery</span>(myPool, query)</code></pre>
+<p>The sqlInterpolate function helps isolate the user input from the query string. Also, sqlinterpolate escapes single tick marks making it difficult to execute ad-hoc scripts. The injection attack fails this time because the code handles input as one continuous string.</p>
+<p><img src="parameterized.png" /></p>
 </div>
+<div id="whitelist-input" class="section level3">
+<h3><span class="header-section-number">4.3.2</span> Whitelist input</h3>
+<p>The app should only allow valid characters as input. If a user enters an email with spaces, then the app should reject it. I implemented an email whitelist by comparing the input with a Regex pattern.</p>
+<pre class="sourceCode r"><code class="sourceCode r">emailwhitelist &lt;-<span class="st"> &quot;^[[:alnum:].-_]+@[[:alnum:].-]+$&quot;</span>
+
+   <span class="cf">if</span>(<span class="op">!</span><span class="kw">is.na</span>(<span class="kw">str_match</span>(input<span class="op">$</span>email, emailwhitelist))){
+    query &lt;-<span class="st"> </span><span class="kw">sqlInterpolate</span>(con,
+                            <span class="st">&quot;INSERT INTO dbo.Persons </span>
+<span class="st">                            VALUES(?email,?title)&quot;</span>,input<span class="op">$</span>email,input<span class="op">$</span>title)<span class="er">)</span>
+  <span class="kw">dbGetQuery</span>(myPool, query)
+     } <span class="cf">else</span> {<span class="kw">stop</span>(<span class="st">&quot;Not a valid email.&quot;</span>)}</code></pre>
+<p>Developers should whitelist with caution. Using a restrictive character set could block legitimate input. The Regex pattern above blocks email addressed with a single quote. Are quotes possible in emails? If they aren’t allowed will that change in the future? It’s possible. A whitelist requires a balance between security and usability.</p>
+</div>
+<div id="server-side-defense" class="section level3">
+<h3><span class="header-section-number">4.3.3</span> Server Side Defense</h3>
+<p>The database user account should have minimal permissions. I would not have been able to truncate the table in the example above had I only had permission to SELECT and INSERT. Interfaces simplify permissions. Instead of granting permissions on tables I can grant permissions on the interface. Stored procedures make great interfaces. Developers can grant permissions on stored procedures without granting access to tables. Thus DB all interactions occur in the manner defined by the stored procedure.</p>
+<p>I can wrap the INSERT statement into a stored procedure. The
+shinybuilder_app user cannot run an INSERT statement outside of the stored procedure.</p>
+<pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">Use</span> Cab_Demo
+GO
+
+<span class="kw">DROP</span> <span class="kw">PROCEDURE</span> <span class="cf">IF</span> <span class="kw">EXISTS</span> dbo.uspInsertEmail;
+GO
+<span class="kw">CREATE</span> <span class="kw">PROCEDURE</span> dbo.uspInsertEmail
+<span class="ot">@email Varchar(100),</span>
+<span class="ot">@title Varchar(100)</span>
+<span class="kw">AS</span>
+<span class="kw">INSERT</span> <span class="kw">INTO</span> dbo.Persons
+<span class="kw">VALUES</span> (@email,@title)
+
+GO
+
+<span class="kw">GRANT</span> <span class="kw">EXECUTE</span> <span class="kw">ON</span> dbo.uspInsertEmail <span class="kw">TO</span> shinybuilder_app </code></pre>
+<p>Now the app calls the stored procedure instead of ad-hoc SQL.</p>
+<pre class="sourceCode r"><code class="sourceCode r">  query &lt;-<span class="st"> </span><span class="kw">sqlInterpolate</span>(con
+                          ,<span class="st">&quot;EXECUTE dbo.uspInsertEmail ?email,?title&quot;</span>,input<span class="op">$</span>email,input<span class="op">$</span>title)<span class="er">)</span>
+
+  <span class="kw">dbGetQuery</span>(myPool, query)</code></pre>
+</div>
+<div id="other-defense-layers" class="section level3">
+<h3><span class="header-section-number">4.3.4</span> Other defense layers</h3>
+<ul>
+<li><p>A few lines of defense exist outside of the app and database server. An intrusion detection system (IDS) uses signatures to detect potential attacks. Some IDS also provide real-time alerting features.</p></li>
+<li><p>Vendor provided patches often contain security fixes. System admins or developers should apply security fixes as soon as possible.</p></li>
+</ul>
+</div>
+<div id="defense-in-depth" class="section level3">
+<h3><span class="header-section-number">4.3.5</span> Defense in Depth</h3>
+<p>Even big firms struggle to manage injection risks, and no code is 100% secure. However, parametrization and whitelists are good first lines of defense.</p>
+
+</div>
+</div>
+<!-- </div> -->
             </section>
 
           </div>
         </div>
       </div>
-<a href="host-resources.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="injection-attacks-childs-play.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="breaking-down-a-shiny-app.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="final-words.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

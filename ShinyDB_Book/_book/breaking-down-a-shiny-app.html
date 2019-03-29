@@ -5,11 +5,11 @@
 
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Chapter 4 Methods | Building Web Applications with Shiny and SQL Server</title>
+  <title>4.2 Breaking Down a Shiny App | Building Web Applications with Shiny and SQL Server</title>
   <meta name="description" content="A guide to building scalable Shiny Datbase applications">
   <meta name="generator" content="bookdown  and GitBook 2.6.7">
 
-  <meta property="og:title" content="Chapter 4 Methods | Building Web Applications with Shiny and SQL Server" />
+  <meta property="og:title" content="4.2 Breaking Down a Shiny App | Building Web Applications with Shiny and SQL Server" />
   <meta property="og:type" content="book" />
   
   
@@ -17,7 +17,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 4 Methods | Building Web Applications with Shiny and SQL Server" />
+  <meta name="twitter:title" content="4.2 Breaking Down a Shiny App | Building Web Applications with Shiny and SQL Server" />
   
   <meta name="twitter:description" content="A guide to building scalable Shiny Datbase applications" />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="host-resources.html">
-<link rel="next" href="injection-attacks-childs-play.html">
+<link rel="prev" href="injection-attacks-childs-play.html">
+<link rel="next" href="defending-against-injection.html">
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -180,16 +180,79 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="methods" class="section level1">
-<h1><span class="header-section-number">Chapter 4</span> Methods</h1> 
+<div id="breaking-down-a-shiny-app" class="section level2">
+<h2><span class="header-section-number">4.2</span> Breaking Down a Shiny App</h2>
+<p>I built a simple shiny app to illustrate how injection works. The app takes an email address and job title as inputs and saves them to a SQL Server database. Users can also update and delete existing records. The app persists user input in one table named dbo.Persons. The following SQL creates dbo.Persons and then inserts one row. The last statement selects all the rows.</p>
+<pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">SET</span> NOCOUNT <span class="kw">ON</span>;
+<span class="kw">DROP</span> <span class="kw">TABLE</span> <span class="cf">IF</span> <span class="kw">EXISTS</span> dbo.Persons;
+<span class="kw">CREATE</span> <span class="kw">TABLE</span> dbo.Persons (
+  email <span class="dt">Varchar</span>(<span class="dv">100</span>) <span class="kw">PRIMARY</span> <span class="kw">KEY</span>, 
+  jobtitle <span class="dt">Varchar</span>(<span class="dv">100</span>)
+);
+
+<span class="kw">INSERT</span> <span class="kw">INTO</span> dbo.Persons <span class="kw">VALUES</span> (<span class="st">&#39;q1724449@nwytg.net&#39;</span>,<span class="st">&#39;Analyst&#39;</span>);
+
+<span class="kw">SELECT</span> email, jobtitle <span class="kw">FROM</span> dbo.Persons;</code></pre>
+<p>The shiny UI controls provide input to the following queries. R combines the user input and query code.</p>
+<pre class="sourceCode sql"><code class="sourceCode sql">
+<span class="co">-- Select all rows from the dbo.Persons table</span>
+<span class="kw">SELECT</span> <span class="op">*</span> 
+<span class="kw">FROM</span> dbo.Persons
+
+<span class="co">--Get the jobtitle where the email address matches the user-provided email</span>
+<span class="kw">SELECT</span> jobtitle 
+<span class="kw">FROM</span> dbo.Persons 
+<span class="kw">WHERE</span> email <span class="op">=</span> <span class="st">&#39;User Input&#39;</span>
+
+<span class="co">--Update the Email and job title where the email address matches the user-provided email</span>
+<span class="kw">UPDATE</span> dbo.Persons 
+<span class="kw">SET</span> Email <span class="op">=</span> <span class="st">&#39;User Input&#39;</span>,jobtitle<span class="op">=</span>  <span class="st">&#39;User Input&#39;</span> 
+<span class="kw">WHERE</span> email <span class="op">=</span><span class="st">&#39;User Input&#39;</span>)
+
+<span class="co">--Delete a row where the email matches user input</span>
+<span class="kw">DELETE</span> 
+<span class="kw">FROM</span> dbo.Persons 
+<span class="kw">WHERE</span> Email <span class="op">=</span> <span class="st">&#39;User Input&#39;</span>
+
+<span class="co">--add a new row to the dbo.Persons table based on user-provided email and jobtitle</span>
+<span class="kw">INSERT</span> <span class="kw">INTO</span> dbo.Persons(email,jobtitle) 
+<span class="kw">VALUES</span> (<span class="st">&#39;User Input&#39;</span>,<span class="st">&#39;User Input&#39;</span>)</code></pre>
+<p>SELECT, UPDATE, DELETE, and INSERT are the fundamental operations of data modification language (DML). My sample app only executes DML code. The other types of query code are data control language (DCL) and data definition language (DDL). I have not seen many apps use DCL and DDL, but there’re times when it’s useful. The CREATE TABLE query above is an example of DDL. The code below concatenates the user input with query code and executes the statement.</p>
+<pre class="sourceCode r"><code class="sourceCode r">    <span class="kw">dbGetQuery</span>(myPool,
+               <span class="kw">paste0</span>(<span class="st">&quot;Select jobtitle </span>
+<span class="st">                      From dbo.Persons </span>
+<span class="st">                      Where email   =&#39;&quot;</span>,input<span class="op">$</span>titled,<span class="st">&quot;&#39;&quot;</span>))
+
+    <span class="kw">dbGetQuery</span>(myPool,
+               <span class="kw">paste0</span>(<span class="st">&quot;UPDATE dbo.Persons </span>
+<span class="st">                       SET Email = &#39;&quot;</span>,input<span class="op">$</span>emailupdate,<span class="st">&quot;&#39;,jobtitle=  &#39;&quot;</span>,input<span class="op">$</span>titleupdate,<span class="st">&quot;&#39;</span>
+<span class="st">                       Where email =&#39;&quot;</span>,input<span class="op">$</span>titled,<span class="st">&quot;&#39;&quot;</span>))
+    
+    <span class="kw">dbGetQuery</span>(myPool,
+               <span class="kw">paste0</span>(<span class="st">&quot;DELETE </span>
+<span class="st">                       From dbo.Persons </span>
+<span class="st">                       WHERE Email = &#39;&quot;</span>,input<span class="op">$</span>titled,<span class="st">&quot;&#39;&quot;</span>))
+    
+    <span class="kw">dbGetQuery</span>(myPool
+               ,<span class="kw">paste0</span>(<span class="st">&quot;Insert into dbo.Persons </span>
+<span class="st">                        values (&#39;&quot;</span>,input<span class="op">$</span>email,<span class="st">&quot;&#39;,&#39;&quot;</span>,input<span class="op">$</span>title,<span class="st">&quot;&#39;)&quot;</span>))</code></pre>
+<p>The code is vulnerable to SQL injection. Nothing is stopping a user from passing a SQL script to either one of the inputs. The GIF below first shows how a user a suppose to interact with the app. Then it shows how a hacker can pass a malicious script through the email input field.</p>
+<center>
+<!---->
+<img src="shinybuilderInjection.gif" />
+</center>
+<p>The string executed against the database is two separate SQL commands. The second command truncates the Persons table. In a real-world production system, this might be data loss or application downtime.</p>
+<pre class="sourceCode r"><code class="sourceCode r">email &lt;-<span class="st"> &quot;&#39;&#39;,&#39;&#39;) TRUNCATE TABLE dbo.Persons --&quot;</span>
+title &lt;-<span class="st"> &quot;Analyst&quot;</span>
+<span class="kw">paste0</span>(<span class="st">&quot;Insert into dbo.Persons values (&#39;&quot;</span>,email,<span class="st">&quot;&#39;,&#39;&quot;</span>,title,<span class="st">&quot;&#39;)&quot;</span>)</code></pre>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="host-resources.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="injection-attacks-childs-play.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="injection-attacks-childs-play.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="defending-against-injection.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

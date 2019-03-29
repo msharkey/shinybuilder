@@ -1,0 +1,15 @@
+# Performance
+
+## Pitfalls of Abstraction
+
+> Virtue is the golden mean between two vices, the one of excess and the other of deficiency.
+
+-Aristotle
+
+What Aristotle says about virtue also applies to abstraction.  If we had no abstraction life would be more challenging.  I don't need to know the internals of power steering to use a car.  The wheel becomes an interface to the complexities.  At the other extreme, a lack of fundamental knowledge causes problems.  The fact that combustion engines require gasoline is an implementation detail.  All drivers must understand this level of detail or they will quickly become hitchikers.
+
+R offers no shortage of abstraction layers and packages.  The DBI package provides a layer of abstraction between the R user and the underlying database system.  Many R users have no need or desire to understand the internals of a RDBMS.
+
+## Indexing
+
+## Host Resources

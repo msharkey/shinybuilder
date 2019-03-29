@@ -19,7 +19,7 @@ trusted_connection <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
 
 ```
 
-### Injection Attacks = Child's Play
+## Injection Attacks = Child's Play
 
 Injection based attacks have been the number one security risk to Web-apps since 2010.  Why is injection at the top?  For one, Hackers discover vulnerable sites with little effort.  Tools like [Havij](https://www.darknet.org.uk/2010/09/havij-advanced-automated-sql-injection-tool/) and [Shodan](https://www.shodan.io/) make injection attacks [child's play](https://techcrunch.com/2018/08/12/hacking-the-websites-responsible-for-election-information-is-so-easy-an-11-year-old-did-it/).  The potential impact from injection-based attacks, especially SQL injection, is severe.  SQL injection vulnerabilities allow hackers to circumvent security controls and run arbitrary scripts against the database.  These scripts might steal data, destroy data, create a backdoor or all the above.  Despite the awareness of injection risks, organizations have trouble eliminating the threat.  The news article featured in the GIF below were all written in the last two years.  They are a few examples of SQL injection that I found interesting. 
 
@@ -30,7 +30,7 @@ Injection based attacks have been the number one security risk to Web-apps since
 
 Large organizations like Cisco, Instagram, and Texas.Gov discovered injection vulnerabilities since 2018.   MySQL and PostgreSQL write source code for database systems, and even they are not immune.  
 
-###  Breaking Down a Shiny App
+##  Breaking Down a Shiny App
 
 I built a simple shiny app to illustrate how injection works.  The app takes an email address and job title as inputs and saves them to a SQL Server database.  Users can also update and delete existing records.  The app persists user input in one table named dbo.Persons.  The following SQL creates dbo.Persons and then inserts one row.  The last statement selects all the rows.
 
@@ -121,9 +121,9 @@ paste0("Insert into dbo.Persons values ('",email,"','",title,"')")
 
 ```
 
-###  Defending Against Injection
+##  Defending Against Injection
 
-#### Paramertization and String Escaping
+### Paramertization and String Escaping
 
 The app mixes trusted data with untrusted data.  Trusted data is the query code, and untrusted data is user input.  If untrusted data mixes with trusted data, then query code becomes changeable at run time.  I can start to separate the trusted and untrusted data through parameterized queries.  Instead of passing the user input variables to the query string, I  store them in parameters.  Then I reference the parameters instead of the user variables.
 
@@ -140,7 +140,7 @@ The sqlInterpolate function helps isolate the user input from the query string. 
 
 ![](parameterized.png)
 
-#### Whitelist input
+### Whitelist input
 
 The app should only allow valid characters as input.  If a user enters an email with spaces, then the app should reject it.  I implemented an email whitelist by comparing the input with a Regex pattern.
 
@@ -161,7 +161,7 @@ emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
 
 Developers should whitelist with caution.  Using a restrictive character set could block legitimate input.  The Regex pattern above blocks email addressed with a single quote.  Are quotes possible in emails?  If they aren't allowed will that change in the future?  It's possible.  A whitelist requires a balance between security and usability.
 
-#### Server Side Defense
+### Server Side Defense
 
 The database user account should have minimal permissions.  I would not have been able to truncate the table in the example above had I only had permission to SELECT and INSERT.  Interfaces simplify permissions.  Instead of granting permissions on tables I can grant permissions on the interface.  Stored procedures make great interfaces.  Developers can grant permissions on stored procedures without granting access to tables.  Thus DB all interactions occur in the manner defined by the stored procedure.
 
@@ -195,7 +195,7 @@ Now the app calls the stored procedure instead of ad-hoc SQL.
   dbGetQuery(myPool, query)
 
 ```
-#### Other defense layers
+### Other defense layers
 
 * A few lines of defense exist outside of the app and database server.  An intrusion detection system (IDS) uses signatures to detect potential attacks.  Some IDS also provide real-time alerting features.
 

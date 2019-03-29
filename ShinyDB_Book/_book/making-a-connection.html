@@ -5,11 +5,11 @@
 
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Chapter 4 Methods | Building Web Applications with Shiny and SQL Server</title>
+  <title>2.1 Making a connection | Building Web Applications with Shiny and SQL Server</title>
   <meta name="description" content="A guide to building scalable Shiny Datbase applications">
   <meta name="generator" content="bookdown  and GitBook 2.6.7">
 
-  <meta property="og:title" content="Chapter 4 Methods | Building Web Applications with Shiny and SQL Server" />
+  <meta property="og:title" content="2.1 Making a connection | Building Web Applications with Shiny and SQL Server" />
   <meta property="og:type" content="book" />
   
   
@@ -17,7 +17,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 4 Methods | Building Web Applications with Shiny and SQL Server" />
+  <meta name="twitter:title" content="2.1 Making a connection | Building Web Applications with Shiny and SQL Server" />
   
   <meta name="twitter:description" content="A guide to building scalable Shiny Datbase applications" />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="host-resources.html">
-<link rel="next" href="injection-attacks-childs-play.html">
+<link rel="prev" href="building-and-managing-connections.html">
+<link rel="next" href="common-connection-problems.html">
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -180,16 +180,35 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="methods" class="section level1">
-<h1><span class="header-section-number">Chapter 4</span> Methods</h1> 
+<div id="making-a-connection" class="section level2">
+<h2><span class="header-section-number">2.1</span> Making a connection</h2>
+<hr />
+<p>R users can integrate SQL Server databases using the DBI and ODBC packages. The first step is to build a connection string. A connection string contains a set of key-value pairs. It tells R where the server is and what user credential to use. Different driver types need different connection string formats. Here are two common connection string configurations.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(DBI)
+
+myDriver &lt;-<span class="st"> &#39;SQL Server&#39;</span>
+<span class="co"># Use . for a local connection, otherwise specify Server Machine Name or IP address</span>
+myServer &lt;-<span class="st"> &#39;.&#39;</span>
+myDatabase &lt;-<span class="st"> &#39;Cab_Demo&#39;</span>
+
+
+trusted_connection &lt;-<span class="st"> </span><span class="kw">dbConnect</span>(odbc<span class="op">::</span><span class="kw">odbc</span>(),<span class="dt">Driver=</span> myDriver,<span class="dt">Server =</span> myServer
+                                ,<span class="dt">Database =</span> myDatabase,<span class="dt">Trusted_Connection=</span><span class="st">&#39;yes&#39;</span>)
+
+myUserid &lt;-<span class="st"> &#39;Cab_App&#39;</span>
+myPassword &lt;-<span class="st"> </span><span class="kw">Sys.getenv</span>(<span class="st">&#39;Cab_App_Password&#39;</span>)
+
+connection &lt;-<span class="st"> </span><span class="kw">dbConnect</span>(odbc<span class="op">::</span><span class="kw">odbc</span>(),<span class="dt">Driver=</span> myDriver,<span class="dt">Server =</span> myServer
+                        ,<span class="dt">Database =</span> myDatabase,<span class="dt">Uid =</span> myUserid,<span class="dt">Pwd =</span> myPassword)</code></pre>
+<p>The trusted_connection uses my windows account instead of a username and password. I prefer windows logins over creating a SQL login because they are easier to manage. My AD system administrator takes care of securing windows credentials. If I use a SQL login, then I’m responsible for guarding and storing the credentials. The second connection string shows how to connect with a SQL login. I use SQL logins for non-windows clients or when connecting to a DB outside the domain. It’s good practice to avoid storing clear text passwords in the client code. So, I stored an environmental variable and accessed it with the Sys.getenv function.</p>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="host-resources.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="injection-attacks-childs-play.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="building-and-managing-connections.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="common-connection-problems.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

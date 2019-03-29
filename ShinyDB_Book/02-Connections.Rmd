@@ -9,7 +9,7 @@ sqlchunk_connection <- DBI::dbConnect(odbc::odbc(),Driver= myDriver,Server = myS
                                 ,Database = myDatabase,Trusted_Connection='yes')
 ```
 
-### Making a connection
+## Making a connection
 ***
 R users can integrate SQL Server databases using the DBI and ODBC packages.  The first step is to build a connection string.  A connection string contains a set of key-value pairs.  It tells R where the server is and what user credential to use.  Different driver types need different connection string formats.  Here are two common connection string configurations.
 
@@ -41,7 +41,7 @@ The trusted_connection uses my windows account instead of a username and passwor
 
 
 
-### Common Connection Problems
+## Common Connection Problems
 ***
 
 I've encountered a wide variety of errors when attempting the initial connection. They usually stem from one or more of the following:
@@ -62,7 +62,7 @@ I need to correct server and database names more than I'd like to admit.
 
 
   
-### Executing a Query
+## Executing a Query
 ***
 
 
@@ -119,7 +119,7 @@ I didn't issue a dbDisconnect, so the connections stays open until the client cl
 
 
 
-### One more connection package to consider
+## One more connection package to consider
 ***
 
 
@@ -186,7 +186,7 @@ profvis({dbconnectworkload ()})
 ```
 
 
-### dbDisconnect(BlogPost)
+## dbDisconnect(BlogPost)
 ***
 Database interaction starts with a connection.  I mentioned a few common connection problems and how to troubleshoot them.  Once I have a connection, then I begin testing queries.  The DBI function dbGetQuery takes two arguments - 1) the connection 2) a query string.  Finally, I mentioned that it's good to get in the habit of closing connections or use the pool package. 
 
