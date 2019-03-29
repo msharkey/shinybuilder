@@ -67,7 +67,7 @@ Demo Application on github (update with github link)
 # Why use an RDBMS?
 
 
-- Potiential Performance Gains
+- Potential Performance Gains
 
 --
 
@@ -475,7 +475,7 @@ knitr::include_graphics("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/04-Images/s
 
 ## Why Injection Works
 
-Unsecure
+Unsecured
 
 ```{r,eval=FALSE}
 dbGetQuery(myPool
@@ -547,7 +547,7 @@ if(!is.na(str_match(input$usr_email, emailwhitelist))){
 
 --
 
-- Peformance
+- Performance
 
 --
 

@@ -4,7 +4,7 @@
     <title>Building Your First Shiny Database Application</title>
     <meta charset="utf-8" />
     <meta name="author" content="Matthew Sharkey | msharkey3434@gmail.com" />
-    <meta name="date" content="2019-03-28" />
+    <meta name="date" content="2019-03-29" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
   </head>
@@ -14,7 +14,7 @@ class: center, middle, inverse, title-slide
 
 # Building Your First Shiny Database Application
 ### Matthew Sharkey | <a href="mailto:msharkey3434@gmail.com">msharkey3434@gmail.com</a>
-### 2019-03-28
+### 2019-03-29
 
 ---
 
@@ -54,7 +54,7 @@ Demo Application on github (update with github link)
 # Why use an RDBMS?
 
 
-- Potiential Performance Gains
+- Potential Performance Gains
 
 --
 
@@ -129,7 +129,7 @@ dbGetQuery(myconnection,"Select GetDate()")
 
 ```
 ##                      
-## 1 2019-03-28 22:27:21
+## 1 2019-03-29 09:38:17
 ```
 
 ```r
@@ -192,11 +192,11 @@ microbenchmark(dbconnectworkload() ,dbpoolworkload(),times = 10)
 ```
 ## Unit: milliseconds
 ##                 expr       min        lq      mean    median        uq
-##  dbconnectworkload() 27.541366 28.523490 29.490287 28.737614 29.730801
-##     dbpoolworkload()  3.769684  3.885831  4.312617  4.009882  4.756549
+##  dbconnectworkload() 25.184425 27.322897 29.008232 29.239541 30.766259
+##     dbpoolworkload()  3.845535  4.047017  4.546376  4.435364  4.779067
 ##        max neval
-##  35.689523    10
-##   5.177685    10
+##  31.102457    10
+##   5.863909    10
 ```
 
 
@@ -277,8 +277,8 @@ microbenchmark(db(),fs(),times = 10)
 ```
 ## Unit: milliseconds
 ##  expr      min       lq     mean   median       uq      max neval
-##  db() 243.6424 244.6644 250.7967 247.0758 252.2713 273.1045    10
-##  fs() 113.9873 115.1504 128.0378 117.3432 147.4850 166.3204    10
+##  db() 253.9942 254.6113 261.2243 257.5993 270.2241 274.5512    10
+##  fs() 125.7123 135.8212 149.1942 144.5750 168.5173 175.8153    10
 ```
 
 
@@ -306,9 +306,9 @@ microbenchmark(db(),fs(),times = 10)
 
 ```
 ## Unit: milliseconds
-##  expr       min        lq     mean    median        uq       max neval
-##  db()  33.30374  34.59244  42.3931  35.86375  37.78019  71.68009    10
-##  fs() 111.90571 113.52468 116.7399 115.11678 119.11639 125.16518    10
+##  expr       min        lq      mean    median        uq      max neval
+##  db()  40.02573  41.93427  62.66168  43.28795  66.75998 162.6048    10
+##  fs() 131.74692 132.56194 147.81296 144.98862 159.88720 178.7471    10
 ```
 
 
@@ -442,7 +442,7 @@ class: inverse, center, middle
 
 ## Why Injection Works
 
-Unsecure
+Unsecured
 
 
 ```r
@@ -517,7 +517,7 @@ if(!is.na(str_match(input$usr_email, emailwhitelist))){
 
 --
 
-- Peformance
+- Performance
 
 --
 
