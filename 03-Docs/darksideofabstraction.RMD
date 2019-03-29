@@ -1,0 +1,96 @@
+---
+title: "The Darkside of DBI and dbplyr abstraction"
+author: "Matt Sharkey"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Abstraction makes life easier.  I don't need to know how an enginer works to use a car.  I don't need to understand the chemical properties of metal oxide semiconductors to use a computer.  And I don't need a PhD in   
+
+```{r cars}
+summary(cars)
+```
+## Abstraction - We find virtue between excess and deficiency
+
+
+```{r, echo=FALSE}
+   con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+                   ,Database = myDatabase,Trusted_Connection='yes')
+if(dbExistsTable(con, "yellow_trip_summary_model"))
+  {dbRemoveTable(con , 'yellow_trip_summary_model')}
+```
+
+```{r}
+dbCreateTable(con,'yellow_trip_summary_model',trips_fs)
+```
+
+--
+
+```{sql,connection = sqlchunk_connection,echo=FALSE,output.var = "DataTypes" }
+Select c.name as Column_Name 
+,t.name as Default_Type
+,t2.name as Hand_Crafted
+,Byte_Diff as Byte_Difference 
+from sys.columns c
+JOIN sys.types t
+ON c.user_type_id = t.user_type_id
+JOIN sys.columns cs
+ON c.name = cs.name
+and cs.object_id = object_id('yellow_trip_summary_partitioned')
+JOIN sys.types t2
+ON cs.user_type_id = t2.user_type_id
+JOIN
+(
+Select 'VendorID' as name,7 as Byte_Diff UNION ALL
+Select 'tpep_pickup_datetime' as name,0 as Byte_Diff UNION ALL
+Select 'tpep_dropoff_datetime' as name,0 as Byte_Diff UNION ALL
+Select 'passenger_count' as name,7 as Byte_Diff UNION ALL
+Select 'trip_distance' as name,6 as Byte_Diff UNION ALL
+Select 'RatecodeID' as name,7 as Byte_Diff UNION ALL
+Select 'store_and_fwd_flag' as name,0 as Byte_Diff UNION ALL
+Select 'PULocationID' as name,6 as Byte_Diff UNION ALL
+Select 'DOLocationID' as name,6 as Byte_Diff UNION ALL
+Select 'payment_type' as name,7 as Byte_Diff UNION ALL
+Select 'fare_amount' as name,3 as Byte_Diff UNION ALL
+Select 'extra' as name,3 as Byte_Diff UNION ALL
+Select 'mta_tax' as name,3 as Byte_Diff UNION ALL
+Select 'tip_amount' as name,3 as Byte_Diff UNION ALL
+Select 'tolls_amount' as name,3 as Byte_Diff UNION ALL
+Select 'improvement_surcharge' as name,3 as Byte_Diff UNION ALL
+Select 'total_amount' as name,3 as Byte_Diff 
+) ch
+ON c.name = ch.name
+Where c.object_id = object_id('yellow_trip_summary_model')
+```
+
+```{r , warning= FALSE,echo= FALSE}
+knitr::kable(DataTypes,  format="html") %>% 
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+---
+
+## 67 Bytes Per Row?  So What?
+
+--
+
+- One year of data = 100 million rows
+
+--
+
+- 6.7 GB of wasted space, compounded by:
+
+  * Memory
+  * Network
+  * Backups
+  * Indexes
+  * Replication
+  
+  
+---
