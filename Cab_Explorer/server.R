@@ -2,7 +2,6 @@ shinyServer(function(input, output,session) {
   
 
   output$trips_trended <- renderPlot({
- 
     tripsStart <- Sys.time()
     # Add 1 to end date because the input assumes midnight as time when filtering against column.
      enddate  <- input$enddate+1

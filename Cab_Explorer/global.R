@@ -18,17 +18,25 @@ myDatabase <- 'Cab_Demo'
 pool <- dbPool(drv = odbc(),Driver = mydriver,Server = myserver,Database = myDatabase,Trusted_Connection='yes')
 
 
+#trips_db <- tbl(pool,"yellow_trip_summary_heap")
+
+#trips_db <- tbl(pool, "yellow_trip_summary")
+
+trips_db <- tbl(pool, "yellow_trip_summary_partitioned")
+
+
+
+
+
+
 ExecuteSQL <- function(Query,Parameters=NA) {
   queryint <- sqlInterpolate(pool, Query, .dots = Parameters)
   results <- dbGetQuery(pool,queryint)
   return(results)
 }
 
-trips_db <- tbl(pool, "yellow_trip_summary_heap")
-### Indexed
-#trips_db <- tbl(pool, "yellow_trip_summary")
-### Indexed and Partitioned
-#trips_db <- tbl(pool, "yellow_trip_summary_partitioned")
+
+
 
 
 

@@ -20,6 +20,7 @@ library(dbplyr)
 library(tidyverse)
 library(kableExtra)
 library(microbenchmark)
+library(ggplot2)
 myDriver <- 'SQL Server'
 myServer <- '.\\snapman'
 myDatabase <- 'Cab_Demo'
@@ -39,18 +40,9 @@ if(comp["nodename"]=="OMC-5CG6151GZF"){
 
 # About Me
 
-Matthew Sharkey | Data Engineer, HDR
-
---
-
-Presentation write up on blog [www.hintank.com](https://www.hinttank.com/)
-
---
-
-Demo Application on github (update with github link)
+Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
 
 ---
-
 
 # Agenda
 
@@ -59,8 +51,6 @@ Demo Application on github (update with github link)
 2. Building and Managing Connections
 
 3. Performance & Optimization
-
-4. Secure Design
 
 ---
 
@@ -103,7 +93,11 @@ Demo Application on github (update with github link)
 
 <br>
 <center>
->IT should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users' requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost?
+>IT should never forget that technology is a means to an end, and not an end in itself...
+
+--
+
+>...Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost?
 
 <br>
 <center>
@@ -121,17 +115,11 @@ class: inverse, center, middle
 
 
 ```{r commonCon, eval=TRUE, warning=FALSE}
-library(DBI)
-myDriver <- 'SQL Server'
-myServer <- '.\\snapman'
-myDatabase <- 'Cab_Demo'
-myconnection <- dbConnect(odbc::odbc(),
-                          Driver= myDriver,
-                          Server = myServer,
-                          Database = myDatabase,
+myconnection <- DBI::dbConnect(odbc::odbc(),
+                          Driver= 'SQL Server',
+                          Server = '.\\snapman',
+                          Database = 'Cab_Demo',
                           Trusted_Connection='yes')
-
-
 ```
 
 --
@@ -193,9 +181,6 @@ dbpoolworkload <- function() {
  for(i in 1:length(queries)){dbGetQuery(poolcon,queries[i])}
 }
 
-results <- microbenchmark(dbconnectworkload(),dbpoolworkload(),times = 10)
-
-
 
 ```
 
@@ -214,7 +199,22 @@ results <- microbenchmark(dbconnectworkload(),dbpoolworkload(),times = 10)
 ```
 --
 ```{r poolres, eval=TRUE}
-microbenchmark(dbconnectworkload() ,dbpoolworkload(),times = 10)
+rs <- microbenchmark(dbconnectworkload() 
+                    ,dbpoolworkload(),times = 100)
+```
+
+---
+
+```{r boxplot,echo=FALSE, fig.align = "center"}
+rs<-as.data.frame(rs)
+rs$time <- rs$time/1000000
+names(rs) <- c("Connection_Type","Milliseconds")
+ggplot(rs, aes(x=Connection_Type, y=Milliseconds , fill=Connection_Type)) +
+ geom_boxplot(alpha=0.4) +
+    theme(text = element_text(size=16))
+#
+#, fig.height = 4.5, fig.width = 8,
+#
 ```
 
 
@@ -239,11 +239,11 @@ Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A dplyr Back End for Database
 
 --
 
-- frustrating --> Possibly
+- Frustrating --> Possibly
 
 --
 
-- slower --> It Depends
+- Slower --> It Depends
 
 ---
 
@@ -299,8 +299,15 @@ db <- function(){sqltable <- trips_db %>%
 
 File storage is faster
 
-```{r}
-microbenchmark(db(),fs(),times = 10)
+
+```{r boxplot2,echo=FALSE, fig.align = "center"}
+rs<-microbenchmark(db(),fs(),times = 100)
+rs<-as.data.frame(rs)
+rs$time <- rs$time/1000000
+ggplot(rs, aes(x=expr, y=time, fill=expr)) +
+ geom_boxplot(alpha=0.4) +
+    theme(text = element_text(size=20))
+
 ```
 
 
@@ -324,10 +331,20 @@ dbExecute(con,
  ON [yellow_tripdata_2018-01](tpep_dropoff_datetime)'
  )
 ```
+
 --
-```{r,message=FALSE}
-microbenchmark(db(),fs(),times = 10)
+
+```{r boxplot3,echo=FALSE, fig.align = "center"}
+rs<-microbenchmark(db(),fs(),times = 100)
+
+rs<-as.data.frame(rs)
+rs$time <- rs$time/1000000
+ggplot(rs, aes(x=expr, y=time, fill=expr)) +
+ geom_boxplot(alpha=0.4) +
+    theme(text = element_text(size=20))
+
 ```
+
 
 ```{r,echo=FALSE}
 dbDisconnect(con)
@@ -416,122 +433,6 @@ ON yellow_trip(tpep_dropoff_datetime,trip_distance)
 
 ---
 
-class: inverse, center, middle
-
-# Secure Design
-
----
-
-## OWASP Top 10 - 2017
-
---
-
-1. Injection
-2. Broker Authentication
-3. Sensitive Data Exposure
-4. XML External Entities (XXE)
-5. Broken Access Control
-6. Security Misconfiguration
-7. Cross-Site Script (XSS)
-8. Insecure Deserialization
-9. Using Components with Known Vulnerabilities
-10. Insufficient Logging and Monitoring
-
----
-
-## SQL Injection
-
-```{r, out.width = "700px",echo=FALSE}
-knitr::include_graphics("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/04-Images/sqlinjection.gif")
-```
-
-
----
-
-
-## Injection Demo
-
-```{sql,connection = sqlchunk_connection,echo=FALSE}
-DROP Table IF Exists dbo.Persons
-
-
-CREATE TABLE dbo.Persons (
-	email Varchar(100) NOT NULL PRIMARY KEY,
-	jobtitle Varchar(50)
-	)
-
-	INSERT INTO dbo.Persons
-	VALUES ('msharkey3434@gmail.com','Data Engineer'),
-	       ('q2474554@nwytg.net','Analyst')
-
-
-```
-
-```{r, out.width = "700px",echo=FALSE}
-knitr::include_graphics("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/04-Images/shinybuilderInjection.gif")
-```
-
----
-
-## Why Injection Works
-
-Unsecured
-
-```{r,eval=FALSE}
-dbGetQuery(myPool
-    ,paste0("Insert into dbo.Persons 
-            values ('",input$usr_email,"','",input$usr_title,"')"))
-```
-
---
-
-Better
-
-```{r,eval=FALSE}
-    params <- c(email = input$usr_email,title = input$usr_title)
-    query <- "Insert into dbo.Persons values (?email,?title)"
-    queryint <- sqlInterpolate(myPool, query, .dots = params)
-    dbGetQuery(myPool, queryint)
-```
-
----
-
-## Whitelist
-
-```{r,eval=FALSE}
-{{emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"}}
-
-if(!is.na(str_match(input$usr_email, emailwhitelist))){
- params <- c(email = usr_email,title = usr_title)
- query <- "Insert into dbo.Persons values (?email,?title)"
- queryint <- sqlInterpolate(myPool, query, .dots = params)
- dbGetQuery(myPool, queryint)
-} else {stop("Not a valid email.")}
-```
-
----
-
-## SQL Injection Defense Recap
-
---
-
-- Grant user least possible permissions
-
---
-
-- Look out for dynamically generated code
-
---
-
-- Whitelist Input
-
---
-
-- Let app interact with interface, not implementation
-
----
-
-
 
 # Recap
 
@@ -543,22 +444,21 @@ if(!is.na(str_match(input$usr_email, emailwhitelist))){
 
 --
 
-- Preventing SQL Injection
-
---
-
 - Performance
 
 --
 
-More in-depth look @ hinttank.com
+Presentation write up on blog [www.hintank.com](https://www.hinttank.com/)
+
+--
+
+Demo Application on github https://github.com/msharkey/shinybuilder
+
 
 ---
 
 class: center, middle
 
 # Thank You
-
-Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
 
 

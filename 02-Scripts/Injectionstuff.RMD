@@ -1,0 +1,115 @@
+
+class: inverse, center, middle
+
+# Secure Design
+
+---
+
+## OWASP Top 10 - 2017
+
+--
+
+1. Injection
+2. Broker Authentication
+3. Sensitive Data Exposure
+4. XML External Entities (XXE)
+5. Broken Access Control
+6. Security Misconfiguration
+7. Cross-Site Script (XSS)
+8. Insecure Deserialization
+9. Using Components with Known Vulnerabilities
+10. Insufficient Logging and Monitoring
+
+---
+
+## SQL Injection
+
+```{r, out.width = "700px",echo=FALSE}
+knitr::include_graphics("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/04-Images/sqlinjection.gif")
+```
+
+
+---
+
+
+## Injection Demo
+
+```{sql,connection = sqlchunk_connection,echo=FALSE}
+DROP Table IF Exists dbo.Persons
+
+
+CREATE TABLE dbo.Persons (
+	email Varchar(100) NOT NULL PRIMARY KEY,
+	jobtitle Varchar(50)
+	)
+
+	INSERT INTO dbo.Persons
+	VALUES ('msharkey3434@gmail.com','Data Engineer'),
+	       ('q2474554@nwytg.net','Analyst')
+
+
+```
+
+```{r, out.width = "700px",echo=FALSE}
+knitr::include_graphics("C:/Users/mshar/OneDrive/Documents/R_UG_Demo/04-Images/shinybuilderInjection.gif")
+```
+
+---
+
+## Why Injection Works
+
+Unsecured
+
+```{r,eval=FALSE}
+dbGetQuery(myPool
+    ,paste0("Insert into dbo.Persons 
+            values ('",input$usr_email,"','",input$usr_title,"')"))
+```
+
+--
+
+Better
+
+```{r,eval=FALSE}
+    params <- c(email = input$usr_email,title = input$usr_title)
+    query <- "Insert into dbo.Persons values (?email,?title)"
+    queryint <- sqlInterpolate(myPool, query, .dots = params)
+    dbGetQuery(myPool, queryint)
+```
+
+---
+
+## Whitelist
+
+```{r,eval=FALSE}
+{{emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"}}
+
+if(!is.na(str_match(input$usr_email, emailwhitelist))){
+ params <- c(email = usr_email,title = usr_title)
+ query <- "Insert into dbo.Persons values (?email,?title)"
+ queryint <- sqlInterpolate(myPool, query, .dots = params)
+ dbGetQuery(myPool, queryint)
+} else {stop("Not a valid email.")}
+```
+
+---
+
+## SQL Injection Defense Recap
+
+--
+
+- Grant user least possible permissions
+
+--
+
+- Look out for dynamically generated code
+
+--
+
+- Whitelist Input
+
+--
+
+- Let app interact with interface, not implementation
+
+---

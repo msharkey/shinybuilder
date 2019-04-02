@@ -4,7 +4,7 @@
     <title>Building Your First Shiny Database Application</title>
     <meta charset="utf-8" />
     <meta name="author" content="Matthew Sharkey | msharkey3434@gmail.com" />
-    <meta name="date" content="2019-03-29" />
+    <meta name="date" content="2019-04-01" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
   </head>
@@ -14,7 +14,7 @@ class: center, middle, inverse, title-slide
 
 # Building Your First Shiny Database Application
 ### Matthew Sharkey | <a href="mailto:msharkey3434@gmail.com">msharkey3434@gmail.com</a>
-### 2019-03-29
+### 2019-04-01
 
 ---
 
@@ -26,18 +26,9 @@ class: center, middle, inverse, title-slide
 
 # About Me
 
-Matthew Sharkey | Data Engineer, HDR
-
---
-
-Presentation write up on blog [www.hintank.com](https://www.hinttank.com/)
-
---
-
-Demo Application on github (update with github link)
+Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
 
 ---
-
 
 # Agenda
 
@@ -46,8 +37,6 @@ Demo Application on github (update with github link)
 2. Building and Managing Connections
 
 3. Performance &amp; Optimization
-
-4. Secure Design
 
 ---
 
@@ -90,7 +79,11 @@ Demo Application on github (update with github link)
 
 &lt;br&gt;
 &lt;center&gt;
-&gt;IT should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users' requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost?
+&gt;IT should never forget that technology is a means to an end, and not an end in itself...
+
+--
+
+&gt;...Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost?
 
 &lt;br&gt;
 &lt;center&gt;
@@ -109,14 +102,10 @@ class: inverse, center, middle
 
 
 ```r
-library(DBI)
-myDriver &lt;- 'SQL Server'
-myServer &lt;- '.\\snapman'
-myDatabase &lt;- 'Cab_Demo'
-myconnection &lt;- dbConnect(odbc::odbc(),
-                          Driver= myDriver,
-                          Server = myServer,
-                          Database = myDatabase,
+myconnection &lt;- DBI::dbConnect(odbc::odbc(),
+                          Driver= 'SQL Server',
+                          Server = '.\\snapman',
+                          Database = 'Cab_Demo',
                           Trusted_Connection='yes')
 ```
 
@@ -129,7 +118,7 @@ dbGetQuery(myconnection,"Select GetDate()")
 
 ```
 ##                      
-## 1 2019-03-29 09:38:17
+## 1 2019-04-01 20:34:45
 ```
 
 ```r
@@ -186,18 +175,13 @@ dbDisconnect(myconnection)
 --
 
 ```r
-microbenchmark(dbconnectworkload() ,dbpoolworkload(),times = 10)
+rs &lt;- microbenchmark(dbconnectworkload() 
+                    ,dbpoolworkload(),times = 100)
 ```
 
-```
-## Unit: milliseconds
-##                 expr       min        lq      mean    median        uq
-##  dbconnectworkload() 25.184425 27.322897 29.008232 29.239541 30.766259
-##     dbpoolworkload()  3.845535  4.047017  4.546376  4.435364  4.779067
-##        max neval
-##  31.102457    10
-##   5.863909    10
-```
+---
+
+&lt;img src="Presentation_files/figure-html/boxplot-1.png" style="display: block; margin: auto;" /&gt;
 
 
 ---
@@ -221,11 +205,11 @@ Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A dplyr Back End for Database
 
 --
 
-- frustrating --&gt; Possibly
+- Frustrating --&gt; Possibly
 
 --
 
-- slower --&gt; It Depends
+- Slower --&gt; It Depends
 
 ---
 
@@ -270,16 +254,7 @@ db &lt;- function(){sqltable &lt;- trips_db %&gt;%
 File storage is faster
 
 
-```r
-microbenchmark(db(),fs(),times = 10)
-```
-
-```
-## Unit: milliseconds
-##  expr      min       lq     mean   median       uq      max neval
-##  db() 253.9942 254.6113 261.2243 257.5993 270.2241 274.5512    10
-##  fs() 125.7123 135.8212 149.1942 144.5750 168.5173 175.8153    10
-```
+&lt;img src="Presentation_files/figure-html/boxplot2-1.png" style="display: block; margin: auto;" /&gt;
 
 
 
@@ -298,18 +273,11 @@ dbExecute(con,
  ON [yellow_tripdata_2018-01](tpep_dropoff_datetime)'
  )
 ```
+
 --
 
-```r
-microbenchmark(db(),fs(),times = 10)
-```
+&lt;img src="Presentation_files/figure-html/boxplot3-1.png" style="display: block; margin: auto;" /&gt;
 
-```
-## Unit: milliseconds
-##  expr       min        lq      mean    median        uq      max neval
-##  db()  40.02573  41.93427  62.66168  43.28795  66.75998 162.6048    10
-##  fs() 131.74692 132.56194 147.81296 144.98862 159.88720 178.7471    10
-```
 
 
 
@@ -401,107 +369,6 @@ ON yellow_trip(tpep_dropoff_datetime,trip_distance)
 
 ---
 
-class: inverse, center, middle
-
-# Secure Design
-
----
-
-## OWASP Top 10 - 2017
-
---
-
-1. Injection
-2. Broker Authentication
-3. Sensitive Data Exposure
-4. XML External Entities (XXE)
-5. Broken Access Control
-6. Security Misconfiguration
-7. Cross-Site Script (XSS)
-8. Insecure Deserialization
-9. Using Components with Known Vulnerabilities
-10. Insufficient Logging and Monitoring
-
----
-
-## SQL Injection
-
-&lt;img src="C:/Users/mshar/OneDrive/Documents/R_UG_Demo/04-Images/sqlinjection.gif" width="700px" /&gt;
-
-
----
-
-
-## Injection Demo
-
-
-
-&lt;img src="C:/Users/mshar/OneDrive/Documents/R_UG_Demo/04-Images/shinybuilderInjection.gif" width="700px" /&gt;
-
----
-
-## Why Injection Works
-
-Unsecured
-
-
-```r
-dbGetQuery(myPool
-    ,paste0("Insert into dbo.Persons 
-            values ('",input$usr_email,"','",input$usr_title,"')"))
-```
-
---
-
-Better
-
-
-```r
-    params &lt;- c(email = input$usr_email,title = input$usr_title)
-    query &lt;- "Insert into dbo.Persons values (?email,?title)"
-    queryint &lt;- sqlInterpolate(myPool, query, .dots = params)
-    dbGetQuery(myPool, queryint)
-```
-
----
-
-## Whitelist
-
-
-```r
-*emailwhitelist &lt;- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
-
-if(!is.na(str_match(input$usr_email, emailwhitelist))){
- params &lt;- c(email = usr_email,title = usr_title)
- query &lt;- "Insert into dbo.Persons values (?email,?title)"
- queryint &lt;- sqlInterpolate(myPool, query, .dots = params)
- dbGetQuery(myPool, queryint)
-} else {stop("Not a valid email.")}
-```
-
----
-
-## SQL Injection Defense Recap
-
---
-
-- Grant user least possible permissions
-
---
-
-- Look out for dynamically generated code
-
---
-
-- Whitelist Input
-
---
-
-- Let app interact with interface, not implementation
-
----
-
-
 
 # Recap
 
@@ -513,23 +380,22 @@ if(!is.na(str_match(input$usr_email, emailwhitelist))){
 
 --
 
-- Preventing SQL Injection
-
---
-
 - Performance
 
 --
 
-More in-depth look @ hinttank.com
+Presentation write up on blog [www.hintank.com](https://www.hinttank.com/)
+
+--
+
+Demo Application on github https://github.com/msharkey/shinybuilder
+
 
 ---
 
 class: center, middle
 
 # Thank You
-
-Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
