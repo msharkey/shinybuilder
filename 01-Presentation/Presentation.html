@@ -4,7 +4,7 @@
     <title>Building Your First Shiny Database Application</title>
     <meta charset="utf-8" />
     <meta name="author" content="Matthew Sharkey | msharkey3434@gmail.com" />
-    <meta name="date" content="2019-04-01" />
+    <meta name="date" content="2019-04-02" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
   </head>
@@ -14,7 +14,7 @@ class: center, middle, inverse, title-slide
 
 # Building Your First Shiny Database Application
 ### Matthew Sharkey | <a href="mailto:msharkey3434@gmail.com">msharkey3434@gmail.com</a>
-### 2019-04-01
+### 2019-04-02
 
 ---
 
@@ -28,6 +28,12 @@ class: center, middle, inverse, title-slide
 
 Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
 
+
+
+![](c:/users/mshar/Desktop/41gaw7rAUFL._SY355_.jpg)
+
+
+
 ---
 
 # Agenda
@@ -38,6 +44,7 @@ Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
 
 3. Performance &amp; Optimization
 
+
 ---
 
 # Why use an RDBMS?
@@ -47,19 +54,19 @@ Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
 
 --
 
-  + Indexing
+  + Indexing - Ordering data by a key e.g. last names in a phone book
 
 --
 
-  + Parallelism
+  + Parallelism - Query Optimizer decides when to use parallelism based on cost estimates
 
 --
 
-- Stability
+- Stability - In 1974, IBM began developing first RDBMS
 
 --
 
-- Security
+- Security - Auditing, Encryption, Data Control Language (DCL)
 
 --
 
@@ -67,7 +74,7 @@ Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
 
 --
 
-- Change Tracking
+- Historical Tracking - Temporal Tables, Slowly Changing Dimensions, Triggers
 
 --
 
@@ -118,7 +125,7 @@ dbGetQuery(myconnection,"Select GetDate()")
 
 ```
 ##                      
-## 1 2019-04-01 20:34:45
+## 1 2019-04-02 22:14:04
 ```
 
 ```r
@@ -180,6 +187,8 @@ rs &lt;- microbenchmark(dbconnectworkload()
 ```
 
 ---
+
+## Manual vs Pool Benchmark Results
 
 &lt;img src="Presentation_files/figure-html/boxplot-1.png" style="display: block; margin: auto;" /&gt;
 
@@ -276,15 +285,20 @@ dbExecute(con,
 
 --
 
+---
+
+## Benchmark with Index
+
+The tables have turned
+
 &lt;img src="Presentation_files/figure-html/boxplot3-1.png" style="display: block; margin: auto;" /&gt;
 
 
 
 
 
---
-&lt;br&gt;
-The tables have turned.
+
+
 
 ---
 
@@ -344,7 +358,7 @@ trips_db %&gt;%
 
 --
 
-- Per FPOC, start with tpep_dropoff_datetime and trip_distance
+- Per FOC, start with tpep_dropoff_datetime and trip_distance
 
 --
 
@@ -358,7 +372,7 @@ ON yellow_trip(tpep_dropoff_datetime,trip_distance)
 
 - Test performance before and after index
 
-- Indexing trade-off = faster reads, slower writes
+- Indexing trade-off = slower writes
 
 ---
 
@@ -366,6 +380,34 @@ ON yellow_trip(tpep_dropoff_datetime,trip_distance)
 
 - Yellow Cab Dashboard
 
+
+```
+## 
+## Attaching package: 'shinydashboard'
+```
+
+```
+## The following object is masked from 'package:graphics':
+## 
+##     box
+```
+
+```
+## 
+## Attaching package: 'lubridate'
+```
+
+```
+## The following object is masked from 'package:base':
+## 
+##     date
+```
+
+```
+## PhantomJS not found. You can install it with webshot::install_phantomjs(). If it is installed, please make sure the phantomjs executable can be found via the PATH variable.
+```
+
+<div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div>
 
 ---
 

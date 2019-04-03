@@ -42,6 +42,12 @@ if(comp["nodename"]=="OMC-5CG6151GZF"){
 
 Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
 
+
+
+![](c:/users/mshar/Desktop/41gaw7rAUFL._SY355_.jpg)
+
+
+
 ---
 
 # Agenda
@@ -52,6 +58,7 @@ Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
 
 3. Performance & Optimization
 
+
 ---
 
 # Why use an RDBMS?
@@ -61,19 +68,19 @@ Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
 
 --
 
-  + Indexing
+  + Indexing - Ordering data by a key e.g. last names in a phone book
 
 --
 
-  + Parallelism
+  + Parallelism - Query Optimizer decides when to use parallelism based on cost estimates
 
 --
 
-- Stability
+- Stability - In 1974, IBM began developing first RDBMS
 
 --
 
-- Security
+- Security - Auditing, Encryption, Data Control Language (DCL)
 
 --
 
@@ -81,7 +88,7 @@ Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
 
 --
 
-- Change Tracking
+- Historical Tracking - Temporal Tables, Slowly Changing Dimensions, Triggers
 
 --
 
@@ -205,6 +212,8 @@ rs <- microbenchmark(dbconnectworkload()
 
 ---
 
+## Manual vs Pool Benchmark Results
+
 ```{r boxplot,echo=FALSE, fig.align = "center"}
 rs<-as.data.frame(rs)
 rs$time <- rs$time/1000000
@@ -212,9 +221,7 @@ names(rs) <- c("Connection_Type","Milliseconds")
 ggplot(rs, aes(x=Connection_Type, y=Milliseconds , fill=Connection_Type)) +
  geom_boxplot(alpha=0.4) +
     theme(text = element_text(size=16))
-#
-#, fig.height = 4.5, fig.width = 8,
-#
+
 ```
 
 
@@ -334,6 +341,12 @@ dbExecute(con,
 
 --
 
+---
+
+## Benchmark with Index
+
+The tables have turned
+
 ```{r boxplot3,echo=FALSE, fig.align = "center"}
 rs<-microbenchmark(db(),fs(),times = 100)
 
@@ -351,9 +364,8 @@ dbDisconnect(con)
 ```
 
 
---
-<br>
-The tables have turned.
+
+
 
 ---
 
@@ -409,7 +421,7 @@ trips_db %>%
 
 --
 
-- Per FPOC, start with tpep_dropoff_datetime and trip_distance
+- Per FOC, start with tpep_dropoff_datetime and trip_distance
 
 --
 
@@ -422,13 +434,14 @@ ON yellow_trip(tpep_dropoff_datetime,trip_distance)
 
 - Test performance before and after index
 
-- Indexing trade-off = faster reads, slower writes
+- Indexing trade-off = slower writes
 
 ---
 
 ## Demo
 
 - Yellow Cab Dashboard
+
 
 
 ---
