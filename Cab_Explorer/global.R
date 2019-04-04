@@ -20,9 +20,11 @@ pool <- dbPool(drv = odbc(),Driver = mydriver,Server = myserver,Database = myDat
 
 #trips_db <- tbl(pool,"yellow_trip_summary_heap")
 
+trips_db <- tbl(pool, "yellow_trip_summary_clustered")
+
 #trips_db <- tbl(pool, "yellow_trip_summary")
 
-trips_db <- tbl(pool, "yellow_trip_summary_partitioned")
+#trips_db <- tbl(pool, "yellow_trip_summary_partitioned")
 
 
 

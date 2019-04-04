@@ -1,7 +1,7 @@
 
 
-url <- "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-07.csv"
-download.file(url,"D:/Cab_Data/yellow_tripdata_2018-07.csv")
+url <- "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-01.csv"
+download.file(url,"D:/Cab_Data/yellow_tripdata_2018-01.csv")
 url <- "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-08.csv"
 download.file(url,"D:/Cab_Data/yellow_tripdata_2018-08.csv")
 url <- "https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-09.csv"

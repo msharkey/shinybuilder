@@ -6,7 +6,7 @@ sidebar <- dashboardSidebar(
               menuItem("Plot", tabName="plot", icon=icon("line-chart"), selected=TRUE, startExpanded = TRUE),
               tabPanel(h5("Filters"),
                        dateInput("startdate", "Start Date:", value = "2018-01-01", format = "mm/dd/yy"),
-                       dateInput("enddate", "End Date:", value = "2018-01-31", format = "mm/dd/yy"),
+                       dateInput("enddate", "End Date:", value = "2018-01-04", format = "mm/dd/yy"),
                        sliderInput("trip_distance", "Trip Distance:",  value=c(0,20), min=0, max = 100)
               )
   )

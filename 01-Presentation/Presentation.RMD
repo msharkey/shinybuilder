@@ -41,14 +41,18 @@ if(comp["nodename"]=="OMC-5CG6151GZF"){
 # About Me
 
 Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
+<div>
+<center>
+
+![me](c:/users/mshar/Desktop/41gaw7rAUFL._SY355_.jpg)
 
 
 
-![](c:/users/mshar/Desktop/41gaw7rAUFL._SY355_.jpg)
-
-
+</center>
+<div>
 
 ---
+
 
 # Agenda
 
@@ -311,6 +315,7 @@ File storage is faster
 rs<-microbenchmark(db(),fs(),times = 100)
 rs<-as.data.frame(rs)
 rs$time <- rs$time/1000000
+rs <- rs %>% filter(time < 1000) # Remove outliers on upp
 ggplot(rs, aes(x=expr, y=time, fill=expr)) +
  geom_boxplot(alpha=0.4) +
     theme(text = element_text(size=20))
@@ -442,6 +447,7 @@ ON yellow_trip(tpep_dropoff_datetime,trip_distance)
 
 - Yellow Cab Dashboard
 
+![](c:/users/mshar/OneDrive/Documents/R_UG_Demo/Cab_Dashboard.png)
 
 
 ---
@@ -473,5 +479,7 @@ Demo Application on github https://github.com/msharkey/shinybuilder
 class: center, middle
 
 # Thank You
+
+
 
 

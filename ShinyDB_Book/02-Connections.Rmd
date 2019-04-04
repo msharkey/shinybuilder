@@ -91,7 +91,8 @@ for (i in 1:5)
 {
 trusted_connection <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
                                 ,Database = myDatabase,Trusted_Connection='yes')
-date <- dbGetQuery(trusted_connection,paste("Select GetDate() as mydate,\'leakedquery\' as c1,",i))
+date <- dbGetQuery(trusted_connection,paste("Select GetDate() as mydate
+                                            ,\'leakedquery\' as c1,",i))
 }
 
 ```
@@ -119,7 +120,7 @@ I didn't issue a dbDisconnect, so the connections stays open until the client cl
 
 
 
-## One more connection package to consider
+## The pool Package
 ***
 
 
@@ -186,7 +187,7 @@ profvis({dbconnectworkload ()})
 ```
 
 
-## dbDisconnect(BlogPost)
+## Connection Summary
 ***
 Database interaction starts with a connection.  I mentioned a few common connection problems and how to troubleshoot them.  Once I have a connection, then I begin testing queries.  The DBI function dbGetQuery takes two arguments - 1) the connection 2) a query string.  Finally, I mentioned that it's good to get in the habit of closing connections or use the pool package. 
 
