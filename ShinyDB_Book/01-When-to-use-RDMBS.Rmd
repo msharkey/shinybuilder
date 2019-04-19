@@ -4,7 +4,7 @@ Relational database management systems (RDBMS) provide a cornerstone for many ap
 
 Even though RDBMS are popular and versatile, they don't solve every problem.  If all I need is a place to store data, then I don't need a database.  Dumping data to a relational database might be tempting, but it will lead to just that- a dump.  Codd, the founder of the relational model, once remarked on choosing the right tools: 
 
->IT should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy >the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users' requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost? [@codd93]  
+>IT should never forget that technology is a means to an end, and not an end in itself. Technologies must be evaluated individually in terms of their ability to satisfy the needs of their respective users. IT should never be reluctant to use the most appropriate interface to satisfy users' requirements. Attempting to force one technology or tool to satisfy a particular need for which another tool is more effective and efficient is like attempting to drive a screw into a wall with a hammer when a screwdriver is at hand: the screw may eventually enter the wall but at what cost? [@codd93]  
 
  
  

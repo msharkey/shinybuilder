@@ -104,24 +104,23 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a><ul>
-<li class="chapter" data-level="" data-path="why-read-this-book.html"><a href="why-read-this-book.html"><i class="fa fa-check"></i>Why read this book</a></li>
-<li class="chapter" data-level="" data-path="structure-of-the-book.html"><a href="structure-of-the-book.html"><i class="fa fa-check"></i>Structure of the book</a></li>
-<li class="chapter" data-level="" data-path="software-information-and-conventions.html"><a href="software-information-and-conventions.html"><i class="fa fa-check"></i>Software information and conventions</a></li>
+<li class="chapter" data-level="" data-path="intended-audience.html"><a href="intended-audience.html"><i class="fa fa-check"></i>Intended Audience</a></li>
+<li class="chapter" data-level="" data-path="software-information.html"><a href="software-information.html"><i class="fa fa-check"></i>Software information</a></li>
 </ul></li>
 <li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Use Cases for a Relational Database</a></li>
 <li class="chapter" data-level="2" data-path="building-and-managing-connections.html"><a href="building-and-managing-connections.html"><i class="fa fa-check"></i><b>2</b> Building and Managing Connections</a><ul>
 <li class="chapter" data-level="2.1" data-path="making-a-connection.html"><a href="making-a-connection.html"><i class="fa fa-check"></i><b>2.1</b> Making a connection</a></li>
 <li class="chapter" data-level="2.2" data-path="common-connection-problems.html"><a href="common-connection-problems.html"><i class="fa fa-check"></i><b>2.2</b> Common Connection Problems</a></li>
 <li class="chapter" data-level="2.3" data-path="executing-a-query.html"><a href="executing-a-query.html"><i class="fa fa-check"></i><b>2.3</b> Executing a Query</a></li>
-<li class="chapter" data-level="2.4" data-path="one-more-connection-package-to-consider.html"><a href="one-more-connection-package-to-consider.html"><i class="fa fa-check"></i><b>2.4</b> One more connection package to consider</a></li>
-<li class="chapter" data-level="2.5" data-path="dbdisconnectblogpost.html"><a href="dbdisconnectblogpost.html"><i class="fa fa-check"></i><b>2.5</b> dbDisconnect(BlogPost)</a></li>
+<li class="chapter" data-level="2.4" data-path="the-pool-package.html"><a href="the-pool-package.html"><i class="fa fa-check"></i><b>2.4</b> The pool Package</a></li>
+<li class="chapter" data-level="2.5" data-path="connection-summary.html"><a href="connection-summary.html"><i class="fa fa-check"></i><b>2.5</b> Connection Summary</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="performance.html"><a href="performance.html"><i class="fa fa-check"></i><b>3</b> Performance</a><ul>
 <li class="chapter" data-level="3.1" data-path="pitfalls-of-abstraction.html"><a href="pitfalls-of-abstraction.html"><i class="fa fa-check"></i><b>3.1</b> Pitfalls of Abstraction</a></li>
 <li class="chapter" data-level="3.2" data-path="indexing.html"><a href="indexing.html"><i class="fa fa-check"></i><b>3.2</b> Indexing</a></li>
 <li class="chapter" data-level="3.3" data-path="host-resources.html"><a href="host-resources.html"><i class="fa fa-check"></i><b>3.3</b> Host Resources</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="methods.html"><a href="methods.html"><i class="fa fa-check"></i><b>4</b> Methods</a><ul>
+<li class="chapter" data-level="4" data-path="security.html"><a href="security.html"><i class="fa fa-check"></i><b>4</b> Security</a><ul>
 <li class="chapter" data-level="4.1" data-path="injection-attacks-childs-play.html"><a href="injection-attacks-childs-play.html"><i class="fa fa-check"></i><b>4.1</b> Injection Attacks = Child’s Play</a></li>
 <li class="chapter" data-level="4.2" data-path="breaking-down-a-shiny-app.html"><a href="breaking-down-a-shiny-app.html"><i class="fa fa-check"></i><b>4.2</b> Breaking Down a Shiny App</a></li>
 <li class="chapter" data-level="4.3" data-path="defending-against-injection.html"><a href="defending-against-injection.html"><i class="fa fa-check"></i><b>4.3</b> Defending Against Injection</a><ul>
@@ -161,7 +160,68 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </blockquote>
 <p>-Aristotle</p>
 <p>What Aristotle says about virtue also applies to abstraction. If we had no abstraction life would be more challenging. I don’t need to know the internals of power steering to use a car. The wheel becomes an interface to the complexities. At the other extreme, a lack of fundamental knowledge causes problems. The fact that combustion engines require gasoline is an implementation detail. All drivers must understand this level of detail or they will quickly become hitchikers.</p>
-<p>R offers no shortage of abstraction layers and packages. The DBI package provides a layer of abstraction between the R user and the underlying database system. Many R users have no need or desire to understand the internals of a RDBMS.</p>
+<p>R offers no shortage of abstraction layers and packages. The DBI package provides a layer of abstraction between the R user and the underlying database system. Many R users have no need or desire to understand the internals of a RDBMS. However, if they understand the basics of databases then they can deliver a more robust solution.</p>
+<p>The R function dbCreateTable() from DBI allows the user to create a SQL table without defining column data types. It’s tedious to look at each column and figure out the most appropriate data type but failure to do so can lead to future performance problems. For example, suppose we use dbCreateTable() with the Yellow Cab data file.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">url &lt;-<span class="st"> &quot;https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-01.csv&quot;</span>
+<span class="kw">download.file</span>(url,<span class="st">&quot;D:/Cab_Data/yellow_tripdata_2018-01.csv&quot;</span>)
+trips_fs&lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&#39;D:/Cab_Data/yellow_tripdata_2018-01.csv&#39;</span>)
+
+<span class="kw">dbCreateTable</span>(con,<span class="st">&#39;yellow_trip_summary_model&#39;</span>,trips_fs)</code></pre></div>
+<p>First the dbCreateTable function generates a CREATE TABLE SQL statement. Then the statement is executed against the database specified in connection argument. A single line of R code replaces several lines of SQL code.</p>
+<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">CREATE</span> <span class="kw">TABLE</span> yellow_trip_summary(
+    [VendorID] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [tpep_pickup_datetime] [datetime] <span class="kw">NULL</span>,
+    [tpep_dropoff_datetime] [datetime] <span class="kw">NULL</span>,
+    [passenger_count] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [trip_distance] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [RatecodeID] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [store_and_fwd_flag] [<span class="dt">varchar</span>](<span class="dv">255</span>) <span class="kw">NULL</span>,
+    [PULocationID] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [DOLocationID] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [payment_type] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [fare_amount] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [extra] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [mta_tax] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [tip_amount] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [tolls_amount] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [improvement_surcharge] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [total_amount] [<span class="dt">float</span>] <span class="kw">NULL</span>,
+    [Hour_Range] [<span class="dt">varchar</span>](<span class="dv">10</span>) <span class="kw">NULL</span>,
+    [<span class="dt">Day</span>] [<span class="dt">char</span>](<span class="dv">3</span>) <span class="kw">NULL</span>
+) </code></pre></div>
+<p>The generated code might meet the requirements but it has some flaws. First, is the FLOAT data type appropriate for every numeric data type? Float expresses approximate numeric values with a default storage size of eight bytes. Being able to express a value as floating point data with eight bytes of storage is unessicary for several of the columns. For example, the payment_type column could be defined as TINYINT because only five classes of payment types exist.</p>
+<p>SELECT payment_type,count(1) FROM [Cab_Demo].[dbo].[yellow_trip_summary_partitioned] group by payment_type</p>
+<p>As long as the number of payment type classes stays below 256, TINYINT will work. Using TINYINT, with a storage size of one byte would save space and could help prevent odd codes from entering the database. Should users be able to enter a payment code of 4.2? They technical could with a float data type.</p>
+<p>When performance or accuracy matters then developers should specify the data types. I created another table with smallest possible data type for each column. At 100 million rows, this table design requires 44% less disk space compared to the first table.</p>
+<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">CREATE</span> <span class="kw">TABLE</span> [dbo].[yellow_trip_summary](
+    [VendorID] [tinyint] <span class="kw">NULL</span>,
+    [tpep_pickup_datetime] [datetime] <span class="kw">NULL</span>,
+    [tpep_dropoff_datetime] [datetime] <span class="kw">NULL</span>,
+    [passenger_count] [tinyint] <span class="kw">NULL</span>,
+    [trip_distance] [<span class="dt">smallint</span>] <span class="kw">NULL</span>,
+    [RatecodeID] [tinyint] <span class="kw">NULL</span>,
+    [store_and_fwd_flag] [<span class="dt">char</span>](<span class="dv">1</span>) <span class="kw">NULL</span>,
+    [PULocationID] [<span class="dt">smallint</span>] <span class="kw">NULL</span>,
+    [DOLocationID] [<span class="dt">smallint</span>] <span class="kw">NULL</span>,
+    [payment_type] [tinyint] <span class="kw">NULL</span>,
+    [fare_amount] [<span class="dt">decimal</span>](<span class="dv">8</span>, <span class="dv">2</span>) <span class="kw">NULL</span>,
+    [extra] [<span class="dt">decimal</span>](<span class="dv">8</span>, <span class="dv">2</span>) <span class="kw">NULL</span>,
+    [mta_tax] [<span class="dt">decimal</span>](<span class="dv">8</span>, <span class="dv">2</span>) <span class="kw">NULL</span>,
+    [tip_amount] [<span class="dt">decimal</span>](<span class="dv">8</span>, <span class="dv">2</span>) <span class="kw">NULL</span>,
+    [tolls_amount] [<span class="dt">decimal</span>](<span class="dv">8</span>, <span class="dv">2</span>) <span class="kw">NULL</span>,
+    [improvement_surcharge] [<span class="dt">decimal</span>](<span class="dv">8</span>, <span class="dv">2</span>) <span class="kw">NULL</span>,
+    [total_amount] [<span class="dt">decimal</span>](<span class="dv">8</span>, <span class="dv">2</span>) <span class="kw">NULL</span>,
+    [Hour_Range] [<span class="dt">varchar</span>](<span class="dv">10</span>) <span class="kw">NULL</span>,
+    [<span class="dt">Day</span>] [<span class="dt">char</span>](<span class="dv">3</span>) <span class="kw">NULL</span>
+)</code></pre></div>
+<p>The size on disk for the first table is 16.1 gb and the second table is 8.9 gb. A difference of 7.2 GB might not seem like a big deal. After all, disk space is relatively cheap. But disk shouldn’t be the only consideration for design. The 7.2 GB now takes up room in memory.</p>
+<ul>
+<li>Memory</li>
+<li>Network</li>
+<li>Backups</li>
+<li>Indexes</li>
+<li>Replication</li>
+</ul>
 </div>
             </section>
 

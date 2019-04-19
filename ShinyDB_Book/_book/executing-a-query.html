@@ -32,7 +32,7 @@
   
   
 <link rel="prev" href="common-connection-problems.html">
-<link rel="next" href="one-more-connection-package-to-consider.html">
+<link rel="next" href="the-pool-package.html">
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -104,24 +104,23 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a><ul>
-<li class="chapter" data-level="" data-path="why-read-this-book.html"><a href="why-read-this-book.html"><i class="fa fa-check"></i>Why read this book</a></li>
-<li class="chapter" data-level="" data-path="structure-of-the-book.html"><a href="structure-of-the-book.html"><i class="fa fa-check"></i>Structure of the book</a></li>
-<li class="chapter" data-level="" data-path="software-information-and-conventions.html"><a href="software-information-and-conventions.html"><i class="fa fa-check"></i>Software information and conventions</a></li>
+<li class="chapter" data-level="" data-path="intended-audience.html"><a href="intended-audience.html"><i class="fa fa-check"></i>Intended Audience</a></li>
+<li class="chapter" data-level="" data-path="software-information.html"><a href="software-information.html"><i class="fa fa-check"></i>Software information</a></li>
 </ul></li>
 <li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Use Cases for a Relational Database</a></li>
 <li class="chapter" data-level="2" data-path="building-and-managing-connections.html"><a href="building-and-managing-connections.html"><i class="fa fa-check"></i><b>2</b> Building and Managing Connections</a><ul>
 <li class="chapter" data-level="2.1" data-path="making-a-connection.html"><a href="making-a-connection.html"><i class="fa fa-check"></i><b>2.1</b> Making a connection</a></li>
 <li class="chapter" data-level="2.2" data-path="common-connection-problems.html"><a href="common-connection-problems.html"><i class="fa fa-check"></i><b>2.2</b> Common Connection Problems</a></li>
 <li class="chapter" data-level="2.3" data-path="executing-a-query.html"><a href="executing-a-query.html"><i class="fa fa-check"></i><b>2.3</b> Executing a Query</a></li>
-<li class="chapter" data-level="2.4" data-path="one-more-connection-package-to-consider.html"><a href="one-more-connection-package-to-consider.html"><i class="fa fa-check"></i><b>2.4</b> One more connection package to consider</a></li>
-<li class="chapter" data-level="2.5" data-path="dbdisconnectblogpost.html"><a href="dbdisconnectblogpost.html"><i class="fa fa-check"></i><b>2.5</b> dbDisconnect(BlogPost)</a></li>
+<li class="chapter" data-level="2.4" data-path="the-pool-package.html"><a href="the-pool-package.html"><i class="fa fa-check"></i><b>2.4</b> The pool Package</a></li>
+<li class="chapter" data-level="2.5" data-path="connection-summary.html"><a href="connection-summary.html"><i class="fa fa-check"></i><b>2.5</b> Connection Summary</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="performance.html"><a href="performance.html"><i class="fa fa-check"></i><b>3</b> Performance</a><ul>
 <li class="chapter" data-level="3.1" data-path="pitfalls-of-abstraction.html"><a href="pitfalls-of-abstraction.html"><i class="fa fa-check"></i><b>3.1</b> Pitfalls of Abstraction</a></li>
 <li class="chapter" data-level="3.2" data-path="indexing.html"><a href="indexing.html"><i class="fa fa-check"></i><b>3.2</b> Indexing</a></li>
 <li class="chapter" data-level="3.3" data-path="host-resources.html"><a href="host-resources.html"><i class="fa fa-check"></i><b>3.3</b> Host Resources</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="methods.html"><a href="methods.html"><i class="fa fa-check"></i><b>4</b> Methods</a><ul>
+<li class="chapter" data-level="4" data-path="security.html"><a href="security.html"><i class="fa fa-check"></i><b>4</b> Security</a><ul>
 <li class="chapter" data-level="4.1" data-path="injection-attacks-childs-play.html"><a href="injection-attacks-childs-play.html"><i class="fa fa-check"></i><b>4.1</b> Injection Attacks = Child’s Play</a></li>
 <li class="chapter" data-level="4.2" data-path="breaking-down-a-shiny-app.html"><a href="breaking-down-a-shiny-app.html"><i class="fa fa-check"></i><b>4.2</b> Breaking Down a Shiny App</a></li>
 <li class="chapter" data-level="4.3" data-path="defending-against-injection.html"><a href="defending-against-injection.html"><i class="fa fa-check"></i><b>4.3</b> Defending Against Injection</a><ul>
@@ -166,7 +165,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 {
 trusted_connection &lt;-<span class="st"> </span><span class="kw">dbConnect</span>(odbc<span class="op">::</span><span class="kw">odbc</span>(),<span class="dt">Driver=</span> myDriver,<span class="dt">Server =</span> myServer
                                 ,<span class="dt">Database =</span> myDatabase,<span class="dt">Trusted_Connection=</span><span class="st">&#39;yes&#39;</span>)
-date &lt;-<span class="st"> </span><span class="kw">dbGetQuery</span>(trusted_connection,<span class="kw">paste</span>(<span class="st">&quot;Select GetDate() as mydate,</span><span class="ch">\&#39;</span><span class="st">leakedquery</span><span class="ch">\&#39;</span><span class="st"> as c1,&quot;</span>,i))
+date &lt;-<span class="st"> </span><span class="kw">dbGetQuery</span>(trusted_connection,<span class="kw">paste</span>(<span class="st">&quot;Select GetDate() as mydate</span>
+<span class="st">                                            ,</span><span class="ch">\&#39;</span><span class="st">leakedquery</span><span class="ch">\&#39;</span><span class="st"> as c1,&quot;</span>,i))
 }</code></pre></div>
 <p>Here’s a query that a system admin might use to watch database connections. It returns information about the five open connections. I’ve used this query to look for applications that might be leaking connections. If I a lot of sleeping connections then I contacted the app developer for a patch.</p>
 <div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">SELECT</span> 
@@ -184,7 +184,7 @@ date &lt;-<span class="st"> </span><span class="kw">dbGetQuery</span>(trusted_co
         </div>
       </div>
 <a href="common-connection-problems.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="one-more-connection-package-to-consider.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="the-pool-package.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

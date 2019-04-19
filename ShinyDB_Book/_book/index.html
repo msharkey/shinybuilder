@@ -32,7 +32,7 @@
   
   
 
-<link rel="next" href="why-read-this-book.html">
+<link rel="next" href="intended-audience.html">
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -104,24 +104,23 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a><ul>
-<li class="chapter" data-level="" data-path="why-read-this-book.html"><a href="why-read-this-book.html"><i class="fa fa-check"></i>Why read this book</a></li>
-<li class="chapter" data-level="" data-path="structure-of-the-book.html"><a href="structure-of-the-book.html"><i class="fa fa-check"></i>Structure of the book</a></li>
-<li class="chapter" data-level="" data-path="software-information-and-conventions.html"><a href="software-information-and-conventions.html"><i class="fa fa-check"></i>Software information and conventions</a></li>
+<li class="chapter" data-level="" data-path="intended-audience.html"><a href="intended-audience.html"><i class="fa fa-check"></i>Intended Audience</a></li>
+<li class="chapter" data-level="" data-path="software-information.html"><a href="software-information.html"><i class="fa fa-check"></i>Software information</a></li>
 </ul></li>
 <li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Use Cases for a Relational Database</a></li>
 <li class="chapter" data-level="2" data-path="building-and-managing-connections.html"><a href="building-and-managing-connections.html"><i class="fa fa-check"></i><b>2</b> Building and Managing Connections</a><ul>
 <li class="chapter" data-level="2.1" data-path="making-a-connection.html"><a href="making-a-connection.html"><i class="fa fa-check"></i><b>2.1</b> Making a connection</a></li>
 <li class="chapter" data-level="2.2" data-path="common-connection-problems.html"><a href="common-connection-problems.html"><i class="fa fa-check"></i><b>2.2</b> Common Connection Problems</a></li>
 <li class="chapter" data-level="2.3" data-path="executing-a-query.html"><a href="executing-a-query.html"><i class="fa fa-check"></i><b>2.3</b> Executing a Query</a></li>
-<li class="chapter" data-level="2.4" data-path="one-more-connection-package-to-consider.html"><a href="one-more-connection-package-to-consider.html"><i class="fa fa-check"></i><b>2.4</b> One more connection package to consider</a></li>
-<li class="chapter" data-level="2.5" data-path="dbdisconnectblogpost.html"><a href="dbdisconnectblogpost.html"><i class="fa fa-check"></i><b>2.5</b> dbDisconnect(BlogPost)</a></li>
+<li class="chapter" data-level="2.4" data-path="the-pool-package.html"><a href="the-pool-package.html"><i class="fa fa-check"></i><b>2.4</b> The pool Package</a></li>
+<li class="chapter" data-level="2.5" data-path="connection-summary.html"><a href="connection-summary.html"><i class="fa fa-check"></i><b>2.5</b> Connection Summary</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="performance.html"><a href="performance.html"><i class="fa fa-check"></i><b>3</b> Performance</a><ul>
 <li class="chapter" data-level="3.1" data-path="pitfalls-of-abstraction.html"><a href="pitfalls-of-abstraction.html"><i class="fa fa-check"></i><b>3.1</b> Pitfalls of Abstraction</a></li>
 <li class="chapter" data-level="3.2" data-path="indexing.html"><a href="indexing.html"><i class="fa fa-check"></i><b>3.2</b> Indexing</a></li>
 <li class="chapter" data-level="3.3" data-path="host-resources.html"><a href="host-resources.html"><i class="fa fa-check"></i><b>3.3</b> Host Resources</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="methods.html"><a href="methods.html"><i class="fa fa-check"></i><b>4</b> Methods</a><ul>
+<li class="chapter" data-level="4" data-path="security.html"><a href="security.html"><i class="fa fa-check"></i><b>4</b> Security</a><ul>
 <li class="chapter" data-level="4.1" data-path="injection-attacks-childs-play.html"><a href="injection-attacks-childs-play.html"><i class="fa fa-check"></i><b>4.1</b> Injection Attacks = Child’s Play</a></li>
 <li class="chapter" data-level="4.2" data-path="breaking-down-a-shiny-app.html"><a href="breaking-down-a-shiny-app.html"><i class="fa fa-check"></i><b>4.2</b> Breaking Down a Shiny App</a></li>
 <li class="chapter" data-level="4.3" data-path="defending-against-injection.html"><a href="defending-against-injection.html"><i class="fa fa-check"></i><b>4.3</b> Defending Against Injection</a><ul>
@@ -161,13 +160,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 <div id="preface" class="section level1 unnumbered">
 <h1>Preface</h1>
-<p><a href="https://www.crcpress.com/product/isbn/9781138700109" target="_blank"><img src="images/cover.jpg" style="display: block; margin: auto;" /></a></p>
-<p>This short book introduces an R package, <strong>bookdown</strong>, to change your workflow of writing books. It should be technically easy to write a book, visually pleasant to view the book, fun to interact with the book, convenient to navigate through the book, straightforward for readers to contribute or leave feedback to the book author(s), and more importantly, authors should not always be distracted by typesetting details.</p>
-<p>The <strong>bookdown</strong> package is built on top of R Markdown (<a href="http://rmarkdown.rstudio.com" class="uri">http://rmarkdown.rstudio.com</a>), and inherits the simplicity of the Markdown syntax (you can learn the basics in five minutes; see Section <a href="#markdown-syntax"><strong>??</strong></a>), as well as the possibility of multiple types of output formats (PDF/HTML/Word/…). It has also added features like multi-page HTML output, numbering and cross-referencing figures/tables/sections/equations, inserting parts/appendices, and imported the GitBook style (<a href="https://www.gitbook.com" class="uri">https://www.gitbook.com</a>) to create elegant and appealing HTML book pages. This book itself is an example of how you can produce a book from a series of R Markdown documents, and both the printed version and the online version can look professional. You can find more examples at <a href="https://bookdown.org" class="uri">https://bookdown.org</a>.</p>
-<p><a href="https://github.com/rstudio/bookdown" target="_blank"><img src="images/logo.png" style="display: block; margin: auto;" /></a></p>
-<p>Despite the package name containing the word “book”, <strong>bookdown</strong> is not only for books. The “book” can be anything that consists of multiple R Markdown documents meant to be read in a linear sequence, such as course handouts, study notes, a software manual, a thesis, or even a diary. In fact, many <strong>bookdown</strong> features apply to single R Markdown documents as well (see Section <a href="#a-single-document"><strong>??</strong></a>).</p>
-<p><img src="images/by-nc-sa.png" alt="Creative Commons License" /><br />
-The online version of this book is licensed under the <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>. You can purchase a hardcopy from <a href="https://www.crcpress.com/product/isbn/9781138700109">Chapman &amp; Hall</a> or Amazon.</p> 
+<p>This book supplments my presentation at the Omaha R User Group on Thursday, April 4, 2019.</p>
+<p><a href="https://github.com/rstudio/bookdown" target="_blank"><img src="images/logo.png" style="display: block; margin: auto;" /></a></p> 
 </div>
             </section>
 
@@ -175,7 +169,7 @@ The online version of this book is licensed under the <a href="http://creativeco
         </div>
       </div>
 
-<a href="why-read-this-book.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="intended-audience.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

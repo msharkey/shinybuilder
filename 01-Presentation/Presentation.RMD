@@ -44,7 +44,7 @@ Matthew Sharkey, MBA, MS-BIA | Data Engineer @ HDR
 <div>
 <center>
 
-![me](c:/users/mshar/Desktop/41gaw7rAUFL._SY355_.jpg)
+![me](C:/Users/mshar/OneDrive/Documents/R_UG_Demo/04-Images/legoGuy.jpg)
 
 
 
@@ -367,9 +367,6 @@ ggplot(rs, aes(x=expr, y=time, fill=expr)) +
 ```{r,echo=FALSE}
 dbDisconnect(con)
 ```
-
-
-
 
 
 ---

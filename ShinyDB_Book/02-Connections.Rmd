@@ -1,9 +1,9 @@
 # Building and Managing Connections
 
-```{r, include=FALSE,eval=FALSE}
+```{r, echo=FALSE,eval=TRUE}
 knitr::opts_chunk$set(echo = TRUE)
 myDriver <- 'SQL Server'
-myServer <- '.'
+myServer <- '.\\snapman'
 myDatabase <- 'Cab_Demo'
 sqlchunk_connection <- DBI::dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
                                 ,Database = myDatabase,Trusted_Connection='yes')

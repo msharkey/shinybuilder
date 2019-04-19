@@ -13,7 +13,8 @@ R offers no shortage of abstraction layers and packages.  The DBI package provid
 The R function dbCreateTable() from DBI allows the user to create a SQL table without defining column data types.  It's tedious to look at each column and figure out the most appropriate data type but failure to do so can lead to future performance problems.  For example, suppose we use dbCreateTable() with the Yellow Cab data file.
 
 ```{r, echo=FALSE}
-   con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+library(DBI)  
+ con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
                    ,Database = myDatabase,Trusted_Connection='yes')
 if(dbExistsTable(con, "yellow_trip_summary_model"))
   {dbRemoveTable(con , 'yellow_trip_summary_model')}
@@ -63,7 +64,7 @@ As long as the number of payment type classes stays below 256, TINYINT will work
 
 When performance or accuracy matters then developers should specify the data types.  I created another table with smallest possible data type for each column.  At 100 million rows, this table design requires 44% less disk space compared to the first table.
 
-```{sql,connection = sqlchunk_connection,echo=FALSE,output.var = "DataTypes" }
+```{sql,connection = sqlchunk_connection,output.var = "DataTypes",eval=FALSE }
 CREATE TABLE [dbo].[yellow_trip_summary](
 	[VendorID] [tinyint] NULL,
 	[tpep_pickup_datetime] [datetime] NULL,
