@@ -5,11 +5,11 @@
 
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>3.2 Indexing | Building Web Applications with Shiny and SQL Server</title>
+  <title>3.2 Indexing | Database Programming with R</title>
   <meta name="description" content="A guide to building scalable Shiny Datbase applications">
   <meta name="generator" content="bookdown  and GitBook 2.6.7">
 
-  <meta property="og:title" content="3.2 Indexing | Building Web Applications with Shiny and SQL Server" />
+  <meta property="og:title" content="3.2 Indexing | Database Programming with R" />
   <meta property="og:type" content="book" />
   
   
@@ -17,7 +17,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="3.2 Indexing | Building Web Applications with Shiny and SQL Server" />
+  <meta name="twitter:title" content="3.2 Indexing | Database Programming with R" />
   
   <meta name="twitter:description" content="A guide to building scalable Shiny Datbase applications" />
   
@@ -32,14 +32,14 @@
   
   
 <link rel="prev" href="pitfalls-of-abstraction.html">
-<link rel="next" href="host-resources.html">
-<script src="libs/jquery-2.2.3/jquery.min.js"></script>
-<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
-<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
-<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
-<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
-<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
-<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link rel="next" href="security.html">
+<script src="libs/jquery/jquery.min.js"></script>
+<link href="libs/gitbook/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-fontsettings.css" rel="stylesheet" />
 
 
 
@@ -47,6 +47,13 @@
 
 
 
+<script src="libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="libs/d3/d3.min.js"></script>
+<link href="libs/profvis/profvis.css" rel="stylesheet" />
+<script src="libs/profvis/profvis.js"></script>
+<link href="libs/highlight/textmate.css" rel="stylesheet" />
+<script src="libs/highlight/highlight.js"></script>
+<script src="libs/profvis-binding/profvis.js"></script>
 
 
 <style type="text/css">
@@ -100,7 +107,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       <nav role="navigation">
 
 <ul class="summary">
-<li><a href="./">A Minimal Book Example</a></li>
+<li><a href="./">Shiny DB Apps</a></li>
 
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a><ul>
@@ -118,7 +125,6 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="3" data-path="performance.html"><a href="performance.html"><i class="fa fa-check"></i><b>3</b> Performance</a><ul>
 <li class="chapter" data-level="3.1" data-path="pitfalls-of-abstraction.html"><a href="pitfalls-of-abstraction.html"><i class="fa fa-check"></i><b>3.1</b> Pitfalls of Abstraction</a></li>
 <li class="chapter" data-level="3.2" data-path="indexing.html"><a href="indexing.html"><i class="fa fa-check"></i><b>3.2</b> Indexing</a></li>
-<li class="chapter" data-level="3.3" data-path="host-resources.html"><a href="host-resources.html"><i class="fa fa-check"></i><b>3.3</b> Host Resources</a></li>
 </ul></li>
 <li class="chapter" data-level="4" data-path="security.html"><a href="security.html"><i class="fa fa-check"></i><b>4</b> Security</a><ul>
 <li class="chapter" data-level="4.1" data-path="injection-attacks-childs-play.html"><a href="injection-attacks-childs-play.html"><i class="fa fa-check"></i><b>4.1</b> Injection Attacks = Child’s Play</a></li>
@@ -131,7 +137,6 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4.3.5" data-path="defending-against-injection.html"><a href="defending-against-injection.html#defense-in-depth"><i class="fa fa-check"></i><b>4.3.5</b> Defense in Depth</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>5</b> Final Words</a></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -145,7 +150,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Building Web Applications with Shiny and SQL Server</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Database Programming with R</a>
           </h1>
         </div>
 
@@ -155,6 +160,89 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
             <section class="normal" id="section-">
 <div id="indexing" class="section level2">
 <h2><span class="header-section-number">3.2</span> Indexing</h2>
+<blockquote>
+<p>If your data fits in memory there is no advantage to putting it in a database: it will only be slower and more frustrating.<span class="citation">(Hadley Wickham, RStudio, Edgar Ruiz <a href="#ref-hwickham2019">2019</a>)</span></p>
+</blockquote>
+<p>It can be a hassle working with databases on ad-hoc data analysis projects, but in the context of Shiny Application development, a database can help the app scale.</p>
+<p>For example, imagine we are tasked with building a shiny dashboard to analyze New York City Yellow Taxi Trip public data located at <a href="https://on.nyc.gov/2tn71Qq" class="uri">https://on.nyc.gov/2tn71Qq</a>. If we leave the data in a CSV format, then how does it perform compared to data imported to a database?</p>
+<p>We can compare performance using the microbenchmark package. The following code downloads a month worth of taxi cab data and imports the file into a SQL table. I use a T-SQL bulk command because it is orders of magnitude faster at importing data then using an R function or single SQL insert statement.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">url &lt;-<span class="st"> &quot;https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-01.csv&quot;</span>
+<span class="kw">download.file</span>(url,<span class="st">&quot;D:/Cab_Data/yellow_tripdata_2018-01.csv&quot;</span>)
+
+packages &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&#39;odbc&#39;</span>,<span class="st">&#39;DBI&#39;</span>,<span class="st">&#39;tidyverse&#39;</span>,<span class="st">&#39;microbenchmark&#39;</span>)
+aa &lt;-<span class="kw">lapply</span>(packages, require, <span class="dt">character.only =</span> <span class="ot">TRUE</span>,<span class="dt">quietly =</span> <span class="ot">TRUE</span>)
+
+con &lt;-<span class="st"> </span><span class="kw">dbConnect</span>(<span class="kw">odbc</span>(),<span class="dt">Driver =</span> <span class="st">&#39;SQL Server&#39;</span>,<span class="dt">Server =</span> <span class="st">&#39;.</span><span class="ch">\\</span><span class="st">snapman&#39;</span>
+                 , <span class="dt">Database =</span> <span class="st">&#39;Cab_Demo&#39;</span>, <span class="dt">trusted_connection =</span> <span class="ot">TRUE</span>)
+
+
+<span class="kw">dbExecute</span>(con,<span class="st">&quot;CREATE TABLE [dbo].[yellow_tripdata_2018-01](</span>
+<span class="st">    [VendorID] [smallint] NULL,</span>
+<span class="st">    [tpep_pickup_datetime] [datetime] NULL,</span>
+<span class="st">    [tpep_dropoff_datetime] [datetime] NULL,</span>
+<span class="st">    [passenger_count] [smallint] NULL,</span>
+<span class="st">    [trip_distance] [real] NULL,</span>
+<span class="st">    [RatecodeID] [smallint] NULL,</span>
+<span class="st">    [store_and_fwd_flag] [varchar](1) NULL,</span>
+<span class="st">    [PULocationID] [smallint] NULL,</span>
+<span class="st">    [DOLocationID] [smallint] NULL,</span>
+<span class="st">    [payment_type] [smallint] NULL,</span>
+<span class="st">    [fare_amount] [real] NULL,</span>
+<span class="st">    [extra] [real] NULL,</span>
+<span class="st">    [mta_tax] [real] NULL,</span>
+<span class="st">    [tip_amount] [real] NULL,</span>
+<span class="st">    [tolls_amount] [real] NULL,</span>
+<span class="st">    [improvement_surcharge] [real] NULL,</span>
+<span class="st">    [total_amount ] [real] NULL</span>
+<span class="st">) ON [PRIMARY]&quot;</span>)
+
+<span class="kw">dbExecute</span>(con,<span class="st">&quot;BULK INSERT [dbo].[yellow_tripdata_2018-01]</span>
+<span class="st">FROM &#39;D:\Cab_Data\yellow_tripdata_2018-01.csv&#39;</span>
+<span class="st">WITH (FORMAT = &#39;CSV&#39;)&quot;</span></code></pre></div>
+<p>With the data loaded, we can run a simulate a sample workload. The following dplyr queries perform a filter and count of the rows. One query is pointed at the CSV and the other at the SQL table.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fs &lt;-<span class="st"> </span><span class="cf">function</span>() csvquery &lt;-<span class="st"> </span>trips_fs <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">filter</span>(tpep_dropoff_datetime <span class="op">&gt;=</span><span class="st"> &#39;2018-01-02 07:28:00&#39;</span>
+          ,tpep_dropoff_datetime <span class="op">&lt;=</span><span class="st"> &#39;2018-01-02 07:30:00&#39;</span>) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">pcount=</span> <span class="kw">n</span>())
+  rs&lt;-<span class="st"> </span><span class="kw">suppressMessages</span>(<span class="kw">compute</span>(csvquery))
+
+db &lt;-<span class="st"> </span><span class="cf">function</span>() sqltable &lt;-<span class="st"> </span>trips_db <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">filter</span>(tpep_dropoff_datetime <span class="op">&gt;=</span><span class="st"> &#39;01-02-2018 13:28&#39;</span>
+           ,tpep_dropoff_datetime <span class="op">&lt;=</span><span class="st"> &#39;01/02/2018 13:30&#39;</span>)  <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">pcount=</span> <span class="kw">n</span>())
+  rs1&lt;-<span class="kw">suppressMessages</span>(<span class="kw">compute</span>(sqltable))</code></pre></div>
+<p>The benchmark function reveals a performance difference between the choice of storage. The CSV query had a lower median execution time. Thus, it would seem the claim that putting data in the database would make the analysis run slower is vindicated.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs&lt;-<span class="kw">microbenchmark</span>(<span class="kw">db</span>(),<span class="kw">fs</span>(),<span class="dt">times =</span> <span class="dv">100</span>)
+rs&lt;-<span class="kw">as.data.frame</span>(rs)
+rs<span class="op">$</span>time &lt;-<span class="st"> </span>rs<span class="op">$</span>time<span class="op">/</span><span class="dv">1000000</span>
+rs &lt;-<span class="st"> </span>rs <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(time <span class="op">&lt;</span><span class="st"> </span><span class="dv">1000</span>) <span class="co"># Remove outliers on upp</span>
+<span class="kw">ggplot</span>(rs, <span class="kw">aes</span>(<span class="dt">x=</span>expr, <span class="dt">y=</span>time, <span class="dt">fill=</span>expr)) <span class="op">+</span>
+<span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="dt">alpha=</span><span class="fl">0.4</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">text =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">20</span>))</code></pre></div>
+<div class="figure">
+<img src="Assets/boxplot2-1.png" />
+
+</div>
+<p>But the story changes when we add an index to the table.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ms&lt;-<span class="kw">dbExecute</span>(con,
+<span class="st">&#39;CREATE NONCLUSTERED INDEX nc_yellow_trip</span>
+<span class="st"> ON [yellow_tripdata_2018-01](tpep_dropoff_datetime)&#39;</span>
+ )</code></pre></div>
+<p>The function pointed at the SQL table now outperforms the CSV function.</p>
+<div class="figure">
+<img src="Assets/boxplot3-1.png" />
+
+</div>
+<p>The db() function works faster because the query uses the index to seek into the data. Without an index, the query had no choice but to scan every single data page to satisfy the filter condition.</p>
+<p>Indexing a table is a bit of art and a bit of science. Creating the best index can be challenging even for veteran DBAs. Columns used for filtering, like the query in the workload above, make good candidates for an index. Imagine you need to look up information about George Washington in a history textbook. There are two physical ways to execute this query: 1) Read the contents of all the pages or 2) Go to the index in the back of the book and read just the pages associated with George Washington. The second method seeks the relevant pages and takes far less time than reading through all the pages. A SQL index based on a filtering column is roughly analogous to the book example.</p>
+
+</div>
+<!-- </div> -->
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-hwickham2019">
+<p>Hadley Wickham, RStudio, Edgar Ruiz. 2019. “Dbplyr: A Dplyr Back End for Databases.” <a href="https://CRAN.R-project.org/package=dbplyr" class="uri">https://CRAN.R-project.org/package=dbplyr</a>.</p>
+</div>
 </div>
             </section>
 
@@ -162,16 +250,16 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
         </div>
       </div>
 <a href="pitfalls-of-abstraction.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="host-resources.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="security.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
-<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
-<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
-<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
-<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
-<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
-<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
-<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook/js/app.min.js"></script>
+<script src="libs/gitbook/js/lunr.js"></script>
+<script src="libs/gitbook/js/plugin-search.js"></script>
+<script src="libs/gitbook/js/plugin-sharing.js"></script>
+<script src="libs/gitbook/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook/js/jquery.highlight.js"></script>
 <script>
 gitbook.require(["gitbook"], function(gitbook) {
 gitbook.start({

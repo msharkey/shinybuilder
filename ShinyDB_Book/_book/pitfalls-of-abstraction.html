@@ -5,11 +5,11 @@
 
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>3.1 Pitfalls of Abstraction | Building Web Applications with Shiny and SQL Server</title>
+  <title>3.1 Pitfalls of Abstraction | Database Programming with R</title>
   <meta name="description" content="A guide to building scalable Shiny Datbase applications">
   <meta name="generator" content="bookdown  and GitBook 2.6.7">
 
-  <meta property="og:title" content="3.1 Pitfalls of Abstraction | Building Web Applications with Shiny and SQL Server" />
+  <meta property="og:title" content="3.1 Pitfalls of Abstraction | Database Programming with R" />
   <meta property="og:type" content="book" />
   
   
@@ -17,7 +17,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="3.1 Pitfalls of Abstraction | Building Web Applications with Shiny and SQL Server" />
+  <meta name="twitter:title" content="3.1 Pitfalls of Abstraction | Database Programming with R" />
   
   <meta name="twitter:description" content="A guide to building scalable Shiny Datbase applications" />
   
@@ -33,13 +33,13 @@
   
 <link rel="prev" href="performance.html">
 <link rel="next" href="indexing.html">
-<script src="libs/jquery-2.2.3/jquery.min.js"></script>
-<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
-<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
-<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
-<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
-<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
-<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<script src="libs/jquery/jquery.min.js"></script>
+<link href="libs/gitbook/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-fontsettings.css" rel="stylesheet" />
 
 
 
@@ -47,6 +47,13 @@
 
 
 
+<script src="libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="libs/d3/d3.min.js"></script>
+<link href="libs/profvis/profvis.css" rel="stylesheet" />
+<script src="libs/profvis/profvis.js"></script>
+<link href="libs/highlight/textmate.css" rel="stylesheet" />
+<script src="libs/highlight/highlight.js"></script>
+<script src="libs/profvis-binding/profvis.js"></script>
 
 
 <style type="text/css">
@@ -100,7 +107,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       <nav role="navigation">
 
 <ul class="summary">
-<li><a href="./">A Minimal Book Example</a></li>
+<li><a href="./">Shiny DB Apps</a></li>
 
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a><ul>
@@ -118,7 +125,6 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="3" data-path="performance.html"><a href="performance.html"><i class="fa fa-check"></i><b>3</b> Performance</a><ul>
 <li class="chapter" data-level="3.1" data-path="pitfalls-of-abstraction.html"><a href="pitfalls-of-abstraction.html"><i class="fa fa-check"></i><b>3.1</b> Pitfalls of Abstraction</a></li>
 <li class="chapter" data-level="3.2" data-path="indexing.html"><a href="indexing.html"><i class="fa fa-check"></i><b>3.2</b> Indexing</a></li>
-<li class="chapter" data-level="3.3" data-path="host-resources.html"><a href="host-resources.html"><i class="fa fa-check"></i><b>3.3</b> Host Resources</a></li>
 </ul></li>
 <li class="chapter" data-level="4" data-path="security.html"><a href="security.html"><i class="fa fa-check"></i><b>4</b> Security</a><ul>
 <li class="chapter" data-level="4.1" data-path="injection-attacks-childs-play.html"><a href="injection-attacks-childs-play.html"><i class="fa fa-check"></i><b>4.1</b> Injection Attacks = Child’s Play</a></li>
@@ -131,7 +137,6 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4.3.5" data-path="defending-against-injection.html"><a href="defending-against-injection.html#defense-in-depth"><i class="fa fa-check"></i><b>4.3.5</b> Defense in Depth</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>5</b> Final Words</a></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -145,7 +150,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Building Web Applications with Shiny and SQL Server</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Database Programming with R</a>
           </h1>
         </div>
 
@@ -159,15 +164,15 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Virtue is the golden mean between two vices, the one of excess and the other of deficiency.</p>
 </blockquote>
 <p>-Aristotle</p>
-<p>What Aristotle says about virtue also applies to abstraction. If we had no abstraction life would be more challenging. I don’t need to know the internals of power steering to use a car. The wheel becomes an interface to the complexities. At the other extreme, a lack of fundamental knowledge causes problems. The fact that combustion engines require gasoline is an implementation detail. All drivers must understand this level of detail or they will quickly become hitchikers.</p>
-<p>R offers no shortage of abstraction layers and packages. The DBI package provides a layer of abstraction between the R user and the underlying database system. Many R users have no need or desire to understand the internals of a RDBMS. However, if they understand the basics of databases then they can deliver a more robust solution.</p>
-<p>The R function dbCreateTable() from DBI allows the user to create a SQL table without defining column data types. It’s tedious to look at each column and figure out the most appropriate data type but failure to do so can lead to future performance problems. For example, suppose we use dbCreateTable() with the Yellow Cab data file.</p>
+<p>What Aristotle says about virtue also applies to abstraction. If we had no abstraction life would be more challenging. I don’t need to know the internals of power steering to use a car. The wheel becomes an interface to the complexities. At the other extreme, a lack of fundamental knowledge causes problems. The fact that combustion engines require gasoline is an implementation detail. All drivers must understand this level of detail or they will quickly become hitchhikers.</p>
+<p>The DBI package provides a layer of abstraction between the R user and the underlying database system. Many R users have no need or desire to understand the internals of an RDBMS. However, if they know the basics of databases, then they can deliver a more robust solution.</p>
+<p>The R function dbCreateTable() from DBI allows the user to create a SQL table without defining column data types. It’s tedious to look at each column and figure out the most appropriate data type, but failure to do so can lead to future performance problems. For example, suppose we use dbCreateTable() with the Yellow Cab data file.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">url &lt;-<span class="st"> &quot;https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-01.csv&quot;</span>
 <span class="kw">download.file</span>(url,<span class="st">&quot;D:/Cab_Data/yellow_tripdata_2018-01.csv&quot;</span>)
 trips_fs&lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&#39;D:/Cab_Data/yellow_tripdata_2018-01.csv&#39;</span>)
 
 <span class="kw">dbCreateTable</span>(con,<span class="st">&#39;yellow_trip_summary_model&#39;</span>,trips_fs)</code></pre></div>
-<p>First the dbCreateTable function generates a CREATE TABLE SQL statement. Then the statement is executed against the database specified in connection argument. A single line of R code replaces several lines of SQL code.</p>
+<p>First, the dbCreateTable function generates a CREATE TABLE SQL statement. Then the statement is executed against the database specified in connection argument. A single line of R code replaces several lines of SQL code.</p>
 <div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">CREATE</span> <span class="kw">TABLE</span> yellow_trip_summary(
     [VendorID] [<span class="dt">float</span>] <span class="kw">NULL</span>,
     [tpep_pickup_datetime] [datetime] <span class="kw">NULL</span>,
@@ -189,10 +194,45 @@ trips_fs&lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span cla
     [Hour_Range] [<span class="dt">varchar</span>](<span class="dv">10</span>) <span class="kw">NULL</span>,
     [<span class="dt">Day</span>] [<span class="dt">char</span>](<span class="dv">3</span>) <span class="kw">NULL</span>
 ) </code></pre></div>
-<p>The generated code might meet the requirements but it has some flaws. First, is the FLOAT data type appropriate for every numeric data type? Float expresses approximate numeric values with a default storage size of eight bytes. Being able to express a value as floating point data with eight bytes of storage is unessicary for several of the columns. For example, the payment_type column could be defined as TINYINT because only five classes of payment types exist.</p>
-<p>SELECT payment_type,count(1) FROM [Cab_Demo].[dbo].[yellow_trip_summary_partitioned] group by payment_type</p>
-<p>As long as the number of payment type classes stays below 256, TINYINT will work. Using TINYINT, with a storage size of one byte would save space and could help prevent odd codes from entering the database. Should users be able to enter a payment code of 4.2? They technical could with a float data type.</p>
-<p>When performance or accuracy matters then developers should specify the data types. I created another table with smallest possible data type for each column. At 100 million rows, this table design requires 44% less disk space compared to the first table.</p>
+<p>The generated code might meet the requirements, but it has some flaws. First, is the FLOAT data type appropriate for every numeric data type? Float expresses approximate numeric values with a default storage size of eight bytes. Eight bytes are wasteful for several of the columns. For example, the payment_type column could be defined as TINYINT because only five classes [1,2,3,4,5] of payment types exist.</p>
+<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">SELECT</span> payment_type,<span class="fu">count</span>(<span class="dv">1</span>)
+  <span class="kw">FROM</span> [Cab_Demo].[dbo].[yellow_trip_summary_partitioned]
+  <span class="kw">group</span> <span class="kw">by</span> payment_type</code></pre></div>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-6">Table 1.1: </span>5 records</caption>
+<thead>
+<tr class="header">
+<th align="right">payment_type</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">4</td>
+<td>153273</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td>531621</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td>30751943</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td>71367409</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>As long as the number of payment type classes stays below 256, TINYINT will work. Using TINYINT, with a storage size of one byte would save space and could help prevent decimal codes from entering the database. Should users be able to enter a payment code of 4.2? They technical could with a float data type.</p>
+<p>When performance or accuracy matters then developers should specify the data types. I created another table with the smallest possible data type for each column. At 100 million rows, this table design requires 44% less disk space compared to the first table.</p>
 <div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">CREATE</span> <span class="kw">TABLE</span> [dbo].[yellow_trip_summary](
     [VendorID] [tinyint] <span class="kw">NULL</span>,
     [tpep_pickup_datetime] [datetime] <span class="kw">NULL</span>,
@@ -214,7 +254,7 @@ trips_fs&lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span cla
     [Hour_Range] [<span class="dt">varchar</span>](<span class="dv">10</span>) <span class="kw">NULL</span>,
     [<span class="dt">Day</span>] [<span class="dt">char</span>](<span class="dv">3</span>) <span class="kw">NULL</span>
 )</code></pre></div>
-<p>The size on disk for the first table is 16.1 gb and the second table is 8.9 gb. A difference of 7.2 GB might not seem like a big deal. After all, disk space is relatively cheap. But disk shouldn’t be the only consideration for design. The 7.2 GB now takes up room in memory.</p>
+<p>The size on disk for the first table is 16.1 GB and the second table is 8.9 GB. A difference of 7.2 GB might not seem like a big deal. After all, disk space is relatively cheap. But disk shouldn’t be the only consideration for design. The 7.2 GB now takes up room in memory.</p>
 <ul>
 <li>Memory</li>
 <li>Network</li>
@@ -232,13 +272,13 @@ trips_fs&lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span cla
 <a href="indexing.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
-<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
-<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
-<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
-<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
-<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
-<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
-<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook/js/app.min.js"></script>
+<script src="libs/gitbook/js/lunr.js"></script>
+<script src="libs/gitbook/js/plugin-search.js"></script>
+<script src="libs/gitbook/js/plugin-sharing.js"></script>
+<script src="libs/gitbook/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook/js/jquery.highlight.js"></script>
 <script>
 gitbook.require(["gitbook"], function(gitbook) {
 gitbook.start({

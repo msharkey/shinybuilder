@@ -1,5 +1,5 @@
 --- 
-title: "Building Web Applications with Shiny and SQL Server"
+title: "Database Programming with R"
 author: "Matthew Sharkey"
 date: "03.27.2019"
 knit: "bookdown::render_book"
@@ -24,21 +24,15 @@ description: "A guide to building scalable Shiny Datbase applications"
 
 # Preface {-}
 
-```{r fig.align='center', echo=FALSE, include=identical(knitr:::pandoc_to(), 'html'), fig.link='https://www.crcpress.com/product/isbn/9781138700109'}
-#knitr::include_graphics('images/cover.jpg', dpi = NA)
-```
 
 This book supplments my presentation at the Omaha R User Group on Thursday, April 4, 2019.
 
-```{r fig.align='center', echo=FALSE, include=identical(knitr:::pandoc_to(), 'html'), fig.link='https://github.com/rstudio/bookdown'}
-knitr::include_graphics('images/logo.png', dpi = NA)
-```
 
 ## Intended Audience {-}
 
 If you develop Shiny Applications and your backend is a relational database then this book is for you.  The demos and code snippets are written in T-SQL, Microsoft SQL Server dialext of SQL, but the core concepts are applicable accross all RDBMS systems.
 
-Data Scientists using R are the primary audience.  Database Developers, BI developers, software engineers, data analysts and managers wanting to learn more about Shiny Database applications will also benefit from the material.
+Data Scientists using R are the primary audience.  Database Developers, BI Developers, Software Engineers, Data Analysts and Managers wanting to learn more about Shiny Database applications will also benefit from the material.
 
 The reader should have some experiance writing R code or programming.  Any knowledge of SQL and relational databases will help but is not required.
 

@@ -1,11 +1,14 @@
 # Building and Managing Connections
 
 ```{r, echo=FALSE,eval=TRUE}
+library(DBI)
 knitr::opts_chunk$set(echo = TRUE)
 myDriver <- 'SQL Server'
 myServer <- '.\\snapman'
 myDatabase <- 'Cab_Demo'
 sqlchunk_connection <- DBI::dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+                                ,Database = myDatabase,Trusted_Connection='yes')
+trusted_connection <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
                                 ,Database = myDatabase,Trusted_Connection='yes')
 ```
 
@@ -20,7 +23,7 @@ library(DBI)
 
 myDriver <- 'SQL Server'
 # Use . for a local connection, otherwise specify Server Machine Name or IP address
-myServer <- '.'
+myServer <- '.\\snapman'
 myDatabase <- 'Cab_Demo'
 
 
@@ -71,7 +74,7 @@ Now that I've made a connection I'll verify it with a simple GetDate() query.
 
 
 
-```{r execQuery, eval=FALSE}
+```{r execQuery, eval=TRUE}
 
 dbGetQuery(trusted_connection,"Select GetDate()")
 dbDisconnect(trusted_connection)
@@ -86,7 +89,7 @@ I'll show what open connections look like on the back-end.  First, I'll make fiv
 
 
 
-```{r lotsofCons, eval=FALSE}
+```{r lotsofCons, eval=TRUE}
 for (i in 1:5)
 {
 trusted_connection <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
@@ -103,7 +106,7 @@ Here's a query that a system admin might use to watch database connections.  It 
 
 
 
-```{sql , eval=FALSE}
+```{sql ,connection = sqlchunk_connection, eval=FALSE}
 SELECT 
     DB_NAME(p.dbid) as DBName, 
     program_name as Program,CPU,memusage,status,SPID,nt_username
@@ -128,58 +131,44 @@ The pool package opens and closes connections automatically.  R users establish 
 
 
 
-```{r pool, eval=FALSE}
-
-
+```{r pool, eval=TRUE}
 library(pool)
-
-queries <- c("SELECT Carrier,count(1)
-  FROM [Cab_Demo].[dbo].[flights]
-  group by Carrier","  Select Avg(distance)
-  From [Cab_Demo].[dbo].[flights]","  Select top 100 [2012],[2013],[2014],[2015]
-  From [Cab_Demo].[dbo].[flights]
-  PIVOT ( count(flight)
-  FOR year in ([2012],[2013],[2014],[2015])
-  ) as pvt")
-
+library(microbenchmark)
+library(ggplot2)
+queries <- c("SELECT Getdate()","Select Getdate()","Select Getdate()","Select Getdate()")
 
 dbconnectworkload <- function() {
-  con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+ for(i in 1:length(queries)){
+   con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
                    ,Database = myDatabase,Trusted_Connection='yes')
-  dbGetQuery(con,queries[1])
+  dbGetQuery(con,queries[i])
   dbDisconnect(con)
-  con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
-                   ,Database =myDatabase,Trusted_Connection='yes')
-  dbGetQuery(con,queries[2])
-  dbDisconnect(con)
-  
-  con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
-                   ,Database =myDatabase,Trusted_Connection='yes')
-  dbGetQuery(con,queries[3])
-  dbDisconnect(con)
-}
+ }
+}  
 
 poolcon <- dbPool(odbc::odbc(),Driver= myDriver,Server = myServer
                   ,Database = myDatabase,Trusted_Connection='yes')
 
 dbpoolworkload <- function() {
-  dbGetQuery(poolcon,queries[1])
-  dbGetQuery(poolcon,queries[2])
-  dbGetQuery(poolcon,queries[3])
+ for(i in 1:length(queries)){dbGetQuery(poolcon,queries[i])}
 }
 
-results <- microbenchmark::microbenchmark(dbconnectworkload()
-                                          ,dbpoolworkload(),times = 5)
+rs <- microbenchmark(dbconnectworkload() 
+                    ,dbpoolworkload(),times = 100)
 
-poolClose(poolcon)
+rs<-as.data.frame(rs)
+rs$time <- rs$time/1000000
+names(rs) <- c("Connection_Type","Milliseconds")
+ggplot(rs, aes(x=Connection_Type, y=Milliseconds , fill=Connection_Type)) +
+ geom_boxplot(alpha=0.4) +
+    theme(text = element_text(size=16))
 
-results
 
 ```
 
-The pooled function connection appears to be 10 times faster. Profvis shows that most of the time spent in dbconnectworkload is on opening connections.
+The pooled function connection appears to be faster. Profvis shows that most of the time spent in dbconnectworkload is on opening connections.
 
-```{r profvischeck, eval=FALSE}
+```{r profvischeck, eval=TRUE}
 library(profvis)
 
 profvis({dbconnectworkload ()})

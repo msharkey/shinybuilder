@@ -1,7 +1,7 @@
 # Security
 
 
-```{r setup, include=FALSE}
+```{r setup, echo=FALSE}
 library(DBI)
 knitr::opts_chunk$set(echo = TRUE)
 myDriver <- 'SQL Server'
@@ -25,7 +25,7 @@ Injection based attacks have been the number one security risk to Web-apps since
 
 <center>
 <!---->
-![](sqlinjection.gif)
+![](C:/Users/mshar/OneDrive/Documents/R_UG_Demo/ShinyDB_Book/Assets/sqlinjection.gif)
 </center>
 
 Large organizations like Cisco, Instagram, and Texas.Gov discovered injection vulnerabilities since 2018.   MySQL and PostgreSQL write source code for database systems, and even they are not immune.  
@@ -106,7 +106,7 @@ The code is vulnerable to SQL injection.  Nothing is stopping a user from passin
 
 <center>
 <!---->
-![](shinybuilderInjection.gif)
+![](C:/Users/mshar/OneDrive/Documents/R_UG_Demo/ShinyDB_Book/Assets/shinybuilderInjection.gif)
 </center>
 
 
@@ -138,7 +138,7 @@ dbGetQuery(myPool, query)
 
 The sqlInterpolate function helps isolate the user input from the query string.  Also, sqlinterpolate escapes single tick marks making it difficult to execute ad-hoc scripts.  The injection attack fails this time because the code handles input as one continuous string.
 
-![](parameterized.png)
+![](C:/Users/mshar/OneDrive/Documents/R_UG_Demo/ShinyDB_Book/Assets/parameterized.png)
 
 ### Whitelist input
 
