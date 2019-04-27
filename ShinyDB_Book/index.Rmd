@@ -25,16 +25,16 @@ description: "A guide to building scalable Shiny Datbase applications"
 # Preface {-}
 
 
-This book supplments my presentation at the Omaha R User Group on Thursday, April 4, 2019.
+This book supplements my presentation at the Omaha R User Group on Thursday, April 4, 2019.
 
 
 ## Intended Audience {-}
 
-If you develop Shiny Applications and your backend is a relational database then this book is for you.  The demos and code snippets are written in T-SQL, Microsoft SQL Server dialext of SQL, but the core concepts are applicable accross all RDBMS systems.
+If you develop Shiny Applications and your back end is a relational database then this book is for you.  The demos and code snippets are written in T-SQL, Microsoft SQL Server dialect of SQL, but the core concepts are applicable across all RDBMS systems.
 
 Data Scientists using R are the primary audience.  Database Developers, BI Developers, Software Engineers, Data Analysts and Managers wanting to learn more about Shiny Database applications will also benefit from the material.
 
-The reader should have some experiance writing R code or programming.  Any knowledge of SQL and relational databases will help but is not required.
+The reader should have some experience writing R code or programming.  Any knowledge of SQL and relational databases will help but is not required.
 
 
 ## Software information {-}
