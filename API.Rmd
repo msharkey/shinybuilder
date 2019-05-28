@@ -1,0 +1,131 @@
+---
+title: "API Proof of Concept"
+author: "Matthew Sharkey"
+date: "April 2, 2019"
+output: html_document
+---
+
+```{r setup, echo=FALSE}
+
+myDriver <- 'SQL Server'
+myServer <- '.\\snapman'
+myDatabase <- 'Cab_Demo'
+sql_connection <- DBI::dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+                                      ,Database = myDatabase,Trusted_Connection='yes')
+
+```
+
+Hi Thomas,
+
+Using an API might be our best option for the different integration requirements.  I built a proof of concept in about 30 minutes.
+
+
+Suppose, App developers (in our case Ted Kyle and Proving Ground) need to insert, update, and read rows from the dbo.Persons table.
+
+```{sql tablecreation2,connection = sql_connection,eval=FALSE}
+Select * FROM [dbo].[Persons]
+
+```
+
+```{sql tablecreation,connection = sql_connection,echo=FALSE}
+Select * FROM [dbo].[Persons] Where email <> 'testing123@gmail.com'
+
+```
+
+
+
+
+We can write simple R functions in an R file.  Plumber manages the mapping into HTTP requests.
+
+```{r APIfunctions,eval=FALSE}
+
+library(DBI)
+
+myDriver <- 'SQL Server'
+myServer <- '.\\snapman'
+myDatabase <- 'Cab_Demo'
+sql_connection <- pool::dbPool(odbc::odbc(),Driver= myDriver,Server = myServer
+                                      ,Database = myDatabase,Trusted_Connection='yes')
+
+
+
+
+ExecuteSQL <- function(Query,Parameters=NA) {
+  queryint <- sqlInterpolate(sql_connection, Query, .dots = Parameters)
+  results <- dbGetQuery(sql_connection,queryint)
+  return(results)
+}
+
+
+#* @get /GetPerson
+GetPersonRow <- function(email){
+  ExecuteSQL('Select * From dbo.Persons where email = ?pemail'
+             ,c(pemail=email))
+}
+
+#* @post /AddPerson
+AddPersonRow <- function(email,jobtitle){
+  ExecuteSQL('INSERT INTO dbo.Persons VALUES(?pemail,?pjobtitle)'
+             ,c(pemail=email,pjobtitle=jobtitle))
+}
+
+
+#* @put /UpdatePerson
+UpdatePersonRow <- function(email,jobtitle){
+  ExecuteSQL('UPDATE dbo.Persons 
+              SET email = ?pemail,jobtitle = ?pjobtitle 
+              where email = ?pemail'
+             ,c(pemail=email,pjobtitle=jobtitle))
+}
+
+```
+
+We save these functions in a file.  Then reference that file in a plumber call.  For example, I saved the functions above in a file named myapp.R
+
+```{r,eval=FALSE}
+ library(plumber)
+ r <- plumb("C:/users/masharkey/desktop/myapp.R") 
+ r$run(port=8000)
+```
+
+I can send a post request directly through Chrome.  The requests returns the query results formatted as JSON.
+
+![](C:/users/masharkey/desktop/2019-04-02_15-10-12.jpg)
+
+We can use postman to test put and post requests.  I'll insert a new row using the AddPerson post request.
+
+
+![](C:/users/masharkey/desktop/postman.jpg)
+
+
+```{sql tablecreation3,connection = sql_connection}
+Select * FROM [dbo].[Persons]
+
+```
+
+
+The new row has been added.  
+
+
+Here are the pros and cons of this approach.
+
+Pros
+
+* We can meet the integration requirements without leaving R and SQL
+* We can use the same/similar functions for integration with Envision and the DataWrangler
+* We push some of the development off on the other teams, this is good because we can let the SMEs stay in their world and we can stay in ours
+* You and I can easily divide the API development into separate functions, I'll do the more advanced SQL functions, you can do the more advanced R functions
+
+Cons
+
+* Separate R services must be running in the background to service the API
+* We will have more admin overhead from patching the R service, the plumber package, ensuring the R service is available
+
+
+Thoughts?
+
+
+
+
+
+

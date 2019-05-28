@@ -1,0 +1,329 @@
+---
+title: "Building Your First Shiny Database Application"
+author: "Matthew Sharkey | msharkey3434@gmail.com"
+date: "`r Sys.Date()`"
+bibliography: ["citation.bib"]
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+
+```{r setup, echo=FALSE,warning=FALSE,message=FALSE}
+options(htmltools.dir.version = FALSE)
+library(DBI)
+library(dbplyr)
+library(tidyverse)
+library(kableExtra)
+library(microbenchmark)
+library(ggplot2)
+myDriver <- 'SQL Server'
+myServer <- '.\\snapman'
+myDatabase <- 'Cab_Demo'
+sqlchunk_connection <- dbConnect(odbc::odbc(),
+                          Driver= myDriver,
+                          Server = myServer,
+                          Database = myDatabase,
+                          Trusted_Connection='yes')
+comp <- Sys.info()
+if(comp["nodename"]=="OMC-5CG6151GZF"){
+  cab_fileloc <- "C:/Users/MaSharkey/Cab_Data/yellow_tripdata_2018-12.csv"} else {
+  cab_fileloc <- "D:/Cab_data/yellow_tripdata_2018-01.csv"
+  }
+```
+
+
+
+# About Me
+
+Matthew Sharkey, MBA, MS-BIA, MCSE | Data Engineer @ HDR
+<div>
+<center>
+
+![me](C:/Users/mshar/OneDrive/Documents/R_UG_Demo/04-Images/legoGuy.jpg)
+
+
+
+</center>
+<div>
+
+---
+
+
+# Agenda
+
+1. What is Shiny and Why Should I Bother?
+
+2. Building and Managing Connections
+
+3. Plotting Data with ggplot
+
+4. Integrating Visuals with Shiny
+
+5. Adding Interactivity
+
+
+---
+
+# Shiny in a Nutshell
+
+- R packagage for building web apps
+
+--
+```{r,eval=FALSE,echo=TRUE}
+<h2>Hello World!</h2>
+```
+
+<h2>Hello World!</h2>
+
+--
+
+```{r,eval=TRUE,echo=TRUE}
+library(shiny)
+
+h2('Hello World!')
+
+```
+
+
+---
+```{r,eval=FALSE,echo=TRUE}
+dateRangeInput("date", strong("Date range")
+   ,start = "2007-01-01", end = "2017-07-31"
+   ,min = "2007-01-01", max = "2017-07-31")
+```
+
+--
+
+```{r,eval=FALSE,echo=TRUE}
+<div id="date">
+<label class="control-label" for="date"> <strong>Date range</strong>
+</label><div class="input-daterange input-group">
+<input class="input-sm form-control" type="text"
+data-date-week-start="0" data-date-format="yyyy-mm-dd"
+data-date-start-view="month" data-min-date="2007-01-01" 
+data-max-date="2017-07-31"data-initial-date="2007-01-01" 
+data-date-autoclose="true"/><span class="input-group-addon">
+to </span> <input  type="text" data-date-language="en" 
+data-date-week-start="0" data-date-format="yyyy-mm-dd" 
+data-min-date="2007-01-01" data-max-date="2017-07-31"/>
+  </div></div>
+```
+
+--
+
+```{r,eval=FALSE,echo=FALSE,message=FALSE}
+    ui<- fluidPage(
+      dateRangeInput("date", strong("Date range"), start = "2007-01-01",end = "2017-07-31",min = "2007-01-01", max = "2017-07-31")
+        )
+    server <- function(input, output, session) {}
+    
+    shinyApp(ui, server)
+  
+```
+
+--
+
+---
+
+
+#Shiny Benefits
+
+- Write application UI and Server side code in R
+
+--
+
+
+
+
+--
+
+- Integrate R data analysis packages
+
+--
+
+- Hosting https://www.shinyapps.io/
+
+---
+<center>
+<iframe src="https://msharkey.shinyapps.io/myapp/" height="625" width="650"></iframe>
+</center>
+---
+
+class: inverse, center, middle
+
+# Building and Managing Connections
+
+
+---
+
+
+```{r commonCon, eval=TRUE, warning=FALSE}
+myconnection <- DBI::dbConnect(odbc::odbc(),
+                          Driver= 'SQL Server',
+                          Server = '.\\snapman',
+                          Database = 'Cab_Demo',
+                          Trusted_Connection='yes')
+```
+
+--
+
+```{r execQuery, eval=TRUE, warning=FALSE}
+
+dbGetQuery(myconnection,"Select GetDate()")
+dbDisconnect(myconnection)
+
+```
+
+---
+
+
+## Common Connection Problems
+
+.pull-left[
+1. Wrong connection string format 
+    
+1. Misspelled something
+
+1. Permissions
+
+1. Driver
+
+1. Wrong port number
+
+1. Firewall
+]
+
+.pull-right[
+<center>
+<iframe src="https://giphy.com/embed/Ym0zs6Ms4vgwU" width="380" height="227" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/mr-robot-rami-malek-its-so-good-Ym0zs6Ms4vgwU"></a></p>
+</center>
+]
+
+
+---
+
+## Manual vs Pool
+
+```{r pool, eval=TRUE,echo=FALSE}
+library(pool)
+queries <- c("SELECT Getdate()","Select Getdate()","Select Getdate()","Select Getdate()")
+
+dbconnectworkload <- function() {
+ for(i in 1:length(queries)){
+   con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+                   ,Database = myDatabase,Trusted_Connection='yes')
+  dbGetQuery(con,queries[i])
+  dbDisconnect(con)
+ }
+}  
+
+poolcon <- dbPool(odbc::odbc(),Driver= myDriver,Server = myServer
+                  ,Database = myDatabase,Trusted_Connection='yes')
+
+dbpoolworkload <- function() {
+ for(i in 1:length(queries)){dbGetQuery(poolcon,queries[i])}
+}
+
+
+```
+
+```{r,eval=FALSE}
+  {{dbConnect}}(
+    odbc::odbc(),Driver= myDriver,Server = myServer
+                ,Database = myDatabase,Trusted_Connection='yes')
+  dbGetQuery(con,query)
+  dbDisconnect(con)  
+```
+--
+```{r,eval=FALSE}
+  {{dbPool}}(
+     odbc::odbc(),Driver= myDriver,Server = myServer
+                  ,Database = myDatabase,Trusted_Connection='yes')
+```
+--
+```{r poolres, eval=FALSE}
+rs <- microbenchmark(dbconnectworkload() 
+                    ,dbpoolworkload(),times = 100)
+```
+
+---
+
+## Manual vs Pool Benchmark Results
+
+```{r boxplot,echo=FALSE, fig.align = "center",eval=FALSE}
+rs<-as.data.frame(rs)
+rs$time <- rs$time/1000000
+names(rs) <- c("Connection_Type","Milliseconds")
+ggplot(rs, aes(x=Connection_Type, y=Milliseconds , fill=Connection_Type)) +
+ geom_boxplot(alpha=0.4) +
+    theme(text = element_text(size=16))
+
+```
+
+
+---
+
+class: inverse, center, middle
+
+# Performance & Optimization
+
+---
+
+
+## File vs Table Query
+
+<br>
+> If your data fits in memory there is no advantage to putting it in a database: it will only be slower and more frustrating.
+
+<br>
+Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A dplyr Back End for Databases. https://CRAN.R-project.org/package=dbplyr.
+
+<br>
+
+--
+
+- Frustrating --> Possibly
+
+--
+
+- Slower --> It Depends
+
+---
+
+
+
+# Recap
+
+- Use the right tool for the job
+
+--
+
+- Troubleshooting connections
+
+--
+
+- Performance
+
+--
+
+Presentation write up on blog [www.hintank.com](https://www.hinttank.com/)
+
+--
+
+Demo Application on github https://github.com/msharkey/shinybuilder
+
+
+---
+
+class: center, middle
+
+# Thank You
+
+
+
+
