@@ -44,7 +44,7 @@ Matthew Sharkey, MBA, MS-BIA, MCSE | Data Engineer @ HDR
 <div>
 <center>
 
-![me](C:/Users/mshar/OneDrive/Documents/R_UG_Demo/04-Images/legoGuy.jpg)
+![me](C:/Users/mshar/OneDrive/old/Documents/R_UG_Demo/04-Images/legoGuy.jpg)
 
 
 
@@ -116,7 +116,7 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
 
 --
 
-```{r,eval=FALSE,echo=FALSE,message=FALSE}
+```{r,eval=TRUE,echo=FALSE,message=FALSE}
     ui<- fluidPage(
       dateRangeInput("date", strong("Date range"), start = "2007-01-01",end = "2017-07-31",min = "2007-01-01", max = "2017-07-31")
         )

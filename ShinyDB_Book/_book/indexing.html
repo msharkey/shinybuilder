@@ -5,11 +5,11 @@
 
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>3.2 Indexing | Database Programming with R</title>
+  <title>3.2 Indexing | Building Web Applications with Shiny and SQL Server</title>
   <meta name="description" content="A guide to building scalable Shiny Datbase applications">
   <meta name="generator" content="bookdown  and GitBook 2.6.7">
 
-  <meta property="og:title" content="3.2 Indexing | Database Programming with R" />
+  <meta property="og:title" content="3.2 Indexing | Building Web Applications with Shiny and SQL Server" />
   <meta property="og:type" content="book" />
   
   
@@ -17,7 +17,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="3.2 Indexing | Database Programming with R" />
+  <meta name="twitter:title" content="3.2 Indexing | Building Web Applications with Shiny and SQL Server" />
   
   <meta name="twitter:description" content="A guide to building scalable Shiny Datbase applications" />
   
@@ -57,41 +57,67 @@
 
 
 <style type="text/css">
-div.sourceCode { overflow-x: auto; }
-table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
-  margin: 0; padding: 0; vertical-align: baseline; border: none; }
-table.sourceCode { width: 100%; line-height: 100%; }
-td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
-td.sourceCode { padding-left: 5px; }
-code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code > span.dt { color: #902000; } /* DataType */
-code > span.dv { color: #40a070; } /* DecVal */
-code > span.bn { color: #40a070; } /* BaseN */
-code > span.fl { color: #40a070; } /* Float */
-code > span.ch { color: #4070a0; } /* Char */
-code > span.st { color: #4070a0; } /* String */
-code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code > span.ot { color: #007020; } /* Other */
-code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code > span.fu { color: #06287e; } /* Function */
-code > span.er { color: #ff0000; font-weight: bold; } /* Error */
-code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-code > span.cn { color: #880000; } /* Constant */
-code > span.sc { color: #4070a0; } /* SpecialChar */
-code > span.vs { color: #4070a0; } /* VerbatimString */
-code > span.ss { color: #bb6688; } /* SpecialString */
-code > span.im { } /* Import */
-code > span.va { color: #19177c; } /* Variable */
-code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code > span.op { color: #666666; } /* Operator */
-code > span.bu { } /* BuiltIn */
-code > span.ex { } /* Extension */
-code > span.pp { color: #bc7a00; } /* Preprocessor */
-code > span.at { color: #7d9029; } /* Attribute */
-code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 <link rel="stylesheet" href="style.css" type="text/css" />
@@ -150,7 +176,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Database Programming with R</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Building Web Applications with Shiny and SQL Server</a>
           </h1>
         </div>
 
@@ -166,7 +192,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>It can be a hassle working with databases on ad-hoc data analysis projects, but in the context of Shiny Application development, a database can help the app scale.</p>
 <p>For example, imagine we are tasked with building a shiny dashboard to analyze New York City Yellow Taxi Trip public data located at <a href="https://on.nyc.gov/2tn71Qq" class="uri">https://on.nyc.gov/2tn71Qq</a>. If we leave the data in a CSV format, then how does it perform compared to data imported to a database?</p>
 <p>We can compare performance using the microbenchmark package. The following code downloads a month worth of taxi cab data and imports the file into a SQL table. I use a T-SQL bulk command because it is orders of magnitude faster at importing data then using an R function or single SQL insert statement.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">url &lt;-<span class="st"> &quot;https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-01.csv&quot;</span>
+<pre class="sourceCode r"><code class="sourceCode r">url &lt;-<span class="st"> &quot;https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2018-01.csv&quot;</span>
 <span class="kw">download.file</span>(url,<span class="st">&quot;D:/Cab_Data/yellow_tripdata_2018-01.csv&quot;</span>)
 
 packages &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&#39;odbc&#39;</span>,<span class="st">&#39;DBI&#39;</span>,<span class="st">&#39;tidyverse&#39;</span>,<span class="st">&#39;microbenchmark&#39;</span>)
@@ -198,9 +224,9 @@ con &lt;-<span class="st"> </span><span class="kw">dbConnect</span>(<span class=
 
 <span class="kw">dbExecute</span>(con,<span class="st">&quot;BULK INSERT [dbo].[yellow_tripdata_2018-01]</span>
 <span class="st">FROM &#39;D:\Cab_Data\yellow_tripdata_2018-01.csv&#39;</span>
-<span class="st">WITH (FORMAT = &#39;CSV&#39;)&quot;</span></code></pre></div>
+<span class="st">WITH (FORMAT = &#39;CSV&#39;)&quot;</span></code></pre>
 <p>With the data loaded, we can run a simulate a sample workload. The following dplyr queries perform a filter and count of the rows. One query is pointed at the CSV and the other at the SQL table.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fs &lt;-<span class="st"> </span><span class="cf">function</span>() csvquery &lt;-<span class="st"> </span>trips_fs <span class="op">%&gt;%</span><span class="st"> </span>
+<pre class="sourceCode r"><code class="sourceCode r">fs &lt;-<span class="st"> </span><span class="cf">function</span>() csvquery &lt;-<span class="st"> </span>trips_fs <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">filter</span>(tpep_dropoff_datetime <span class="op">&gt;=</span><span class="st"> &#39;2018-01-02 07:28:00&#39;</span>
           ,tpep_dropoff_datetime <span class="op">&lt;=</span><span class="st"> &#39;2018-01-02 07:30:00&#39;</span>) <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">summarise</span>(<span class="dt">pcount=</span> <span class="kw">n</span>())
@@ -210,29 +236,23 @@ db &lt;-<span class="st"> </span><span class="cf">function</span>() sqltable &lt
 <span class="st">    </span><span class="kw">filter</span>(tpep_dropoff_datetime <span class="op">&gt;=</span><span class="st"> &#39;01-02-2018 13:28&#39;</span>
            ,tpep_dropoff_datetime <span class="op">&lt;=</span><span class="st"> &#39;01/02/2018 13:30&#39;</span>)  <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">summarise</span>(<span class="dt">pcount=</span> <span class="kw">n</span>())
-  rs1&lt;-<span class="kw">suppressMessages</span>(<span class="kw">compute</span>(sqltable))</code></pre></div>
+  rs1&lt;-<span class="kw">suppressMessages</span>(<span class="kw">compute</span>(sqltable))</code></pre>
 <p>The benchmark function reveals a performance difference between the choice of storage. The CSV query had a lower median execution time. Thus, it would seem the claim that putting data in the database would make the analysis run slower is vindicated.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs&lt;-<span class="kw">microbenchmark</span>(<span class="kw">db</span>(),<span class="kw">fs</span>(),<span class="dt">times =</span> <span class="dv">100</span>)
+<pre class="sourceCode r"><code class="sourceCode r">rs&lt;-<span class="kw">microbenchmark</span>(<span class="kw">db</span>(),<span class="kw">fs</span>(),<span class="dt">times =</span> <span class="dv">100</span>)
 rs&lt;-<span class="kw">as.data.frame</span>(rs)
 rs<span class="op">$</span>time &lt;-<span class="st"> </span>rs<span class="op">$</span>time<span class="op">/</span><span class="dv">1000000</span>
 rs &lt;-<span class="st"> </span>rs <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(time <span class="op">&lt;</span><span class="st"> </span><span class="dv">1000</span>) <span class="co"># Remove outliers on upp</span>
 <span class="kw">ggplot</span>(rs, <span class="kw">aes</span>(<span class="dt">x=</span>expr, <span class="dt">y=</span>time, <span class="dt">fill=</span>expr)) <span class="op">+</span>
 <span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="dt">alpha=</span><span class="fl">0.4</span>) <span class="op">+</span>
-<span class="st">    </span><span class="kw">theme</span>(<span class="dt">text =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">20</span>))</code></pre></div>
-<div class="figure">
-<img src="Assets/boxplot2-1.png" />
-
-</div>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">text =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">20</span>))</code></pre>
+<p><img src="Assets/boxplot2-1.png" /></p>
 <p>But the story changes when we add an index to the table.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ms&lt;-<span class="kw">dbExecute</span>(con,
+<pre class="sourceCode r"><code class="sourceCode r">ms&lt;-<span class="kw">dbExecute</span>(con,
 <span class="st">&#39;CREATE NONCLUSTERED INDEX nc_yellow_trip</span>
 <span class="st"> ON [yellow_tripdata_2018-01](tpep_dropoff_datetime)&#39;</span>
- )</code></pre></div>
+ )</code></pre>
 <p>The function pointed at the SQL table now outperforms the CSV function.</p>
-<div class="figure">
-<img src="Assets/boxplot3-1.png" />
-
-</div>
+<p><img src="Assets/boxplot3-1.png" /></p>
 <p>The db() function works faster because the query uses the index to seek into the data. Without an index, the query had no choice but to scan every single data page to satisfy the filter condition.</p>
 <p>Indexing a table is a bit of art and a bit of science. Creating the best index can be challenging even for veteran DBAs. Columns used for filtering, like the query in the workload above, make good candidates for an index. Imagine you need to look up information about George Washington in a history textbook. There are two physical ways to execute this query: 1) Read the contents of all the pages or 2) Go to the index in the back of the book and read just the pages associated with George Washington. The second method seeks the relevant pages and takes far less time than reading through all the pages. A SQL index based on a filtering column is roughly analogous to the book example.</p>
 
@@ -241,7 +261,7 @@ rs &lt;-<span class="st"> </span>rs <span class="op">%&gt;%</span><span class="s
 <h3>References</h3>
 <div id="refs" class="references">
 <div id="ref-hwickham2019">
-<p>Hadley Wickham, RStudio, Edgar Ruiz. 2019. “Dbplyr: A Dplyr Back End for Databases.” <a href="https://CRAN.R-project.org/package=dbplyr" class="uri">https://CRAN.R-project.org/package=dbplyr</a>.</p>
+<p>Hadley Wickham, RStudio, Edgar Ruiz. 2019. “Dbplyr: A Dplyr Back End for Databases.” <a href="https://CRAN.R-project.org/package=dbplyr">https://CRAN.R-project.org/package=dbplyr</a>.</p>
 </div>
 </div>
             </section>
