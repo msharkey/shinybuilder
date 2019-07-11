@@ -1,5 +1,5 @@
 ---
-title: "Building Your First Shiny Database Application"
+title: "Building Web-Apps with R and SQL Server"
 author: "Matthew Sharkey | msharkey3434@gmail.com"
 date: "`r Sys.Date()`"
 bibliography: ["citation.bib"]
@@ -21,30 +21,30 @@ library(tidyverse)
 library(kableExtra)
 library(microbenchmark)
 library(ggplot2)
-myDriver <- 'SQL Server'
-myServer <- '.\\snapman'
-myDatabase <- 'Cab_Demo'
-sqlchunk_connection <- dbConnect(odbc::odbc(),
-                          Driver= myDriver,
-                          Server = myServer,
-                          Database = myDatabase,
-                          Trusted_Connection='yes')
-comp <- Sys.info()
-if(comp["nodename"]=="OMC-5CG6151GZF"){
-  cab_fileloc <- "C:/Users/MaSharkey/Cab_Data/yellow_tripdata_2018-12.csv"} else {
-  cab_fileloc <- "D:/Cab_data/yellow_tripdata_2018-01.csv"
-  }
+#myDriver <- 'SQL Server'
+#myServer <- '.\\snapman'
+#myDatabase <- 'Cab_Demo'
+#sqlchunk_connection <- dbConnect(odbc::odbc(),
+#                          Driver= myDriver,
+#                          Server = myServer,
+#                          Database = myDatabase,
+#                          Trusted_Connection='yes')
+#comp <- Sys.info()
+#if(comp["nodename"]=="OMC-5CG6151GZF"){
+#  cab_fileloc <- "C:/Users/MaSharkey/Cab_Data/yellow_tripdata_2018-12.csv"} else {
+#  cab_fileloc <- "D:/Cab_data/yellow_tripdata_2018-01.csv"
+#  }
 ```
 
 
 
 # About Me
 
-Matthew Sharkey, MBA, MS-BIA, MCSE | Data Engineer @ HDR
+Matthew Sharkey, MBA, MS-BIA, MCSE | Database Administrator
 <div>
 <center>
 
-![me](C:/Users/mshar/OneDrive/old/Documents/R_UG_Demo/04-Images/legoGuy.jpg)
+![me](C:/Users\matthew.sharkey\OneDrive - Buildertrend\Repos\shinybuilder\04-Images/legoGuy.jpg)
 
 
 
@@ -56,7 +56,7 @@ Matthew Sharkey, MBA, MS-BIA, MCSE | Data Engineer @ HDR
 
 # Agenda
 
-1. What is Shiny and Why Should I Bother?
+1. Intro to R web development
 
 2. Building and Managing Connections
 
@@ -69,7 +69,7 @@ Matthew Sharkey, MBA, MS-BIA, MCSE | Data Engineer @ HDR
 
 ---
 
-# Shiny in a Nutshell
+# It's all about Shiny
 
 - R packagage for building web apps
 
@@ -117,12 +117,17 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
 --
 
 ```{r,eval=TRUE,echo=FALSE,message=FALSE}
-    ui<- fluidPage(
-      dateRangeInput("date", strong("Date range"), start = "2007-01-01",end = "2017-07-31",min = "2007-01-01", max = "2017-07-31")
-        )
-    server <- function(input, output, session) {}
     
-    shinyApp(ui, server)
+    shinyApp(
+      ui = fluidPage(
+      dateRangeInput("date", strong("Date range"), start = "2007-01-01",end = "2017-07-31",min = "2007-01-01", max = "2017-07-31")
+  ),
+
+  server = function(input, output) {},
+
+  options = list(height = 500)
+)
+    
   
 ```
 
@@ -163,19 +168,19 @@ class: inverse, center, middle
 
 
 ```{r commonCon, eval=TRUE, warning=FALSE}
-myconnection <- DBI::dbConnect(odbc::odbc(),
-                          Driver= 'SQL Server',
-                          Server = '.\\snapman',
-                          Database = 'Cab_Demo',
-                          Trusted_Connection='yes')
+#myconnection <- DBI::dbConnect(odbc::odbc(),
+#                          Driver= 'SQL Server',
+#                          Server = '.\\snapman',
+#                          Database = 'Cab_Demo',
+#                          Trusted_Connection='yes')
 ```
 
 --
 
 ```{r execQuery, eval=TRUE, warning=FALSE}
 
-dbGetQuery(myconnection,"Select GetDate()")
-dbDisconnect(myconnection)
+#dbGetQuery(myconnection,"Select GetDate()")
+#dbDisconnect(myconnection)
 
 ```
 
@@ -210,24 +215,24 @@ dbDisconnect(myconnection)
 ## Manual vs Pool
 
 ```{r pool, eval=TRUE,echo=FALSE}
-library(pool)
-queries <- c("SELECT Getdate()","Select Getdate()","Select Getdate()","Select Getdate()")
-
-dbconnectworkload <- function() {
- for(i in 1:length(queries)){
-   con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
-                   ,Database = myDatabase,Trusted_Connection='yes')
-  dbGetQuery(con,queries[i])
-  dbDisconnect(con)
- }
-}  
-
-poolcon <- dbPool(odbc::odbc(),Driver= myDriver,Server = myServer
-                  ,Database = myDatabase,Trusted_Connection='yes')
-
-dbpoolworkload <- function() {
- for(i in 1:length(queries)){dbGetQuery(poolcon,queries[i])}
-}
+#library(pool)
+#queries <- c("SELECT Getdate()","Select Getdate()","Select Getdate()","Select Getdate()")
+#
+#dbconnectworkload <- function() {
+# for(i in 1:length(queries)){
+#   con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
+#                   ,Database = myDatabase,Trusted_Connection='yes')
+#  dbGetQuery(con,queries[i])
+#  dbDisconnect(con)
+# }
+#}  
+#
+#poolcon <- dbPool(odbc::odbc(),Driver= myDriver,Server = myServer
+#                  ,Database = myDatabase,Trusted_Connection='yes')
+#
+#dbpoolworkload <- function() {
+# for(i in 1:length(queries)){dbGetQuery(poolcon,queries[i])}
+#}
 
 
 ```
@@ -256,13 +261,13 @@ rs <- microbenchmark(dbconnectworkload()
 ## Manual vs Pool Benchmark Results
 
 ```{r boxplot,echo=FALSE, fig.align = "center",eval=FALSE}
-rs<-as.data.frame(rs)
-rs$time <- rs$time/1000000
-names(rs) <- c("Connection_Type","Milliseconds")
-ggplot(rs, aes(x=Connection_Type, y=Milliseconds , fill=Connection_Type)) +
- geom_boxplot(alpha=0.4) +
-    theme(text = element_text(size=16))
-
+#rs<-as.data.frame(rs)
+#rs$time <- rs$time/1000000
+#names(rs) <- c("Connection_Type","Milliseconds")
+#ggplot(rs, aes(x=Connection_Type, y=Milliseconds , fill=Connection_Type)) +
+# geom_boxplot(alpha=0.4) +
+#    theme(text = element_text(size=16))
+#
 ```
 
 

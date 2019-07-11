@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
   <head>
-    <title>Building Your First Shiny Database Application</title>
+    <title>Building Web-Apps with R and SQL Server</title>
     <meta charset="utf-8" />
     <meta name="author" content="Matthew Sharkey | msharkey3434@gmail.com" />
-    <meta name="date" content="2019-07-07" />
+    <meta name="date" content="2019-07-08" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
   </head>
@@ -12,9 +12,9 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Building Your First Shiny Database Application
+# Building Web-Apps with R and SQL Server
 ### Matthew Sharkey | <a href="mailto:msharkey3434@gmail.com" class="email">msharkey3434@gmail.com</a>
-### 2019-07-07
+### 2019-07-08
 
 ---
 
@@ -26,11 +26,11 @@ class: center, middle, inverse, title-slide
 
 # About Me
 
-Matthew Sharkey, MBA, MS-BIA, MCSE | Data Engineer @ HDR
+Matthew Sharkey, MBA, MS-BIA, MCSE | Database Administrator
 &lt;div&gt;
 &lt;center&gt;
 
-![me](C:/Users/mshar/OneDrive/old/Documents/R_UG_Demo/04-Images/legoGuy.jpg)
+![me](C:/Users\matthew.sharkey\OneDrive - Buildertrend\Repos\shinybuilder\04-Images/legoGuy.jpg)
 
 
 
@@ -42,7 +42,7 @@ Matthew Sharkey, MBA, MS-BIA, MCSE | Data Engineer @ HDR
 
 # Agenda
 
-1. What is Shiny and Why Should I Bother?
+1. Intro to R web development
 
 2. Building and Managing Connections
 
@@ -55,7 +55,7 @@ Matthew Sharkey, MBA, MS-BIA, MCSE | Data Engineer @ HDR
 
 ---
 
-# Shiny in a Nutshell
+# It's all about Shiny
 
 - R packagage for building web apps
 
@@ -107,7 +107,7 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/&gt;
 
 --
 
-<div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div>
+![](Presentation_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
 
 --
 
@@ -147,27 +147,19 @@ class: inverse, center, middle
 
 
 ```r
-myconnection &lt;- DBI::dbConnect(odbc::odbc(),
-                          Driver= 'SQL Server',
-                          Server = '.\\snapman',
-                          Database = 'Cab_Demo',
-                          Trusted_Connection='yes')
+#myconnection &lt;- DBI::dbConnect(odbc::odbc(),
+#                          Driver= 'SQL Server',
+#                          Server = '.\\snapman',
+#                          Database = 'Cab_Demo',
+#                          Trusted_Connection='yes')
 ```
 
 --
 
 
 ```r
-dbGetQuery(myconnection,"Select GetDate()")
-```
-
-```
-##                      
-## 1 2019-07-07 20:48:36
-```
-
-```r
-dbDisconnect(myconnection)
+#dbGetQuery(myconnection,"Select GetDate()")
+#dbDisconnect(myconnection)
 ```
 
 ---
