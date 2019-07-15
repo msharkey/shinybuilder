@@ -2,6 +2,7 @@
 title: "Building Web-Apps with R and SQL Server"
 author: "Matthew Sharkey | msharkey3434@gmail.com"
 date: "`r Sys.Date()`"
+abstract: "R isn't well known for enterprise Web Applications.  However, recent advancements in the R ecosystem aim to change that.  In this presentation, I will introduce what you need to know for building a production-ready web-app in R."
 bibliography: ["citation.bib"]
 output:
   xaringan::moon_reader:
@@ -47,7 +48,7 @@ Matthew Sharkey, MBA, MS-BIA, MCSE | Database Administrator
 ![me](C:/Users\matthew.sharkey\OneDrive - Buildertrend\Repos\shinybuilder\04-Images/legoGuy.jpg)
 
 
-
+  
 </center>
 <div>
 
@@ -69,7 +70,7 @@ Matthew Sharkey, MBA, MS-BIA, MCSE | Database Administrator
 
 ---
 
-# It's all about Shiny
+# Web-Dev Simplified
 
 - R packagage for building web apps
 
@@ -185,6 +186,35 @@ class: inverse, center, middle
 ```
 
 ---
+
+# Additional Resources
+
+Pluralsight
+https://app.pluralsight.com/library/courses/r-programming-fundamentals/table-of-contents
+
+Shiny Gallery
+https://shiny.rstudio.com/gallery/
+
+My E-book
+https://bookdown.org/msharkey3434/ShinyDB_Book/
+
+My Blog
+https://www.hinttank.com/
+
+Advanced R book
+https://amzn.to/32qbna4
+
+People to follow
+@jcheng,@xieyihui,@hadleywickham,@drob
+
+
+
+---
+
+
+
+
+
 
 
 ## Common Connection Problems

@@ -11,7 +11,7 @@ library(profvis)
 
 
 mydriver <-  "SQL Server"
-myserver <- '.'
+myserver <- '.\\snapman'
 myDatabase <- 'Test'
 
 
