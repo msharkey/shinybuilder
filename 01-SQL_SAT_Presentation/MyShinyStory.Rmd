@@ -13,11 +13,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 In March of 2018 a colleuge approached me about an internal job posting.  His team was looking for a Data Engineer to support the budding Data Science team.  Although I was content with my current position, the opputunity seemed intreguing.  As a Database Administrator I had worked with Data Science on mostly operational task e.g. granting data permissions, answering performance related questions, setting up auditing, configuring encryption.  So I had a general understanding of what they were up to. The Data Science team was ramping up and needed more development resources dedicated to data aquistion.  Essentially, they needed an ETL developer.  I took the interview and was offered the position.  After a cost benefit analysis and a tough discussion with my current manager I decided the best route forward was to take the job.
 
-Within in the fist two weeks of starting a team memember resigned.  Some of his projects, including development of a web-app were transitioned to me.  Intially, It annoyed me that I had just interviewed for an ETL developer role and was now being asked to do something competely different.  The web-app was half-completed and written in a stack I didn't have a lot of experiance in. In fact, I didn't have a lot of web-app experiance in general as I've been a database specialist my entire career.  So after several tough discussions with my manager and the application stakeholders I made the decision to re-write the app from scratch.
+Within in the fist two weeks of starting a team memember resigned.  Some of his projects, including development of a web-app were transitioned to me.  Intially, It annoyed me that I had just interviewed for an ETL developer role and was now being asked to take over a half-completed web-app in a stack I didn't have a lot of experiance in. In fact, I didn't have a lot of web-app experiance in general as I've been a database specialist my entire career.  So after several tough discussions with my manager and the application stakeholders I made the decision to re-write the app from scratch.
 
 ## R you serious?
 
-I decided to re-write the app using R with a SQL Server backend.  At that point I had about 2000 hours of R coding experiance from grad school and personal training.  Also, my coworkers understood the internals of R like a DBA understands the internals of SQL Server.  If I had any gaps in my knowledge they could help.  Using SQL Server as the backend was the most logical choice.  Most of my expertise is database programing on the SQL Server data platform.  My plan was to push as much of the business logic and processing on the database as possible because I could debug SQL much faster than R.  I was aware that R had several packages that abstracted some of the major compoments of web development.  For example, I used the Shiny package to generate about 95% of my HTML, CSS, and Javascript.  Again, this was perfect for someone like me whose skills lie outside of front-end web development.  Instead of writting HTML I called functions from the Shiny library.  For example, if I wanted "Hello World!" to appear in the browser I would need to declare it inside of <h2> tags.  But with Shiny I called the h2() function.
+I decided to re-write the app using R with a SQL Server backend.  At that point I had about 2000 hours of R coding experiance from grad school and personal training.  Also, my coworkers understood the internals of R like a DBA understands the internals of SQL Server.  If I had any gaps in my knowledge they could help.  Using SQL Server as the backend was the most logical choice.  Most of my expertise is database programing on the SQL Server data platform.  My plan was to push as much of the business logic and processing on the database as possible because I could debug SQL much faster than R.  I was aware that R had several packages that abstracted some of the major compoments of web development.  For example, I used the Shiny package to generate about 95% of my HTML, CSS, and Javascript.  Again, this was perfect for someone like me whose skills lie outside of front-end web development.  Instead of writting HTML I called functions from the Shiny library.  For example, if I wanted "Hello World!" to appear in the browser I would need to declare it inside of &lt;h2> tags.  But with Shiny I called the h2() function.
+
 
 ```{r,eval=FALSE,echo=TRUE}
 <h2>Hello World!</h2>
@@ -72,8 +73,56 @@ https://shiny.rstudio.com/gallery/
 
 ## App Archecture
 
-I started to get a feel for application Archecture after looking at demo apps and watching the tutorial video on the Shiny portal https://shiny.rstudio.com/tutorial/.  The first major component to learn was the UI.  I learned the UI holds the functions
+I started to get a feel for application Archecture after looking at demo apps and watching the tutorial video on the Shiny portal https://shiny.rstudio.com/tutorial/.  The main components were the UI, the Server Side code, and the database.  
 
+![](/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/04-Images/ShinyArc.png)
+
+The code below provides the minumun components required for a Shiny database app.  A developer can use it as template for starting a new project. The first line after the library functions creates a database connection object to SQL Server.  The connection object depends on functions from the DBI and odbc library.  The next line of code creates a UI object, then the server object, and the final line runs takes the UI and server object and runs the app.
+
+```{r,eval=FALSE}
+library(shiny)
+library(DBI)
+library(odbc)
+con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
+
+my_ui <- fluidPage()
+
+my_server <- function(input, output) {}
+
+shinyApp(ui = my_ui, server = my_server)
+
+```
+
+
+
+### UI
+
+The UI contained functions related to web browser display e.g. the date input control above.  The site format, theme, user input controls, server outputs like graphs and tables are all managed in the UI. The best way to understand the UI is to look at an example.  I wrote a simple Shiny App to view system CPU utilization over the last four hours.  The UI contains two important functions - one for accepting user input in the form of slider filter and the other displays the CPU plot output.  The slider helps users determine how far back the plot should display data up to a max of the last 256 minutes.  
+
+```{r,eval=FALSE}
+library(shiny)
+library(DBI)
+library(odbc)
+con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
+
+my_ui <- fluidPage(sliderInput("cpu_slider","Minutes Back",0,256,256))
+
+my_server <- function(input, output) {}
+
+shinyApp(ui = my_ui, server = my_server)
+
+```
+
+```{r, echo=FALSE}
+shinyApp(
+
+  ui <- fluidPage(sliderInput("cpu_slider","Minutes Back",0,256,256)),
+
+  server = function(input, output) { },
+
+  options = list(height = 500)
+)
+```
 
 
 ## Performance Tunning and Optimization

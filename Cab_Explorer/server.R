@@ -7,8 +7,8 @@ shinyServer(function(input, output,session) {
      enddate  <- input$enddate+1
     trenddata <- trips_db %>%
       mutate(Trip_Date = as.Date(tpep_dropoff_datetime))  %>% 
-      filter(tpep_dropoff_datetime >= input$startdate,tpep_dropoff_datetime < enddate,
-             trip_distance >= input$trip_distance[1],trip_distance <= input$trip_distance[2])  %>%
+      filter(tpep_dropoff_datetime >= !!input$startdate,tpep_dropoff_datetime < enddate,
+             trip_distance >= !!input$trip_distance[1],trip_distance <= !!input$trip_distance[2])  %>%
       group_by(Trip_Date) %>%
       summarise(Trip_Count= n())
      #Force Eval to capture query compute time
@@ -35,8 +35,8 @@ shinyServer(function(input, output,session) {
    barStart <- Sys.time()
    enddate  <- input$enddate+1
    barsdata <- trips_db  %>%
-     filter(tpep_dropoff_datetime >= input$startdate,tpep_dropoff_datetime < enddate,
-            trip_distance >= input$trip_distance[1],trip_distance <= input$trip_distance[2])  %>%
+     filter(tpep_dropoff_datetime >= !!input$startdate,tpep_dropoff_datetime < enddate,
+            trip_distance >= !!input$trip_distance[1],trip_distance <= !!input$trip_distance[2])  %>%
      group_by(payment_type) %>%
      summarise(Payment_Count = n()) %>%
      mutate(Payment_Type_Desc =
@@ -73,8 +73,8 @@ shinyServer(function(input, output,session) {
     enddate  <- input$enddate+1
     heatmapStart <- Sys.time()
     heatdata <- trips_db  %>%
-      filter(tpep_dropoff_datetime >= input$startdate,tpep_dropoff_datetime < enddate,
-             trip_distance >= input$trip_distance[1],trip_distance <= input$trip_distance[2])  %>%
+      filter(tpep_dropoff_datetime >= !!input$startdate,tpep_dropoff_datetime < enddate,
+             trip_distance >= !!input$trip_distance[1],trip_distance <= !!input$trip_distance[2])  %>%
       mutate(Hour_Range_Raw = DatePart(hh,tpep_dropoff_datetime),Day_Raw= DatePart(dw,tpep_dropoff_datetime)) %>% 
       group_by(Hour_Range,Day) %>%
       summarise(Avg_Tip = mean(tip_amount))
