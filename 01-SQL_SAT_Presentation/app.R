@@ -11,7 +11,7 @@ library(profvis)
 
 
 mydriver <-  "SQL Server"
-myserver <- '.\\snapman'
+myserver <- ifelse(Sys.info()["nodename"]=="INFRA035",".",".\\snapman")
 myDatabase <- 'Test'
 
 

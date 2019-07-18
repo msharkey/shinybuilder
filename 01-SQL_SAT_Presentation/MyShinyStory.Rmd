@@ -75,7 +75,7 @@ https://shiny.rstudio.com/gallery/
 
 I started to get a feel for application Archecture after looking at demo apps and watching the tutorial video on the Shiny portal https://shiny.rstudio.com/tutorial/.  The main components were the UI, the Server Side code, and the database.  
 
-![](/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/04-Images/ShinyArc.png)
+//![](/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/04-Images/ShinyArc.png)
 
 The code below provides the minumun components required for a Shiny database app.  A developer can use it as template for starting a new project. The first line after the library functions creates a database connection object to SQL Server.  The connection object depends on functions from the DBI and odbc library.  The next line of code creates a UI object, then the server object, and the final line runs takes the UI and server object and runs the app.
 
@@ -97,15 +97,96 @@ shinyApp(ui = my_ui, server = my_server)
 
 ### UI
 
-The UI contained functions related to web browser display e.g. the date input control above.  The site format, theme, user input controls, server outputs like graphs and tables are all managed in the UI. The best way to understand the UI is to look at an example.  I wrote a simple Shiny App to view system CPU utilization over the last four hours.  The UI contains two important functions - one for accepting user input in the form of slider filter and the other displays the CPU plot output.  The slider helps users determine how far back the plot should display data up to a max of the last 256 minutes.  
+The UI contained functions related to web browser display e.g. the date input control above.  The site format, theme, user input controls, server outputs like graphs and tables are all managed in the UI. The best way to understand the UI is to look at an example.  I wrote a simple Shiny App to view system CPU utilization over the last four hours.  The UI contains two important functions - one for accepting user input in the form of slider filter and the other displays the CPU plot output.
 
-```{r,eval=FALSE}
+```{r, echo=FALSE, warning=FALSE,message=FALSE}
+
 library(shiny)
 library(DBI)
 library(odbc)
+library(ggplot2)
+library(pool)
+library(profvis)
+
+
+mydriver <-  "SQL Server"
+myserver <- ifelse(Sys.info()["nodename"]=="INFRA035",".",".\\snapman")
+myDatabase <- 'Test'
+
+
+pool <- dbPool(drv = odbc(),Driver = mydriver,Server = myserver,Database = myDatabase,Trusted_Connection='yes')
+
+shinyApp(
+
+ui <- fluidPage(
+
+    titlePanel("CPU Last 4 hours"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput("minutesRange","Minutes ago",min=0,max=256,value=256)
+        ),
+
+        mainPanel(
+           plotOutput("cpuPlot")
+        )
+    )
+),
+
+
+server <- function(input, output) {
+    
+    output$cpuPlot <- renderPlot({
+
+        query <- "DECLARE @ts_now bigint = (SELECT cpu_ticks/(cpu_ticks/ms_ticks) FROM sys.dm_os_sys_info WITH (NOLOCK)); 
+                    
+                    SELECT TOP(256) SQLProcessUtilization AS [SQL Server Process CPU Utilization], 
+                                   SystemIdle AS [System Idle Process], 
+                                   100 - SystemIdle - SQLProcessUtilization AS [CPU_Utilization], 
+                                   DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time] 
+                    FROM (SELECT record.value('(./Record/@id)[1]', 'int') AS record_id, 
+                    			record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int') 
+                    			AS [SystemIdle], 
+                    			record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int') 
+                    			AS [SQLProcessUtilization], [timestamp] 
+                    	  FROM (SELECT [timestamp], CONVERT(xml, record) AS [record] 
+                    			FROM sys.dm_os_ring_buffers WITH (NOLOCK)
+                    			WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR' 
+                    			AND record LIKE N'%<SystemHealth>%') AS x) AS y 
+                    	Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE())>=DATEADD(minute,- ?minRange, GETDATE())
+                    ORDER BY record_id DESC OPTION (RECOMPILE);"
+        
+        myquery <- sqlInterpolate(pool,query,.dots=c(minRange=input$minutesRange))
+       
+        tryCatch({
+        results <- dbGetQuery(pool,myquery)
+        },error =function(e) {
+            showModal(modalDialog(
+                h5('There was an error')
+            )
+            )
+        })
+        j<- ggplot(results,aes(Event_Time,CPU_Utilization))
+        j+ geom_line()
+        
+       
+    })
+   
+},
+
+
+  options = list(height = 500)
+)
+```
+
+We'll build the app one step at a time.  First we'll tackle the input slider.  The slider helps users determine how far back the plot should display data up to a max of the last 256 minutes. we create the slider with the sliderInput function.  The required aurguments are the inputId, the label, the minumum value, maximum value and defualt value.  It's important to note that the value for inputId must be unique for each input object. All input objects require a inputId so they can be referenced in the Server object.  Finally, we'll wrap the slider in a side bar to give the page an organized look.
+
+
+```{r,eval=FALSE}
+library(shiny)
+
 con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
 
-my_ui <- fluidPage(sliderInput("cpu_slider","Minutes Back",0,256,256))
+my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))
 
 my_server <- function(input, output) {}
 
@@ -113,10 +194,10 @@ shinyApp(ui = my_ui, server = my_server)
 
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
 shinyApp(
 
-  ui <- fluidPage(sliderInput("cpu_slider","Minutes Back",0,256,256)),
+  ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))),
 
   server = function(input, output) { },
 
@@ -124,9 +205,182 @@ shinyApp(
 )
 ```
 
+Now we need to add a function for our plot.  The function is named plotOutput() and it currently references a non existant plot named "cpuPlot".  We will build cpuPlot in the server object.  The app appearance hasn't changed however, there is now space reserved for the plot in the main pannel on the web page.
+
+
+```{r,eval=FALSE}
+library(shiny)
+
+con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
+
+my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))
+                   , mainPanel(plotOutput("cpuPlot")))
+
+my_server <- function(input, output) {}
+
+shinyApp(ui = my_ui, server = my_server)
+
+```
+
+## Server an Database Intergration
+
+The plot uses data extracted from SQL Server via a T-SQL query.  I'm using a slighty modified query originally written by Glenn Berry.
+
+```{r,echo=FALSE}
+library(odbc)
+library(DBI)
+sqlcon <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.',Database = 'Test' ,Trusted_Connection='yes')
+```
+
+```{sql,eval=TRUE,connection=sqlcon}
+ DECLARE @ts_now bigint = (SELECT cpu_ticks/(cpu_ticks/ms_ticks) FROM sys.dm_os_sys_info WITH (NOLOCK)); 
+   
+  SELECT TOP(256)   DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time] ,
+                 100 - SystemIdle AS [CPU_Utilization]
+  FROM (SELECT record.value('(./Record/@id)[1]', 'int') AS record_id, 
+              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int') 
+              AS [SystemIdle], 
+              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int') 
+              AS [SQLProcessUtilization], [timestamp] 
+        FROM (SELECT [timestamp], CONVERT(xml, record) AS [record] 
+              FROM sys.dm_os_ring_buffers WITH (NOLOCK)
+              WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR' 
+              AND record LIKE N'%<SystemHealth>%') AS x) AS y 
+  ORDER BY record_id DESC OPTION (RECOMPILE);
+  
+```
+
+The query works great but now we need to integrate it with our slider input.  The goal is that the plot time range can be controlled by the slider input.  The default value for the input is 256 minutes, so when the app starts it will pull back the maximum range.  When the user moves the slider the query will need to re-run and pull back the range specified.  To ensure the query re-runs each time the slider input is moved we must wrap the query inside an output function in the server object.
+
+
+```{r,eval=FALSE}
+library(odbc)
+library(DBI)
+
+
+my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))
+                   , mainPanel(plotOutput("cpuPlot")))
+
+my_server <- function(input, output) {
+  
+  output$cpuPlot <- renderPlot({
+  con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
+  myquery <- paste0("DECLARE @ts_now bigint = (SELECT cpu_ticks/(cpu_ticks/ms_ticks) FROM sys.dm_os_sys_info WITH (NOLOCK)); 
+   
+  SELECT TOP(256)   DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time] ,
+                 100 - SystemIdle AS [CPU_Utilization]
+  FROM (SELECT record.value('(./Record/@id)[1]', 'int') AS record_id, 
+              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int') 
+              AS [SystemIdle], 
+              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int') 
+              AS [SQLProcessUtilization], [timestamp] 
+        FROM (SELECT [timestamp], CONVERT(xml, record) AS [record] 
+              FROM sys.dm_os_ring_buffers WITH (NOLOCK)
+              WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR' 
+              AND record LIKE N'%<SystemHealth>%') AS x) AS y 
+              Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >= DATEADD(minute,-",input$cpu_slider,",Getdate())
+  ORDER BY record_id DESC OPTION (RECOMPILE);
+  ")
+ mydata <- dbGetQuery(con,myquery)
+
+ dbDisconnect(con)
+  })
+}
+
+shinyApp(ui = my_ui, server = my_server)
+
+```
+
+The myquery variable holds the query text combined with current value in slider input.  When the app starts the current value of the sliderInput cpu_slider is concatenated with the query then executed against the server with the dbGetQuery function.  The contents of the query are stored in mydata.  Each time the user moves the slider input it invalidates the contents of the output object and triggers all the code contained within the brackets of the renderPlot function to re-run.  This means we get an updated query and a new data set loaded to mydata.
+
+Now we have our data but no function to generate a plot.  The ggplot2 library provides the app with a line plot function.
+
+```{r,eval=FALSE}
+library(odbc)
+library(DBI)
+library(ggplot2)
+
+my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))
+                   , mainPanel(plotOutput("cpuPlot")))
+
+my_server <- function(input, output) {
+  
+  output$cpuPlot <- renderPlot({
+  con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.',Database = 'Test' ,Trusted_Connection='yes')
+  myquery <- paste0("DECLARE @ts_now bigint = (SELECT cpu_ticks/(cpu_ticks/ms_ticks) FROM sys.dm_os_sys_info WITH (NOLOCK)); 
+   
+  SELECT TOP(256)   DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time] ,
+                 100 - SystemIdle AS [CPU_Utilization]
+  FROM (SELECT record.value('(./Record/@id)[1]', 'int') AS record_id, 
+              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int') 
+              AS [SystemIdle], 
+              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int') 
+              AS [SQLProcessUtilization], [timestamp] 
+        FROM (SELECT [timestamp], CONVERT(xml, record) AS [record] 
+              FROM sys.dm_os_ring_buffers WITH (NOLOCK)
+              WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR' 
+              AND record LIKE N'%<SystemHealth>%') AS x) AS y 
+              Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >= DATEADD(minute,-",input$cpu_slider,",Getdate())
+  ORDER BY record_id DESC OPTION (RECOMPILE);
+  ")
+ mydata <- dbGetQuery(con,myquery)
+ dbDisconnect(con)
+ 
+ ggplot(mydata,aes(Event_Time,CPU_Utilization)) + geom_line()
+ 
+
+  })
+}
+
+shinyApp(ui = my_ui, server = my_server)
+
+```
+
+
+//Recap here in presentation
 
 ## Performance Tunning and Optimization
 
+### Security
 
-Cache
+We have a basic functioning app but it has a few design flaws.  The most pressing issue is concatenating user input with the query string.  As a rule of thumb, never mix trusted data (in this case the query string) with untrusted data (the user input).  If a malicous use how figured out how to bypass the input control they in theory could execute arbituary scripts against the SQL Server.  we can mitigate the risk by parametrizing the query.  The sqlinterpolate function from DBI allows us to paramertize.
 
+
+```{r,eval=FALSE}
+myquery <- "DECLARE @ts_now bigint = (SELECT cpu_ticks/(cpu_ticks/ms_ticks) FROM sys.dm_os_sys_info WITH (NOLOCK)); 
+  SELECT TOP(256)   DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time] ,
+                 100 - SystemIdle AS [CPU_Utilization]
+  FROM (SELECT record.value('(./Record/@id)[1]', 'int') AS record_id, 
+              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int') 
+              AS [SystemIdle], 
+              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int') 
+              AS [SQLProcessUtilization], [timestamp] 
+        FROM (SELECT [timestamp], CONVERT(xml, record) AS [record] 
+              FROM sys.dm_os_ring_buffers WITH (NOLOCK)
+              WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR' 
+              AND record LIKE N'%<SystemHealth>%') AS x) AS y 
+              Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >= DATEADD(minute,-?cpu_slider_param,Getdate())
+  ORDER BY record_id DESC OPTION (RECOMPILE);"
+
+myquery_param <- sqlInterpolate(con,myquery,.dots =c(cpu_slider_param <- input$cpu_slider))
+mydata <- dbGetQuery(con,myquery_param)
+
+```
+
+With text inputs I'd take input validation one more step and implement whitelists.  For example, a user email input control must follow a certain regex pattern.  The pseudo code below populates the emailistwhitelist variable with a regex pattern of an email I found on stackoverflow.  The if block checks if the input matches the pattern.  If it doesn't then the app will not pass the input to the database.
+
+
+```{r,eval=FALSE}
+emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
+
+if(!is.na(str_match(usr_email, emailwhitelist))){
+  #Run query
+} else
+{
+  # Reject input
+}
+```
+
+### Connection Management
+
+The app seems a little slugish on my machine.  If performance isn't acc
