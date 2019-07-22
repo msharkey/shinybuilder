@@ -6,9 +6,8 @@ library(shiny)
 library(DBI)
 library(odbc)
 library(ggplot2)
-library(pool)
 library(profvis)
-
+library(pool)
 
 mydriver <-  "SQL Server"
 myserver <- ifelse(Sys.info()["nodename"]=="INFRA035",".",".\\snapman")

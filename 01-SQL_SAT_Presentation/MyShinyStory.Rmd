@@ -229,7 +229,7 @@ The plot uses data extracted from SQL Server via a T-SQL query.  I'm using a sli
 ```{r,echo=FALSE}
 library(odbc)
 library(DBI)
-sqlcon <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.',Database = 'Test' ,Trusted_Connection='yes')
+sqlcon <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
 ```
 
 ```{sql,eval=TRUE,connection=sqlcon}
@@ -383,4 +383,36 @@ if(!is.na(str_match(usr_email, emailwhitelist))){
 
 ### Connection Management
 
-The app seems a little slugish on my machine.  If performance isn't acc
+The app seems a little slugish.  If performance isn't acceptable then the fist place to turn is profvis.  Profvis provides line by line execution metrics for R code.  We'll run the app inside the profvis function and then interact with the application as a normal user would.  After we close the session a bar chart reporting memory consumed and execution time appears next to each function in our app.  Also, a flame graph shows exection time at each stage of the callstack. The flame graph is built on a mapping library and can be controlled (pan, zoom in, zoom out) like a Google map.
+
+```{r,echo=FALSE,eval=FALSE}
+library(profvis)
+
+profvis(runApp("C:/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/01-SQL_SAT_Presentation/slowapp.R"))
+```
+
+The profile session reveals dbConnect() accounts for most of the exection time.  The app makes a connection to our database each time the user adjusts the slider input.  Instead building a connection and closing it for each query execution we can establish a pool and let R handle opening and closing connections.  We need two minor app code changes to use connection pooling.  First we need to reference the pool library and then replace the dbConnect() with dbPool().  We don't need to close the pool when the application is running so dbDisconnect() gets removed. Finally, we move dbPool() outside of the server object completely.
+
+```{r,eval = FALSE}
+library(pool)
+
+pool <- dbPool(drv = odbc(),Driver = mydriver,Server = myserver,Database = myDatabase,Trusted_Connection='yes')
+
+  results <- dbGetQuery(pool,myquery)
+
+```
+
+```{r,echo=FALSE,eval=FALSE}
+library(profvis)
+
+profvis(runApp("C:/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/01-SQL_SAT_Presentation/slowapp.R"))
+```
+
+In addtion to making our session faster, using pool also helps the app scale.  Pool dynamically opens and closes connections as needed.  So as users start to increase they may use an existining connection from the pool.  
+
+### Load Testing
+
+
+
+
+
