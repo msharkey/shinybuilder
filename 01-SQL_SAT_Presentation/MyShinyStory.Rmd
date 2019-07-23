@@ -75,7 +75,7 @@ https://shiny.rstudio.com/gallery/
 
 I started to get a feel for application Archecture after looking at demo apps and watching the tutorial video on the Shiny portal https://shiny.rstudio.com/tutorial/.  The main components were the UI, the Server Side code, and the database.  
 
-//![](/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/04-Images/ShinyArc.png)
+![](./Images/ShinyArc.png)
 
 The code below provides the minumun components required for a Shiny database app.  A developer can use it as template for starting a new project. The first line after the library functions creates a database connection object to SQL Server.  The connection object depends on functions from the DBI and odbc library.  The next line of code creates a UI object, then the server object, and the final line runs takes the UI and server object and runs the app.
 
@@ -194,7 +194,7 @@ shinyApp(ui = my_ui, server = my_server)
 
 ```
 
-```{r, echo=FALSE,message=FALSE,warning=FALSE}
+```{r, echo=FALSE,message=FALSE,warning=FALSE,eval=FALSE}
 shinyApp(
 
   ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))),
@@ -381,6 +381,8 @@ if(!is.na(str_match(usr_email, emailwhitelist))){
 }
 ```
 
+### Error Handling
+
 ### Connection Management
 
 The app seems a little slugish.  If performance isn't acceptable then the fist place to turn is profvis.  Profvis provides line by line execution metrics for R code.  We'll run the app inside the profvis function and then interact with the application as a normal user would.  After we close the session a bar chart reporting memory consumed and execution time appears next to each function in our app.  Also, a flame graph shows exection time at each stage of the callstack. The flame graph is built on a mapping library and can be controlled (pan, zoom in, zoom out) like a Google map.
@@ -390,6 +392,11 @@ library(profvis)
 
 profvis(runApp("C:/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/01-SQL_SAT_Presentation/slowapp.R"))
 ```
+
+![](./Images/ProfvisData.JPG)
+
+![](./Images/Flame.JPG)
+
 
 The profile session reveals dbConnect() accounts for most of the exection time.  The app makes a connection to our database each time the user adjusts the slider input.  Instead building a connection and closing it for each query execution we can establish a pool and let R handle opening and closing connections.  We need two minor app code changes to use connection pooling.  First we need to reference the pool library and then replace the dbConnect() with dbPool().  We don't need to close the pool when the application is running so dbDisconnect() gets removed. Finally, we move dbPool() outside of the server object completely.
 
@@ -402,15 +409,40 @@ pool <- dbPool(drv = odbc(),Driver = mydriver,Server = myserver,Database = myDat
 
 ```
 
-```{r,echo=FALSE,eval=FALSE}
-library(profvis)
-
-profvis(runApp("C:/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/01-SQL_SAT_Presentation/slowapp.R"))
-```
-
 In addtion to making our session faster, using pool also helps the app scale.  Pool dynamically opens and closes connections as needed.  So as users start to increase they may use an existining connection from the pool.  
 
 ### Load Testing
+
+The app has reached acceptable performance for one user session.  But how does the app handle multiple user sessions?  We can find out using a load test.  All we need for a quick load test is the shinyload package, shinycannon program and Java.
+
+Similar to profvis the fist step of a load test is recording a typical user session.  In most cases this session would be recorded on an application deployed to a webserver, however for demonstartion I record the session with app hosted on my local machine.  I start two instances of Rstudio. One runs the Shiny app and the other runs the recording function record_session().
+
+```{r,eval=FALSE}
+shinyloadtest::record_session('http://127.0.0.1:6696/')
+```
+
+record_session launches the app in a browser.  Once the browser closes any action taken during the session is written to recording.log in a timestamped folder in the working directory.  The path to recording.log makes up one the first required positional argument in shinycannon.  The second required argument is the app URL.  We'll see how the app performs with 50 users for two minutes of load. The following code runs in a terminal.
+
+```{sh,eval=FALSE}
+$ shinycannon recording.log http://127.0.0.1:6696/ --workers 50 --loaded-duration-minutes 2
+```
+
+After the load test finishes we can view the results throught shinyloadtest.
+
+```{r,eval=FALSE,message=FALSE, warning=FALSE}
+
+df <- shinyloadtest::load_runs("50workers" = "./test-logs-2019-07-22T03_21_19.997Z")
+
+shinyloadtest::shinyloadtest_report(df, "run1.html")
+
+```
+
+```{r echo=FALSE}
+htmltools::includeHTML("gantt-run-50workers.svg")
+```
+
+
+### Plot Caching
 
 
 

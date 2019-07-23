@@ -51,7 +51,7 @@ server <- function(input, output) {
                     			WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR' 
                     			AND record LIKE N'%<SystemHealth>%') AS x) AS y 
                     	Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE())>=DATEADD(minute,- ?minRange, GETDATE())
-                    ORDER BY record_id DESC OPTION (RECOMPILE);"
+                    ORDER BY record_id DESC;"
         
         myquery <- sqlInterpolate(pool,query,.dots=c(minRange=input$minutesRange))
        
