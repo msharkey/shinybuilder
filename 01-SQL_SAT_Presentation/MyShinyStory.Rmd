@@ -381,7 +381,6 @@ if(!is.na(str_match(usr_email, emailwhitelist))){
 }
 ```
 
-### Error Handling
 
 ### Connection Management
 
@@ -410,6 +409,63 @@ pool <- dbPool(drv = odbc(),Driver = mydriver,Server = myserver,Database = myDat
 ```
 
 In addtion to making our session faster, using pool also helps the app scale.  Pool dynamically opens and closes connections as needed.  So as users start to increase they may use an existining connection from the pool.  
+
+
+### Error Handling
+
+Error handling can improve user experiance and prevent the app from crashing.  If an error occurs the app should do something like fix the issue automatically or alert the user.  When we increase app complexity we increase the need for error handling.  Adding a relational database to the app is an example of increasing complexity. In addition to all the potential bugs in Shiny, packages, and O.S. of the webserver we now have to account for all the potential bugs in the database software and O.S. of the database server. For example, I'll simulate a database outage by forcing the database offline while the app is running.
+
+```{sql,connection=sqlcon}
+ALTER Database Test Set SINGLE_USER WITH ROLLBACK IMMEDIATE;
+ALTER Database Test Set OFFLINE;
+```
+
+When the user adjusts the slider the query attempts to re-run but fails.  R displays an error containing the query text where the plot should be.  This error is problematic because the error message means nothing to th average user and second I might not want implementation details like table  names exposed to end users.
+
+![](./Images/ErrorMessage.JPG)
+
+We can avoid this issue with a tryCatch function wrapped around the query execution.  If an error occurs during executionof the code within the tryCatch it passes execution off to the error function.
+
+```{r,eval=FALSE}
+      tryCatch({
+        results <- dbGetQuery(pool,myquery)
+        j<- ggplot(results,aes(Event_Time,CPU_Utilization))
+        j+ geom_line()
+        },error =function(e) {
+            showModal(modalDialog(
+                h5('There was an error.  Please contact the system admin.')
+            )
+            )
+        })
+       
+```
+
+Now instead of red error messages the user get's a modal box with instructions.
+
+![](./Images/ModalError.JPG)
+
+The error function stores error details from the R session like the error message.  It's possible to write error specific messages or events.  A good example of error specific handlong is re-submitting the query in the event of a deadlock.  This code looks for the SQL Server specific error message 1205 for deadlocks.  If the error message contains "1205" then the function re-submits the query three times.
+
+```{r,eval=FALSE}
+tryCatch({
+    dbGetQuery(con,myquery)
+}
+,error = function(e){
+  if(grep('1205',e$message)==1){
+    while (x<4){
+      tryCatch({
+        dbGetQuery(con,myquery)
+        break
+        }
+      ,error=function(e){
+      x<<- x+1
+      })
+    }
+  }
+})
+```
+
+
 
 ### Load Testing
 

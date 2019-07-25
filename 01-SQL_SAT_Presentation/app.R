@@ -57,14 +57,15 @@ server <- function(input, output) {
        
         tryCatch({
         results <- dbGetQuery(pool,myquery)
+        j<- ggplot(results,aes(Event_Time,CPU_Utilization))
+        j+ geom_line()
         },error =function(e) {
             showModal(modalDialog(
-                h5('There was an error')
+                h5('There was an error.  Please contact the system admin.')
             )
             )
         })
-        j<- ggplot(results,aes(Event_Time,CPU_Utilization))
-        j+ geom_line()
+       
         
        
     })
