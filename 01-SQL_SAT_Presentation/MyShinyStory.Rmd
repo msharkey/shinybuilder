@@ -99,84 +99,7 @@ shinyApp(ui = my_ui, server = my_server)
 
 The UI contained functions related to web browser display e.g. the date input control above.  The site format, theme, user input controls, server outputs like graphs and tables are all managed in the UI. The best way to understand the UI is to look at an example.  I wrote a simple Shiny App to view system CPU utilization over the last four hours.  The UI contains two important functions - one for accepting user input in the form of slider filter and the other displays the CPU plot output.
 
-```{r, echo=FALSE, warning=FALSE,message=FALSE}
-
-library(shiny)
-library(DBI)
-library(odbc)
-library(ggplot2)
-library(pool)
-library(profvis)
-
-
-mydriver <-  "SQL Server"
-myserver <- ifelse(Sys.info()["nodename"]=="INFRA035",".",".\\snapman")
-myDatabase <- 'Test'
-
-
-pool <- dbPool(drv = odbc(),Driver = mydriver,Server = myserver,Database = myDatabase,Trusted_Connection='yes')
-
-shinyApp(
-
-ui <- fluidPage(
-
-    titlePanel("CPU Last 4 hours"),
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("minutesRange","Minutes ago",min=0,max=256,value=256)
-        ),
-
-        mainPanel(
-           plotOutput("cpuPlot")
-        )
-    )
-),
-
-
-server <- function(input, output) {
-    
-    output$cpuPlot <- renderPlot({
-
-        query <- "DECLARE @ts_now bigint = (SELECT cpu_ticks/(cpu_ticks/ms_ticks) FROM sys.dm_os_sys_info WITH (NOLOCK)); 
-                    
-                    SELECT TOP(256) SQLProcessUtilization AS [SQL Server Process CPU Utilization], 
-                                   SystemIdle AS [System Idle Process], 
-                                   100 - SystemIdle - SQLProcessUtilization AS [CPU_Utilization], 
-                                   DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time] 
-                    FROM (SELECT record.value('(./Record/@id)[1]', 'int') AS record_id, 
-                    			record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int') 
-                    			AS [SystemIdle], 
-                    			record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int') 
-                    			AS [SQLProcessUtilization], [timestamp] 
-                    	  FROM (SELECT [timestamp], CONVERT(xml, record) AS [record] 
-                    			FROM sys.dm_os_ring_buffers WITH (NOLOCK)
-                    			WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR' 
-                    			AND record LIKE N'%<SystemHealth>%') AS x) AS y 
-                    	Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE())>=DATEADD(minute,- ?minRange, GETDATE())
-                    ORDER BY record_id DESC OPTION (RECOMPILE);"
-        
-        myquery <- sqlInterpolate(pool,query,.dots=c(minRange=input$minutesRange))
-       
-        tryCatch({
-        results <- dbGetQuery(pool,myquery)
-        },error =function(e) {
-            showModal(modalDialog(
-                h5('There was an error')
-            )
-            )
-        })
-        j<- ggplot(results,aes(Event_Time,CPU_Utilization))
-        j+ geom_line()
-        
-       
-    })
-   
-},
-
-
-  options = list(height = 500)
-)
-```
+//![] App screen shot goes here
 
 We'll build the app one step at a time.  First we'll tackle the input slider.  The slider helps users determine how far back the plot should display data up to a max of the last 256 minutes. we create the slider with the sliderInput function.  The required aurguments are the inputId, the label, the minumum value, maximum value and defualt value.  It's important to note that the value for inputId must be unique for each input object. All input objects require a inputId so they can be referenced in the Server object.  Finally, we'll wrap the slider in a side bar to give the page an organized look.
 
@@ -194,16 +117,6 @@ shinyApp(ui = my_ui, server = my_server)
 
 ```
 
-```{r, echo=FALSE,message=FALSE,warning=FALSE,eval=FALSE}
-shinyApp(
-
-  ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))),
-
-  server = function(input, output) { },
-
-  options = list(height = 500)
-)
-```
 
 Now we need to add a function for our plot.  The function is named plotOutput() and it currently references a non existant plot named "cpuPlot".  We will build cpuPlot in the server object.  The app appearance hasn't changed however, there is now space reserved for the plot in the main pannel on the web page.
 
@@ -222,9 +135,9 @@ shinyApp(ui = my_ui, server = my_server)
 
 ```
 
-## Server an Database Intergration
+## Server and Database Intergration
 
-The plot uses data extracted from SQL Server via a T-SQL query.  I'm using a slighty modified query originally written by Glenn Berry.
+The plot uses data extracted from SQL Server via a T-SQL query.  I'm using a slighty modified script from Glenn Berry.
 
 ```{r,echo=FALSE}
 library(odbc)
@@ -296,44 +209,11 @@ The myquery variable holds the query text combined with current value in slider 
 Now we have our data but no function to generate a plot.  The ggplot2 library provides the app with a line plot function.
 
 ```{r,eval=FALSE}
-library(odbc)
-library(DBI)
+
 library(ggplot2)
 
-my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))
-                   , mainPanel(plotOutput("cpuPlot")))
-
-my_server <- function(input, output) {
-  
-  output$cpuPlot <- renderPlot({
-  con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.',Database = 'Test' ,Trusted_Connection='yes')
-  myquery <- paste0("DECLARE @ts_now bigint = (SELECT cpu_ticks/(cpu_ticks/ms_ticks) FROM sys.dm_os_sys_info WITH (NOLOCK)); 
-   
-  SELECT TOP(256)   DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time] ,
-                 100 - SystemIdle AS [CPU_Utilization]
-  FROM (SELECT record.value('(./Record/@id)[1]', 'int') AS record_id, 
-              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int') 
-              AS [SystemIdle], 
-              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int') 
-              AS [SQLProcessUtilization], [timestamp] 
-        FROM (SELECT [timestamp], CONVERT(xml, record) AS [record] 
-              FROM sys.dm_os_ring_buffers WITH (NOLOCK)
-              WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR' 
-              AND record LIKE N'%<SystemHealth>%') AS x) AS y 
-              Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >= DATEADD(minute,-",input$cpu_slider,",Getdate())
-  ORDER BY record_id DESC OPTION (RECOMPILE);
-  ")
- mydata <- dbGetQuery(con,myquery)
- dbDisconnect(con)
- 
  ggplot(mydata,aes(Event_Time,CPU_Utilization)) + geom_line()
  
-
-  })
-}
-
-shinyApp(ui = my_ui, server = my_server)
-
 ```
 
 
@@ -469,7 +349,7 @@ tryCatch({
 
 ### Load Testing
 
-The app has reached acceptable performance for one user session.  But how does the app handle multiple user sessions?  We can find out using a load test.  All we need for a quick load test is the shinyload package, shinycannon program and Java.
+The app has reached acceptable performance for one user session.  But how does the app handle multiple user sessions?  We can find out using a load test.  We need shinyload package, shinycannon program and Java for running load tests.
 
 Similar to profvis the fist step of a load test is recording a typical user session.  In most cases this session would be recorded on an application deployed to a webserver, however for demonstartion I record the session with app hosted on my local machine.  I start two instances of Rstudio. One runs the Shiny app and the other runs the recording function record_session().
 
@@ -477,7 +357,7 @@ Similar to profvis the fist step of a load test is recording a typical user sess
 shinyloadtest::record_session('http://127.0.0.1:6696/')
 ```
 
-record_session launches the app in a browser.  Once the browser closes any action taken during the session is written to recording.log in a timestamped folder in the working directory.  The path to recording.log makes up one the first required positional argument in shinycannon.  The second required argument is the app URL.  We'll see how the app performs with 50 users for two minutes of load. The following code runs in a terminal.
+The record_session function launches the app in a browser.  Once the browser closes any action taken during the session is written to recording.log in a timestamped folder in the working directory.  The path to recording.log makes up one the first required positional argument in shinycannon.  The second required argument is the app URL.  We'll see how the app performs with 50 users for two minutes of load. The following code runs in a terminal.
 
 ```{sh,eval=FALSE}
 $ shinycannon recording.log http://127.0.0.1:6696/ --workers 50 --loaded-duration-minutes 2
@@ -497,8 +377,46 @@ shinyloadtest::shinyloadtest_report(df, "run1.html")
 htmltools::includeHTML("gantt-run-50workers.svg")
 ```
 
+The X Axis represents elasped time and the Y represents displays each session.  Sessions contained within the black dots indicate when all user sessions were executing.  At 10 concurrent users session performance pluments.  The 11th app user would be waiting seconds plots to render.  Interupting a user workflow for two seconds will not make for happy users. We need a go faster button.
 
-### Plot Caching
+
+### Plot and Plan Caching
+
+We already know from the profivs session that the two most expensive functions aside from the dbConnect were renderPlot and dbGetQuery.  We can't tune the query much but we can remove the OPTION(recompile) query hint.  This will enable plan caching on the SQL server. Instead of recompiling the plan each time our app will look it up in cache.
+
+```{r,eval=FALSE}
+myquery <- "DECLARE @ts_now bigint = (SELECT cpu_ticks/(cpu_ticks/ms_ticks) FROM sys.dm_os_sys_info WITH (NOLOCK)); 
+  SELECT TOP(256)   DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time] ,
+                 100 - SystemIdle AS [CPU_Utilization]
+  FROM (SELECT record.value('(./Record/@id)[1]', 'int') AS record_id, 
+              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int') 
+              AS [SystemIdle], 
+              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int') 
+              AS [SQLProcessUtilization], [timestamp] 
+        FROM (SELECT [timestamp], CONVERT(xml, record) AS [record] 
+              FROM sys.dm_os_ring_buffers WITH (NOLOCK)
+              WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR' 
+              AND record LIKE N'%<SystemHealth>%') AS x) AS y 
+              Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >= DATEADD(minute,-?cpu_slider_param,Getdate())
+  ORDER BY record_id DESC
+  --OPTION (RECOMPILE);"## Disabling hint so plan caching can occur
+```
+
+
+we can also enable plot caching with minor app code changes.  The renderCachedPlot function replaces render plot and we specify a cache key after the renderCachedPlot closing curly brace.  The natural choice is the input slider.  When a user selects the same input they, in theory, would be requesting the same plot.  Rather than re-render the same plot, the app can retrivie it from cache.
+
+```{r,eval=FALSE}
+  },cacheKeyExpr = {input$cpu_slider})
+
+```
+
+There's a design flaw with this app.  The data returned by the query is not deterministic because the data frame is a sliding window of the last 256 minutes of CPU utilization.  We would need to persist the results of the query in a timestamped history table to prevent wrong plot results.  The user input control also needs updated to either a time stamp or free text numeric field.  For the purpuse of the demo we will skip the backend change for now as we are focused on the impact of plot caching.
+
+
+
+
+
+
 
 
 

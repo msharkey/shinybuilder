@@ -5,7 +5,9 @@ library(DBI)
 library(ggplot2)
 library(pool)
 
-con <-  dbPool(drv = odbc::odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test',Trusted_Connection='yes')
+
+#myserver <- ifelse(Sys.info()["nodename"]=="INFRA035",".",".\\snapman") 
+con <-  dbPool(drv = odbc::odbc(),  Driver = 'Sql Server',Server = ".\\snapman",Database = 'Test',Trusted_Connection='yes')
 
 my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))
                    , mainPanel(plotOutput("cpuPlot")))
@@ -30,7 +32,7 @@ my_server <- function(input, output) {
               WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR' 
               AND record LIKE N'%<SystemHealth>%') AS x) AS y 
               Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >= DATEADD(minute,-",input$cpu_slider,",Getdate())
-  ORDER BY record_id DESC OPTION (RECOMPILE);
+  ORDER BY record_id DESC;
   ")
     mydata <- dbGetQuery(con,myquery)
  
