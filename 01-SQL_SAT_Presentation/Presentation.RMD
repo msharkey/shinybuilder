@@ -1,6 +1,6 @@
 ---
 title: "Building Web-Apps with R and SQL Server"
-author: "Matthew Sharkey | msharkey3434@gmail.com"
+author: "R isn't well known for enterprise Web Applications.  However, recent advancements in the R ecosystem aim to change that.  In this presentation, I will introduce what you need to know for building a production-ready web-app in R."
 date: "`r Sys.Date()`"
 abstract: "R isn't well known for enterprise Web Applications.  However, recent advancements in the R ecosystem aim to change that.  In this presentation, I will introduce what you need to know for building a production-ready web-app in R."
 bibliography: ["citation.bib"]
@@ -39,33 +39,59 @@ library(ggplot2)
 
 
 
-# About Me
+# Hello World
 
-Matthew Sharkey, MBA, MS-BIA, MCSE | Database Administrator
 <div>
 <center>
+.pull-left[
+-Matt Sharkey, MBA, MS-BIA, MCSE
 
-![me](C:/Users\matthew.sharkey\OneDrive - Buildertrend\Repos\shinybuilder\04-Images/legoGuy.jpg)
+-IT Database Administrator
+]
+.pull-right[
+<img src="./Images/matthew_sharkey.JPG" alt="me" width="300" height="267">
+]
 
 
-  
+
 </center>
 <div>
+
+
+---
+
+class: center, middle
+
+![](./Images/silver.JPG)
+
+---
+
+
+class: center, middle
+
+![](./Images/gold.JPG)
+
+
+---
+
+class: center, middle
+
+![](./Images/rockstar.JPG)
 
 ---
 
 
 # Agenda
 
-1. Intro to R web development
+1. The story behind this presentation
 
-2. Building and Managing Connections
+--
 
-3. Plotting Data with ggplot
+2. Building a sample app
 
-4. Integrating Visuals with Shiny
+-- 
 
-5. Adding Interactivity
+3. 
 
 
 ---
@@ -267,25 +293,6 @@ People to follow
 
 ```
 
-```{r,eval=FALSE}
-  {{dbConnect}}(
-    odbc::odbc(),Driver= myDriver,Server = myServer
-                ,Database = myDatabase,Trusted_Connection='yes')
-  dbGetQuery(con,query)
-  dbDisconnect(con)  
-```
---
-```{r,eval=FALSE}
-  {{dbPool}}(
-     odbc::odbc(),Driver= myDriver,Server = myServer
-                  ,Database = myDatabase,Trusted_Connection='yes')
-```
---
-```{r poolres, eval=FALSE}
-rs <- microbenchmark(dbconnectworkload() 
-                    ,dbpoolworkload(),times = 100)
-```
-
 ---
 
 ## Manual vs Pool Benchmark Results
@@ -310,54 +317,10 @@ class: inverse, center, middle
 ---
 
 
-## File vs Table Query
-
-<br>
-> If your data fits in memory there is no advantage to putting it in a database: it will only be slower and more frustrating.
-
-<br>
-Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A dplyr Back End for Databases. https://CRAN.R-project.org/package=dbplyr.
-
-<br>
-
---
-
-- Frustrating --> Possibly
-
---
-
-- Slower --> It Depends
-
----
-
-
-
-# Recap
-
-- Use the right tool for the job
-
---
-
-- Troubleshooting connections
-
---
-
-- Performance
-
---
-
-Presentation write up on blog [www.hintank.com](https://www.hinttank.com/)
-
---
-
-Demo Application on github https://github.com/msharkey/shinybuilder
-
-
----
-
 class: center, middle
 
 # Thank You
+
 
 
 

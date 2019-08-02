@@ -3,8 +3,8 @@
   <head>
     <title>Building Web-Apps with R and SQL Server</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Matthew Sharkey | msharkey3434@gmail.com" />
-    <meta name="date" content="2019-07-13" />
+    <meta name="author" content="R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R." />
+    <meta name="date" content="2019-08-02" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
   </head>
@@ -13,8 +13,8 @@
 class: center, middle, inverse, title-slide
 
 # Building Web-Apps with R and SQL Server
-### Matthew Sharkey | <a href="mailto:msharkey3434@gmail.com" class="email">msharkey3434@gmail.com</a>
-### 2019-07-13
+### R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R.
+### 2019-08-02
 
 ---
 
@@ -24,33 +24,59 @@ class: center, middle, inverse, title-slide
 
 
 
-# About Me
+# Hello World
 
-Matthew Sharkey, MBA, MS-BIA, MCSE | Database Administrator
 &lt;div&gt;
 &lt;center&gt;
+.pull-left[
+-Matt Sharkey, MBA, MS-BIA, MCSE
 
-![me](C:/Users\matthew.sharkey\OneDrive - Buildertrend\Repos\shinybuilder\04-Images/legoGuy.jpg)
+-IT Database Administrator
+]
+.pull-right[
+&lt;img src="./Images/matthew_sharkey.JPG" alt="me" width="300" height="267"&gt;
+]
 
 
 
 &lt;/center&gt;
 &lt;div&gt;
 
+
+---
+
+class: center, middle
+
+![](./Images/silver.JPG)
+
+---
+
+
+class: center, middle
+
+![](./Images/gold.JPG)
+
+
+---
+
+class: center, middle
+
+![](./Images/rockstar.JPG)
+
 ---
 
 
 # Agenda
 
-1. Intro to R web development
+1. The story behind this presentation
 
-2. Building and Managing Connections
+--
 
-3. Plotting Data with ggplot
+2. Building a sample app
 
-4. Integrating Visuals with Shiny
+-- 
 
-5. Adding Interactivity
+3. 
 
 
 ---
@@ -107,7 +133,7 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/&gt;
 
 --
 
-<div style="width: 100% ; height: 500px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div>
+![](Presentation_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
 
 --
 
@@ -186,12 +212,6 @@ People to follow
 
 
 
-
-
-
-
-
-
 ---
 
 
@@ -229,28 +249,6 @@ People to follow
 
 
 
-
-```r
-*  dbConnect(
-    odbc::odbc(),Driver= myDriver,Server = myServer
-                ,Database = myDatabase,Trusted_Connection='yes')
-  dbGetQuery(con,query)
-  dbDisconnect(con)  
-```
---
-
-```r
-*  dbPool(
-     odbc::odbc(),Driver= myDriver,Server = myServer
-                  ,Database = myDatabase,Trusted_Connection='yes')
-```
---
-
-```r
-rs &lt;- microbenchmark(dbconnectworkload() 
-                    ,dbpoolworkload(),times = 100)
-```
-
 ---
 
 ## Manual vs Pool Benchmark Results
@@ -266,51 +264,6 @@ class: inverse, center, middle
 
 ---
 
-
-## File vs Table Query
-
-&lt;br&gt;
-&gt; If your data fits in memory there is no advantage to putting it in a database: it will only be slower and more frustrating.
-
-&lt;br&gt;
-Hadley Wickham, RStudio, Edgar Ruiz. 2019. Dbplyr: A dplyr Back End for Databases. https://CRAN.R-project.org/package=dbplyr.
-
-&lt;br&gt;
-
---
-
-- Frustrating --&gt; Possibly
-
---
-
-- Slower --&gt; It Depends
-
----
-
-
-
-# Recap
-
-- Use the right tool for the job
-
---
-
-- Troubleshooting connections
-
---
-
-- Performance
-
---
-
-Presentation write up on blog [www.hintank.com](https://www.hinttank.com/)
-
---
-
-Demo Application on github https://github.com/msharkey/shinybuilder
-
-
----
 
 class: center, middle
 
