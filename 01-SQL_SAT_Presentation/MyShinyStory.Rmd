@@ -243,8 +243,6 @@ shinyApp(ui = my_ui, server = my_server)
  
 //Recap here in the presentation
 
-## Performance Tuning and Optimization
-
 ### Security
 
 A pressing security issue is concatenating user input with the query string.  As a rule of thumb, never mix trusted data (in this case, the query string) with untrusted data (the user input).  If a user passed a string for the input, then they could execute arbitrary commands against the database.  Put another way; the app is vulnerable to injection attacks.  We can reduce the risk of injection attacks by sanitizing our inputs.  The sqlinterpolate function from DBI helps with this. It escapes single ticks and paramertizes inputs.

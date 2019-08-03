@@ -2,7 +2,6 @@
 title: "Building Web-Apps with R and SQL Server"
 author: "R isn't well known for enterprise Web Applications.  However, recent advancements in the R ecosystem aim to change that.  In this presentation, I will introduce what you need to know for building a production-ready web-app in R."
 date: "`r Sys.Date()`"
-abstract: "R isn't well known for enterprise Web Applications.  However, recent advancements in the R ecosystem aim to change that.  In this presentation, I will introduce what you need to know for building a production-ready web-app in R."
 bibliography: ["citation.bib"]
 output:
   xaringan::moon_reader:
@@ -39,14 +38,17 @@ library(ggplot2)
 
 
 
-# Hello World
+# About Me
 
 <div>
 <center>
 .pull-left[
--Matt Sharkey, MBA, MS-BIA, MCSE
+- Matt Sharkey, MBA, MS-BIA, MCSE
 
--IT Database Administrator
+- DBA @ BuilderTrend
+
+- Hometown - Winner, SD
+
 ]
 .pull-right[
 <img src="./Images/matthew_sharkey.JPG" alt="me" width="300" height="267">
@@ -78,27 +80,47 @@ class: center, middle
 
 ![](./Images/rockstar.JPG)
 
+
 ---
 
+# From IT to Data science
 
-# Agenda
+- DBA 
 
-1. The story behind this presentation
+
+---
+
+# From IT to Data science
+
+- DBA -> Data Engineer
+
+
+---
+
+# From IT to Data science
+
+- DBA -> Data Engineer
 
 --
 
-2. Building a sample app
-
--- 
-
-3. 
-
+- Data Engineer
 
 ---
 
+# From IT to Data science
+
+- DBA -> Data Engineer
+
+--
+
+- Data Engineer -> Web Developer?
+
+---
+
+
 # Web-Dev Simplified
 
-- R packagage for building web apps
+- Shiny -> R packagage for building web apps
 
 --
 ```{r,eval=FALSE,echo=TRUE}
@@ -143,22 +165,7 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
 
 --
 
-```{r,eval=TRUE,echo=FALSE,message=FALSE}
-    
-    shinyApp(
-      ui = fluidPage(
-      dateRangeInput("date", strong("Date range"), start = "2007-01-01",end = "2017-07-31",min = "2007-01-01", max = "2017-07-31")
-  ),
-
-  server = function(input, output) {},
-
-  options = list(height = 500)
-)
-    
-  
-```
-
---
+![](./Images/DateRange.JPG)
 
 ---
 
@@ -166,11 +173,6 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
 #Shiny Benefits
 
 - Write application UI and Server side code in R
-
---
-
-
-
 
 --
 
@@ -186,7 +188,239 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
 </center>
 ---
 
+
+.pull-left[
+
+# Pros
+
+- Development Speed
+
+- Supportability
+
+]
+
+
+.pull-right[
+
+
+
+---
+
+
+.pull-left[
+
+# Pros
+
+- Development Speed
+
+- Supportability
+
+]
+
+
+.pull-right[
+
+# Concerns
+
+- Would I be sacraficing functionality?
+
+- Would I be sacraficing performance?
+
+- "R is not real programming"
+
+]
+
+
+
+
+---
+
+
 class: inverse, center, middle
+
+# Architecture
+
+---
+
+![](./Images/ShinyArc2.png)
+
+---
+
+![](./Images/ShinyArc1.png)
+
+---
+
+![](./Images/ShinyArc.png)
+
+---
+
+```{r,eval=FALSE}
+library(shiny)
+library(DBI)
+library(odbc)
+
+con <- dbConnect(drv = odbc(),
+                 Driver = 'Sql Server',
+                 Server = '.\\snapman',
+                 Database = 'Test')
+
+
+```
+
+
+
+---
+
+```{r,eval=FALSE}
+library(shiny)
+library(DBI)
+library(odbc)
+
+con <- dbConnect(drv = odbc(),
+                 Driver = 'Sql Server',
+                 Server = '.\\snapman',
+                 Database = 'Test')
+
+{{my_ui <- fluidPage()}}
+ 
+
+```
+
+---
+
+```{r,eval=FALSE}
+library(shiny)
+library(DBI)
+library(odbc)
+
+con <- dbConnect(drv = odbc(),
+                 Driver = 'Sql Server',
+                 Server = '.\\snapman',
+                 Database = 'Test')
+
+my_ui <- fluidPage()
+ 
+{{my_server <- function(input, output) {}}}
+
+```
+
+---
+
+```{r,eval=FALSE}
+library(shiny)
+library(DBI)
+library(odbc)
+
+con <- dbConnect(drv = odbc(),
+                 Driver = 'Sql Server',
+                 Server = '.\\snapman',
+                 Database = 'Test')
+
+my_ui <- fluidPage()
+ 
+my_server <- function(input, output) {}
+
+{{shinyApp(ui = my_ui, server = my_server)}}
+```
+
+---
+
+https://shiny.rstudio.com/gallery/see-more.html
+
+---
+class: inverse, center, middle
+
+# 01 Sample App
+
+![](./Images/BaseApp.JPG)
+
+
+---
+
+# Demo Recap
+
+- Built a user slider control
+
+--
+
+- Defined space for plot output
+
+--
+
+- Added source query text
+
+--
+
+- Executed query
+
+--
+
+- Ploted results
+
+--
+
+- Bound user input to query string
+
+---
+
+
+
+---
+```{r,eval=FALSE}
+Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >=
+  {{DATEADD(minute,-",input$cpu_slider,",Getdate())}}
+```
+
+--
+```{r,eval=FALSE}
+Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >=
+  {{DATEADD(minute,-?cpu_slider_param,Getdate())}}
+```
+--
+```{r,eval=FALSE}
+myquery <- sqlInterpolate(con,myquery,
+           .dots =c(cpu_slider_param <- input$cpu_slider)
+```                                
+--
+```{r,eval=FALSE}
+mydata <- dbGetQuery(con,myquery)
+```
+
+---
+
+# Injection Risk
+
+![](./Images/shinybuilderInjection.gif)
+
+
+---
+
+# Whitelist
+
+```{r,eval=FALSE}
+emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
+
+if(!is.na(str_match(usr_email, emailwhitelist))){
+  #Run query
+} else
+{
+  # Reject input
+}
+```
+
+---
+
+class: inverse, center, middle
+
+
+# 02 - Building and Managing Connections
+
+---
+
+
+
+class: inverse, center, middle
+
 
 # Building and Managing Connections
 
@@ -321,6 +555,7 @@ class: center, middle
 
 # Thank You
 
+<iframe src="https://giphy.com/embed/n4oKYFlAcv2AU" width="480" height="270" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/n4oKYFlAcv2AU">via GIPHY</a></p>
 
 
 
