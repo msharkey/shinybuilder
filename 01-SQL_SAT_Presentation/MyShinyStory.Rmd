@@ -15,7 +15,7 @@ Shortly after I started a team member resigned.  I took on some of his projects,
 
 I decided to re-write the app using R with a SQL Server back-end.  At that point, I had hundreds of hours of R coding experience from grad school and side projects.  Also, my coworkers were all Data Scientists and knew R like a DBA knows SQL Server.  If I had any gaps in my knowledge, they could help.  My strategy was to push as much logic and data processing to the database as possible.  I felt this was the best route because, again, most of my experience is on the database side. 
 
-Before starting the re-write, I had concerns about R performance. R by default runs on one thread whereas SQL server by default can multi-thread.  The Shiny package in R generates about 95% of the  HTML, CSS, and Javascript needed to build a web-app.  For example, if I wanted "Hello World!" to appear in the browser, I would have needed to declare it inside of &lt;h2> tags.  However, with Shiny I called the h2() function.
+Before starting the re-write, I had concerns about R performance. R by default runs on one thread whereas SQL server by default can multi-thread.  The Shiny package in R generates about 95% of the  HTML, CSS, and JavaScript needed to build a web-app.  For example, if I wanted "Hello World!" to appear in the browser, I would have needed to declare it inside of &lt;h2> tags.  However, with Shiny I called the h2() function.
 
 
 ```{r,eval=FALSE,echo=TRUE}
@@ -89,13 +89,13 @@ shinyApp(ui = my_ui, server = my_server)
 
 ### UI
 
-The date input control above is one of many components in the UI.  The UI also contains formating, theme data, and server outputs like graphs. 
+The date input control above is one of many components in the UI.  The UI also contains formatting, theme data, and server outputs like graphs. 
 
 The image below shows what the completed UI looks like for a sample app.  The app has two UI components- a slider control and a plot displaying CPU utilization over time.
 
 ![](./Images/BaseApp.JPG)
 
-The slider helps users determine how far back the plot should display data up to a max of the last 256 minutes. We create the slider with the sliderinput() function.  It's important to note that the value for inputId must be unique for each input object because we reference it in the server object.  The server object wouldn't know which input to accept if we had duplicate inputIDs.  Finally, we wrap the slider in a sidebar to give the page an organized look.
+The slider helps users determine how far back the plot should display data up to a max of the last 256 minutes. We create the slider with the sliderinput() function.  It's important to note that the value for input Id must be unique for each input object because we reference it in the server object.  The server object wouldn't know which input to accept if we had duplicate input Ids.  Finally, we wrap the slider in a sidebar to give the page an organized look.
 
 ```{r,eval=FALSE}
 library(shiny)
@@ -240,12 +240,10 @@ dbDisconnect(con)
 shinyApp(ui = my_ui, server = my_server)
 ```
 
- 
-//Recap here in the presentation
 
 ### Security
 
-A pressing security issue is concatenating user input with the query string.  As a rule of thumb, never mix trusted data (in this case, the query string) with untrusted data (the user input).  If a user passed a string for the input, then they could execute arbitrary commands against the database.  Put another way; the app is vulnerable to injection attacks.  We can reduce the risk of injection attacks by sanitizing our inputs.  The sqlinterpolate function from DBI helps with this. It escapes single ticks and paramertizes inputs.
+A pressing security issue is concatenating user input with the query string.  As a rule of thumb, never mix trusted data (in this case, the query string) with untrusted data (the user input).  If a user passed a string for the input, then they could execute arbitrary commands against the database.  Put another way; the app is vulnerable to injection attacks.  We can reduce the risk of injection attacks by sanitizing our inputs.  The sqlinterpolate function from DBI helps with this. It escapes single ticks and binds inputs to the parameters.
 
 
 ```{r,eval=FALSE}
@@ -269,7 +267,7 @@ myquery_param <- sqlInterpolate(con,myquery,.dots =c(cpu_slider_param <- input$c
 mydata <- dbGetQuery(con,myquery_param)
 ```
 
-It might make sense to use whitelists certain inputs.  For example, check that an email input field follows a specified pattern.  The code below populates emailistwhitelist with a regex pattern of a valid email.  The if() function checks if the input matches the pattern.  If it doesn't match, then query won't touch the database.
+It might make sense to use white lists certain inputs.  For example, check that an email input field follows a specified pattern.  The code below populates emailistwhitelist with a regex pattern of a valid email.  The if() function checks if the input matches the pattern.  If it doesn't match, then query won't touch the database.
 
 ```{r,eval=FALSE}
 emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
@@ -403,7 +401,7 @@ We can also enable plot caching with minor app code changes.  First, the renderC
   },cacheKeyExpr = {input$cpu_slider})
 ```
 
-Before we re-run the load test, I must point out that our app would not work with caching in its current state.  The query returns a sliding window and is not deterministic. Say, for example, I submit a query with a slider input value of 256.  Then five minutes later, I submit the same query.  The data would change, but if we pulled the plot from cache, it would reflect stale data.  We could persist the results of the query in a table and update the input control to a timestamp or numeric field.  This change makes the app compatable with plot caching.  For the demo, we not add the change as the focus is on performance implications.  With plot caching, the load test reveals a significant performance enhancement.
+Before we re-run the load test, I must point out that our app would not work with caching in its current state.  The query returns a sliding window and is not deterministic. Say, for example, I submit a query with a slider input value of 256.  Then five minutes later, I submit the same query.  The data would change, but if we pulled the plot from cache, it would reflect stale data.  We could persist the results of the query in a table and update the input control to a timestamp or numeric field.  This change makes the app compatible with plot caching.  For the demo, we not add the change as the focus is on performance implications.  With plot caching, the load test reveals a significant performance enhancement.
 
 ```{r echo=FALSE}
 htmltools::includeHTML("gantt-run-50workersCache.svg")
@@ -413,6 +411,6 @@ Each event now executes in milliseconds, which improves concurrency.  The 50th u
  
 ### Summary
 
-I had a tough problem at my last job.  I took responsibilty for a web-app written in a unfamiliar  stack.  I used the R package Shiny which helped simplify the development process.  So, instead of codding Html, I spent time on things I'm good at like solving problems and sharing the results.  I had concerns about scale and functionality.  However, I learned with proper design, a Shiny app can serve 50 users easily.  I used R functions for improving security, connection management, error handling, and caching.
+I had a tough problem at my last job.  I took responsibility for a web-app written in a unfamiliar  stack.  I used the R package Shiny which helped simplify the development process.  So, instead of codding Html, I spent time on things I'm good at like solving problems and sharing the results.  I had concerns about scale and functionality.  However, I learned with proper design, a Shiny app can serve 50 users easily.  I used R functions for improving security, connection management, error handling, and caching.
 
  If a Data Science team needs to write a self -service web-app then R is a good choice.

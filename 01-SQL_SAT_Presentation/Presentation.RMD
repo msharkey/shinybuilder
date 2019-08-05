@@ -13,39 +13,16 @@ output:
 ---
 
 
-```{r setup, echo=FALSE,warning=FALSE,message=FALSE}
-options(htmltools.dir.version = FALSE)
-library(DBI)
-library(dbplyr)
-library(tidyverse)
-library(kableExtra)
-library(microbenchmark)
-library(ggplot2)
-#myDriver <- 'SQL Server'
-#myServer <- '.\\snapman'
-#myDatabase <- 'Cab_Demo'
-#sqlchunk_connection <- dbConnect(odbc::odbc(),
-#                          Driver= myDriver,
-#                          Server = myServer,
-#                          Database = myDatabase,
-#                          Trusted_Connection='yes')
-#comp <- Sys.info()
-#if(comp["nodename"]=="OMC-5CG6151GZF"){
-#  cab_fileloc <- "C:/Users/MaSharkey/Cab_Data/yellow_tripdata_2018-12.csv"} else {
-#  cab_fileloc <- "D:/Cab_data/yellow_tripdata_2018-01.csv"
-#  }
-```
+## About Me
 
 
 
-# About Me
-
-<div>
-<center>
 .pull-left[
 - Matt Sharkey, MBA, MS-BIA, MCSE
 
 - DBA @ BuilderTrend
+
+- Omaha, NE
 
 - Hometown - Winner, SD
 
@@ -56,8 +33,6 @@ library(ggplot2)
 
 
 
-</center>
-<div>
 
 
 ---
@@ -83,44 +58,59 @@ class: center, middle
 
 ---
 
-# From IT to Data science
+## From IT to Data science
 
 - DBA 
 
 
 ---
 
-# From IT to Data science
+## From IT to Data science
 
 - DBA -> Data Engineer
 
 
 ---
 
-# From IT to Data science
+## From IT to Data science
 
 - DBA -> Data Engineer
-
---
 
 - Data Engineer
 
 ---
 
-# From IT to Data science
+## From IT to Data science
 
 - DBA -> Data Engineer
 
+- Data Engineer -> Web Developer?
+
 --
 
-- Data Engineer -> Web Developer?
+![](./Images/mark-de-rooij-k59C8rWwPAo-unsplash.jpg)
 
 ---
 
+.pull-left[
+![](./Images/76-debugging.png)
 
-# Web-Dev Simplified
+]
 
-- Shiny -> R packagage for building web apps
+.pull-right[
+
+![](./Images/127-end-of-the-line.png)
+
+]
+
+
+
+
+
+
+# Web Development Simplified
+
+- Shiny -> R package for building web apps
 
 --
 ```{r,eval=FALSE,echo=TRUE}
@@ -140,13 +130,24 @@ h2('Hello World!')
 
 
 ---
-```{r,eval=FALSE,echo=TRUE}
-dateRangeInput("date", strong("Date range")
-   ,start = "2007-01-01", end = "2017-07-31"
-   ,min = "2007-01-01", max = "2017-07-31")
-```
+.pull-left[
 
+```{r,eval=FALSE,echo=TRUE}
+dateRangeInput("date"
+   ,strong("Date range")
+   ,start = "2007-01-01"
+   ,end = "2017-07-31"
+   ,min = "2007-01-01"
+   ,max = "2017-07-31")
+```
+]
+
+.pull-right[
+![](./Images/DateRange.JPG)
+
+]
 --
+
 
 ```{r,eval=FALSE,echo=TRUE}
 <div id="date">
@@ -163,74 +164,47 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
   </div></div>
 ```
 
+
+
+
+---
+
+
+
+## Pros
+
+- Familiar 
+
 --
 
-![](./Images/DateRange.JPG)
+- Supportability
+
+--
+
+- Hosting Options https://www.shinyapps.io/
+
+
 
 ---
 
-
-#Shiny Benefits
-
-- Write application UI and Server side code in R
-
---
-
-- Integrate R data analysis packages
-
---
-
-- Hosting https://www.shinyapps.io/
-
----
 <center>
 <iframe src="https://msharkey.shinyapps.io/myapp/" height="625" width="650"></iframe>
 </center>
----
-
-
-.pull-left[
-
-# Pros
-
-- Development Speed
-
-- Supportability
-
-]
-
-
-.pull-right[
-
-
 
 ---
 
-
-.pull-left[
-
-# Pros
-
-- Development Speed
-
-- Supportability
-
-]
+## Concerns
 
 
-.pull-right[
+- Functionality?
 
-# Concerns
+--
 
-- Would I be sacraficing functionality?
+- Performance?
 
-- Would I be sacraficing performance?
+--
 
 - "R is not real programming"
-
-]
-
-
 
 
 ---
@@ -238,7 +212,7 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
 
 class: inverse, center, middle
 
-# Architecture
+## Architecture
 
 ---
 
@@ -323,21 +297,23 @@ my_server <- function(input, output) {}
 {{shinyApp(ui = my_ui, server = my_server)}}
 ```
 
----
+--
 
-https://shiny.rstudio.com/gallery/see-more.html
+[Shiny Gallery](https://shiny.rstudio.com/gallery/see-more.html)
+
+
 
 ---
 class: inverse, center, middle
 
-# 01 Sample App
+## 01 - Sample App Demo
 
 ![](./Images/BaseApp.JPG)
 
 
 ---
 
-# Demo Recap
+## Demo Recap
 
 - Built a user slider control
 
@@ -355,7 +331,7 @@ class: inverse, center, middle
 
 --
 
-- Ploted results
+- Plotted results
 
 --
 
@@ -379,7 +355,7 @@ Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >=
 --
 ```{r,eval=FALSE}
 myquery <- sqlInterpolate(con,myquery,
-           .dots =c(cpu_slider_param <- input$cpu_slider)
+           .dots =c(cpu_slider_param <- input$cpu_slider))
 ```                                
 --
 ```{r,eval=FALSE}
@@ -388,66 +364,326 @@ mydata <- dbGetQuery(con,myquery)
 
 ---
 
-# Injection Risk
+## Injection Risk
 
 ![](./Images/shinybuilderInjection.gif)
 
 
 ---
 
-# Whitelist
+## Whitelist
 
 ```{r,eval=FALSE}
 emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
 
 if(!is.na(str_match(usr_email, emailwhitelist))){
-  #Run query
+  ##Run query
 } else
 {
-  # Reject input
+  ## Reject input
 }
 ```
 
 ---
+//Akward Transition
+
+## Building and Managing Connections
+
+```{r,eval=FALSE}
+{{con <-  dbConnect(drv = odbc::odbc(), }}
+                    Driver = 'Sql Server',
+                    Server = '.\\snapman',
+                    Database = 'Test',
+                    Trusted_Connection='yes')
+    myquery <- ...
+    mydata <- dbGetQuery(con,myquery)
+    
+    {{dbDisconnect(con)}}
+```
+
+
+--
+
+
+```{r,eval=FALSE}
+{{pool <- dbPool(drv = odbc::odbc(),}}
+               Driver = 'Sql Server',
+               Server = '.\\snapman',
+               Database = 'Test')
+my_ui <- ....
+my_server <- function(input, output) {
+  output$cpuPlot <- renderPlot({
+    myquery <- ....
+    myqueryint <- ...
+    {{mydata <- dbGetQuery(pool,myqueryint)}}
+
+```
+
+
+---
 
 class: inverse, center, middle
 
 
-# 02 - Building and Managing Connections
+## 02 - Building and Managing Connections Demo
 
 ---
 
+## Demo Recap
+
+- Profiled session with profvis
+
+--
+
+- Identified bottleneck 
 
 
-class: inverse, center, middle
+--
 
-
-# Building and Managing Connections
-
+- Switched app to connection pooling
 
 ---
 
+## Error Handling
 
-```{r commonCon, eval=TRUE, warning=FALSE}
-#myconnection <- DBI::dbConnect(odbc::odbc(),
-#                          Driver= 'SQL Server',
-#                          Server = '.\\snapman',
-#                          Database = 'Cab_Demo',
-#                          Trusted_Connection='yes')
+
+<iframe src="https://giphy.com/embed/WhFfFPCEDXpBe" width="480" height="360" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/error-WhFfFPCEDXpBe">via GIPHY</a></p>
+
+
+--
+
+---
+
+How would the app respond to a database error?
+
+![](./Images/ErrorMessage.JPG)
+
+---
+
+```{r,eval=FALSE}
+
+results <- dbGetQuery(pool,myquery)
+ggplot(results,aes(Event_Time,CPU_Utilization)) + geom_line()
+    
+        
+        
+        
+
+                   
 ```
 
 --
 
-```{r execQuery, eval=TRUE, warning=FALSE}
+```{r,eval=FALSE}
+tryCatch({
+{{ results <- dbGetQuery(pool,myquery)}}
+{{ggplot(results,aes(Event_Time,CPU_Utilization))+ geom_line()}}
+ },error =function(e) {
+    showModal(modalDialog(
+    h5('There was an error.  Please contact the system admin.")
+      )
+      )
+  })
+```
 
-#dbGetQuery(myconnection,"Select GetDate()")
-#dbDisconnect(myconnection)
 
+--
+
+![](./Images/ModalError.JPG)
+
+
+---
+
+## Handling Deadlocks Client Side
+
+```{r,eval=FALSE}
+tryCatch({
+    dbGetQuery(con,myquery)
+}
+,error = function(e){
+  {{if(grep('1205',e$message)==1){}}
+    while (x<4){
+      tryCatch({
+        dbGetQuery(con,myquery)
+        break
+        }
+      ,error=function(e){
+      x<<- x+1
+      })
+    }
+  }
+})
 ```
 
 ---
 
-# Additional Resources
+
+
+class: inverse, center, middle
+
+
+## 03 - Error Handling Demo
+
+
+---
+
+
+## Demo Recap
+
+- Forced database offline during active session
+
+--
+
+- No error handling displayed errors at the client and crashed session
+
+--
+
+- Added tryCatch around connection attempt and query attempt
+
+
+---
+
+## Load Testing 
+
+
+App is fast with one user session  
+
+--
+
+What about 50 concurrent users?
+
+--
+
+```{r,eval=FALSE}
+shinyloadtest::record_session('http://127.0.0.1:6696/')
+```
+
+--
+
+```{sh,eval=FALSE}
+$ shinycannon recording.log http://127.0.0.1:6696/ 
+--workers 50 --loaded-duration-minutes 2
+```
+
+--
+
+```{r,eval=FALSE,message=FALSE, warning=FALSE}
+df <- shinyloadtest::load_runs("50workers" = "./test-log.997Z")
+
+shinyloadtest::shinyloadtest_report(df, "run1.html")
+```
+
+---
+
+
+
+class: inverse, center, middle
+
+
+## 04 - Review Load Test Results
+
+
+---
+
+
+## Recap
+
+- Recorded an typical user session
+
+--
+
+- Ran load test with shinycannon
+
+--
+
+- Analyzed test results
+
+
+
+---
+
+## Caching
+
+```{r,eval=FALSE}
+--OPTION (RECOMPILE);
+```
+
+--
+
+renderPlot -> renderCachedPlot
+
+--
+
+```{r,eval=FALSE}
+  },cacheKeyExpr = {input$cpu_slider})
+```
+
+---
+
+class: inverse, center, middle
+
+## 05 - Caching Demo
+
+---
+
+
+## Demo Recap
+
+- Removed OPTION recompile hint from query
+
+--
+
+- Configured app for plot caching
+
+--
+
+- Analyzed load test results with caching
+
+
+---
+
+
+## Session Recap
+
+```{r,eval=FALSE}
+con <- dbConnect(drv = odbc(),
+                 Driver = 'Sql Server',
+                 Server = '.\\snapman',
+                 Database = 'Test')
+
+my_ui <- fluidPage()
+my_server <- function(input, output) {}
+shinyApp(ui = my_ui, server = my_server)
+```
+
+--
+
+- Built a sample app from the template
+
+--
+
+- Fortified the app
+
+  - Connection Pooling
+  
+  - Error Handling
+
+--
+
+- Scaled the app
+
+  - Load Testing
+  
+  - Caching
+  
+
+---
+
+
+## Additional Resources
+
+Presentation Repo
+https://github.com/msharkey/shinybuilder/tree/master/01-SQL_SAT_Presentation
 
 Pluralsight
 https://app.pluralsight.com/library/courses/r-programming-fundamentals/table-of-contents
@@ -472,88 +708,9 @@ People to follow
 ---
 
 
-
-
-
-
-
-## Common Connection Problems
-
-.pull-left[
-1. Wrong connection string format 
-    
-1. Misspelled something
-
-1. Permissions
-
-1. Driver
-
-1. Wrong port number
-
-1. Firewall
-]
-
-.pull-right[
-<center>
-<iframe src="https://giphy.com/embed/Ym0zs6Ms4vgwU" width="380" height="227" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/mr-robot-rami-malek-its-so-good-Ym0zs6Ms4vgwU"></a></p>
-</center>
-]
-
-
----
-
-## Manual vs Pool
-
-```{r pool, eval=TRUE,echo=FALSE}
-#library(pool)
-#queries <- c("SELECT Getdate()","Select Getdate()","Select Getdate()","Select Getdate()")
-#
-#dbconnectworkload <- function() {
-# for(i in 1:length(queries)){
-#   con <- dbConnect(odbc::odbc(),Driver= myDriver,Server = myServer
-#                   ,Database = myDatabase,Trusted_Connection='yes')
-#  dbGetQuery(con,queries[i])
-#  dbDisconnect(con)
-# }
-#}  
-#
-#poolcon <- dbPool(odbc::odbc(),Driver= myDriver,Server = myServer
-#                  ,Database = myDatabase,Trusted_Connection='yes')
-#
-#dbpoolworkload <- function() {
-# for(i in 1:length(queries)){dbGetQuery(poolcon,queries[i])}
-#}
-
-
-```
-
----
-
-## Manual vs Pool Benchmark Results
-
-```{r boxplot,echo=FALSE, fig.align = "center",eval=FALSE}
-#rs<-as.data.frame(rs)
-#rs$time <- rs$time/1000000
-#names(rs) <- c("Connection_Type","Milliseconds")
-#ggplot(rs, aes(x=Connection_Type, y=Milliseconds , fill=Connection_Type)) +
-# geom_boxplot(alpha=0.4) +
-#    theme(text = element_text(size=16))
-#
-```
-
-
----
-
-class: inverse, center, middle
-
-# Performance & Optimization
-
----
-
-
 class: center, middle
 
-# Thank You
+## Thank You
 
 <iframe src="https://giphy.com/embed/n4oKYFlAcv2AU" width="480" height="270" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/n4oKYFlAcv2AU">via GIPHY</a></p>
 

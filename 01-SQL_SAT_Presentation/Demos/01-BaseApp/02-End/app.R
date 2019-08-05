@@ -46,7 +46,7 @@ SELECT TOP (256) DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_
 OPTION (RECOMPILE);")
   
   mydata <- dbGetQuery(con,myquery)
-  
+  dbDisconnect(con)
   ggplot(mydata,aes(Event_Time,CPU_Utilization))+geom_line()
   })
   

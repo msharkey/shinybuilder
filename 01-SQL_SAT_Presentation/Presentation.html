@@ -4,9 +4,9 @@
     <title>Building Web-Apps with R and SQL Server</title>
     <meta charset="utf-8" />
     <meta name="author" content="R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R." />
-    <meta name="date" content="2019-08-03" />
-    <link href="libs/remark-css/default.css" rel="stylesheet" />
-    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+    <meta name="date" content="2019-08-04" />
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
   </head>
   <body>
     <textarea id="source">
@@ -14,24 +14,22 @@ class: center, middle, inverse, title-slide
 
 # Building Web-Apps with R and SQL Server
 ### R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R.
-### 2019-08-03
+### 2019-08-04
 
 ---
 
 
 
+## About Me
 
 
 
-
-# Hi
-
-&lt;div&gt;
-&lt;center&gt;
 .pull-left[
 - Matt Sharkey, MBA, MS-BIA, MCSE
 
 - DBA @ BuilderTrend
+
+- Omaha, NE
 
 - Hometown - Winner, SD
 
@@ -42,8 +40,6 @@ class: center, middle, inverse, title-slide
 
 
 
-&lt;/center&gt;
-&lt;div&gt;
 
 
 ---
@@ -69,20 +65,59 @@ class: center, middle
 
 ---
 
-# From IT to Data science
+## From IT to Data science
 
-- DBA --&gt; Data Engineer
+- DBA 
 
---
-
-- Data Engineer --&gt; Web Developer?
 
 ---
 
+## From IT to Data science
 
-# Web-Dev Simplified
+- DBA -&gt; Data Engineer
 
-- Shiny --&gt; R packagage for building web apps
+
+---
+
+## From IT to Data science
+
+- DBA -&gt; Data Engineer
+
+- Data Engineer
+
+---
+
+## From IT to Data science
+
+- DBA -&gt; Data Engineer
+
+- Data Engineer -&gt; Web Developer?
+
+--
+
+![](./Images/mark-de-rooij-k59C8rWwPAo-unsplash.jpg)
+
+---
+
+.pull-left[
+![](./Images/76-debugging.png)
+
+]
+
+.pull-right[
+
+![](./Images/127-end-of-the-line.png)
+
+]
+
+
+
+
+
+
+# Web Development Simplified
+
+- Shiny -&gt; R package for building web apps
 
 --
 
@@ -105,14 +140,25 @@ h2('Hello World!')
 
 
 ---
+.pull-left[
+
 
 ```r
-dateRangeInput("date", strong("Date range")
-   ,start = "2007-01-01", end = "2017-07-31"
-   ,min = "2007-01-01", max = "2017-07-31")
+dateRangeInput("date"
+   ,strong("Date range")
+   ,start = "2007-01-01"
+   ,end = "2017-07-31"
+   ,min = "2007-01-01"
+   ,max = "2017-07-31")
 ```
+]
 
+.pull-right[
+![](./Images/DateRange.JPG)
+
+]
 --
+
 
 
 ```r
@@ -130,57 +176,47 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/&gt;
   &lt;/div&gt;&lt;/div&gt;
 ```
 
---
 
-![](./Images/DateRange.JPG)
+
 
 ---
 
 
-#Shiny Benefits
 
-- Write application UI and Server side code in R
+## Pros
 
---
-
-- Integrate R data analysis packages
+- Familiar 
 
 --
-
-- Hosting https://www.shinyapps.io/
-
----
-&lt;center&gt;
-&lt;iframe src="https://msharkey.shinyapps.io/myapp/" height="625" width="650"&gt;&lt;/iframe&gt;
-&lt;/center&gt;
----
-
-
-
-.pull-left[
-
-# Pros
-
-- Development Speed
 
 - Supportability
 
-]
+--
+
+- Hosting Options https://www.shinyapps.io/
 
 
-.pull-right[
 
-# Concerns
+---
 
-- Would I be sacraficing functionality?
+&lt;center&gt;
+&lt;iframe src="https://msharkey.shinyapps.io/myapp/" height="625" width="650"&gt;&lt;/iframe&gt;
+&lt;/center&gt;
 
-- Would I be sacraficing performance?
+---
+
+## Concerns
+
+
+- Functionality?
+
+--
+
+- Performance?
+
+--
 
 - "R is not real programming"
-
-]
-
-
 
 
 ---
@@ -188,7 +224,7 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/&gt;
 
 class: inverse, center, middle
 
-# Architecture
+## Architecture
 
 ---
 
@@ -272,21 +308,23 @@ my_server &lt;- function(input, output) {}
 *shinyApp(ui = my_ui, server = my_server)
 ```
 
----
+--
 
-https://shiny.rstudio.com/gallery/see-more.html
+[Shiny Gallery](https://shiny.rstudio.com/gallery/see-more.html)
+
+
 
 ---
 class: inverse, center, middle
 
-# 01 Sample App
+## 01 - Sample App Demo
 
 ![](./Images/BaseApp.JPG)
 
 
 ---
 
-# Demo Recap
+## Demo Recap
 
 - Built a user slider control
 
@@ -304,18 +342,14 @@ class: inverse, center, middle
 
 --
 
-- Ploted results
+- Plotted results
 
 --
 
-- Made app interactive
+- Bound user input to query string
 
 ---
 
-
-class: inverse, center, middle
-
-# Optimization
 
 
 ---
@@ -328,13 +362,14 @@ Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) &gt;=
 --
 
 ```r
-Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) &gt;= {{DATEADD(minute,-?cpu_slider_param,Getdate())}}
+Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) &gt;=
+*  DATEADD(minute,-?cpu_slider_param,Getdate())
 ```
 --
 
 ```r
 myquery &lt;- sqlInterpolate(con,myquery,
-                          .dots =c(cpu_slider_param &lt;- input$cpu_slider)
+           .dots =c(cpu_slider_param &lt;- input$cpu_slider))
 ```
 --
 
@@ -344,67 +379,330 @@ mydata &lt;- dbGetQuery(con,myquery)
 
 ---
 
-# Injection Risk
+## Injection Risk
 
 ![](./Images/shinybuilderInjection.gif)
 
 
 ---
 
-# Whitelist
+## Whitelist
 
 
 ```r
 emailwhitelist &lt;- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
 
 if(!is.na(str_match(usr_email, emailwhitelist))){
-  #Run query
+  ##Run query
 } else
 {
-  # Reject input
+  ## Reject input
 }
 ```
 
 ---
 
-class: inverse, center, middle
+
+## Building and Managing Connections
 
 
-# 02 - Building and Managing Connections
+```r
+*con &lt;-  dbConnect(drv = odbc::odbc(), 
+                    Driver = 'Sql Server',
+                    Server = '.\\snapman',
+                    Database = 'Test',
+                    Trusted_Connection='yes')
+    myquery &lt;- ...
+    mydata &lt;- dbGetQuery(con,myquery)
+    
+*    dbDisconnect(con)
+```
 
----
 
-
-
-class: inverse, center, middle
-
-
-# Building and Managing Connections
-
-
----
+--
 
 
 
 ```r
-#myconnection &lt;- DBI::dbConnect(odbc::odbc(),
-#                          Driver= 'SQL Server',
-#                          Server = '.\\snapman',
-#                          Database = 'Cab_Demo',
-#                          Trusted_Connection='yes')
+*pool &lt;- dbPool(drv = odbc::odbc(),
+               Driver = 'Sql Server',
+               Server = '.\\snapman',
+               Database = 'Test')
+my_ui &lt;- ....
+my_server &lt;- function(input, output) {
+  output$cpuPlot &lt;- renderPlot({
+    myquery &lt;- ....
+    myqueryint &lt;- ...
+*    mydata &lt;- dbGetQuery(pool,myqueryint)
+```
+
+
+---
+
+class: inverse, center, middle
+
+
+## 02 - Building and Managing Connections Demo
+
+---
+
+## Demo Recap
+
+- Profiled session with profvis
+
+--
+
+- Identified bottleneck 
+
+
+--
+
+- Switched app to connection pooling
+
+---
+
+## Error Handling
+
+
+&lt;iframe src="https://giphy.com/embed/WhFfFPCEDXpBe" width="480" height="360" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;p&gt;&lt;a href="https://giphy.com/gifs/error-WhFfFPCEDXpBe"&gt;via GIPHY&lt;/a&gt;&lt;/p&gt;
+
+
+--
+
+---
+
+How would the app respond to a database error?
+
+![](./Images/ErrorMessage.JPG)
+
+---
+
+
+```r
+results &lt;- dbGetQuery(pool,myquery)
+ggplot(results,aes(Event_Time,CPU_Utilization)) + geom_line()
 ```
 
 --
 
 
 ```r
-#dbGetQuery(myconnection,"Select GetDate()")
-#dbDisconnect(myconnection)
+tryCatch({
+* results &lt;- dbGetQuery(pool,myquery)
+*ggplot(results,aes(Event_Time,CPU_Utilization))+ geom_line()
+ },error =function(e) {
+    showModal(modalDialog(
+    h5('There was an error.  Please contact the system admin.")
+      )
+      )
+  })
+```
+
+
+--
+
+![](./Images/ModalError.JPG)
+
+
+---
+
+## Handling Deadlocks Client Side
+
+
+```r
+tryCatch({
+    dbGetQuery(con,myquery)
+}
+,error = function(e){
+*  if(grep('1205',e$message)==1){
+    while (x&lt;4){
+      tryCatch({
+        dbGetQuery(con,myquery)
+        break
+        }
+      ,error=function(e){
+      x&lt;&lt;- x+1
+      })
+    }
+  }
+})
 ```
 
 ---
 
-# Additional Resources
+
+
+class: inverse, center, middle
+
+
+## 03 - Error Handling Demo
+
+
+---
+
+
+## Demo Recap
+
+- Forced database offline during active session
+
+--
+
+- No error handling displayed errors at the client and crashed session
+
+--
+
+- Added tryCatch around connection attempt and query attempt
+
+
+---
+
+## Load Testing 
+
+
+App is fast with one user session  
+
+--
+
+What about 50 concurrent users?
+
+--
+
+
+```r
+shinyloadtest::record_session('http://127.0.0.1:6696/')
+```
+
+--
+
+
+```sh
+$ shinycannon recording.log http://127.0.0.1:6696/ 
+--workers 50 --loaded-duration-minutes 2
+```
+
+--
+
+
+```r
+df &lt;- shinyloadtest::load_runs("50workers" = "./test-log.997Z")
+
+shinyloadtest::shinyloadtest_report(df, "run1.html")
+```
+
+---
+
+
+
+class: inverse, center, middle
+
+
+## 04 - Review Load Test Results
+
+
+---
+
+
+## Recap
+
+- Recorded an typical user session
+
+--
+
+- Ran load test with shinycannon
+
+--
+
+- Analyzed test results
+
+
+
+---
+
+## Caching
+
+
+```r
+--OPTION (RECOMPILE);
+```
+
+--
+
+renderPlot -&gt; renderCachedPlot
+
+--
+
+
+```r
+  },cacheKeyExpr = {input$cpu_slider})
+```
+
+---
+
+class: inverse, center, middle
+
+## 05 - Caching Demo
+
+---
+
+
+## Demo Recap
+
+- Removed OPTION recompile hint from query
+
+--
+
+- Configured app for plot caching
+
+--
+
+- Analyzed load test results with caching
+
+
+---
+
+
+## Session Recap
+
+
+```r
+con &lt;- dbConnect(drv = odbc(),
+                 Driver = 'Sql Server',
+                 Server = '.\\snapman',
+                 Database = 'Test')
+
+my_ui &lt;- fluidPage()
+my_server &lt;- function(input, output) {}
+shinyApp(ui = my_ui, server = my_server)
+```
+
+--
+
+- Built a sample app from the template
+
+--
+
+- Fortified the app
+
+  - Connection Pooling
+  
+  - Error Handling
+
+--
+
+- Scaled the app
+
+  - Load Testing
+  
+  - Caching
+  
+
+---
+
+
+## Additional Resources
+
+Presentation Repo
+https://github.com/msharkey/shinybuilder/tree/master/01-SQL_SAT_Presentation
 
 Pluralsight
 https://app.pluralsight.com/library/courses/r-programming-fundamentals/table-of-contents
@@ -429,59 +727,9 @@ People to follow
 ---
 
 
-
-
-
-
-
-## Common Connection Problems
-
-.pull-left[
-1. Wrong connection string format 
-    
-1. Misspelled something
-
-1. Permissions
-
-1. Driver
-
-1. Wrong port number
-
-1. Firewall
-]
-
-.pull-right[
-&lt;center&gt;
-&lt;iframe src="https://giphy.com/embed/Ym0zs6Ms4vgwU" width="380" height="227" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;p&gt;&lt;a href="https://giphy.com/gifs/mr-robot-rami-malek-its-so-good-Ym0zs6Ms4vgwU"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;/center&gt;
-]
-
-
----
-
-## Manual vs Pool
-
-
-
----
-
-## Manual vs Pool Benchmark Results
-
-
-
-
----
-
-class: inverse, center, middle
-
-# Performance &amp; Optimization
-
----
-
-
 class: center, middle
 
-# Thank You
+## Thank You
 
 &lt;iframe src="https://giphy.com/embed/n4oKYFlAcv2AU" width="480" height="270" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;p&gt;&lt;a href="https://giphy.com/gifs/n4oKYFlAcv2AU"&gt;via GIPHY&lt;/a&gt;&lt;/p&gt;
     </textarea>
