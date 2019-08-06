@@ -4,7 +4,7 @@
     <title>Building Your First Shiny Database Application</title>
     <meta charset="utf-8" />
     <meta name="author" content="Matthew Sharkey | msharkey3434@gmail.com" />
-    <meta name="date" content="2019-04-03" />
+    <meta name="date" content="2019-08-05" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
   </head>
@@ -13,8 +13,8 @@
 class: center, middle, inverse, title-slide
 
 # Building Your First Shiny Database Application
-### Matthew Sharkey | <a href="mailto:msharkey3434@gmail.com">msharkey3434@gmail.com</a>
-### 2019-04-03
+### Matthew Sharkey | <a href="mailto:msharkey3434@gmail.com" class="email">msharkey3434@gmail.com</a>
+### 2019-08-05
 
 ---
 
@@ -129,7 +129,7 @@ dbGetQuery(myconnection,"Select GetDate()")
 
 ```
 ##                      
-## 1 2019-04-03 22:50:33
+## 1 2019-08-05 23:17:31
 ```
 
 ```r
@@ -170,7 +170,7 @@ dbDisconnect(myconnection)
 
 
 ```r
-*  dbConnect(
+  {{dbConnect}}(
     odbc::odbc(),Driver= myDriver,Server = myServer
                 ,Database = myDatabase,Trusted_Connection='yes')
   dbGetQuery(con,query)
@@ -179,7 +179,7 @@ dbDisconnect(myconnection)
 --
 
 ```r
-*  dbPool(
+  {{dbPool}}(
      odbc::odbc(),Driver= myDriver,Server = myServer
                   ,Database = myDatabase,Trusted_Connection='yes')
 ```

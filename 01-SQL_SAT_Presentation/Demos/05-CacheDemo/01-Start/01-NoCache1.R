@@ -16,7 +16,7 @@ my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,25
 
 my_server <- function(input, output) {
   
-  output$cpuPlot <- renderPlot({
+  output$cpuPlot <- renderCachedPlot({
     
     myquery <- paste0("Execute dbo.getCPUutilization ?minRange")
 
@@ -29,7 +29,7 @@ my_server <- function(input, output) {
         showModal(modalDialog('There was an error.'))
       })
       
-  })
+  },cacheKeyExpr = input$cpu_slider)
 }
 
 shinyApp(ui = my_ui, server = my_server)

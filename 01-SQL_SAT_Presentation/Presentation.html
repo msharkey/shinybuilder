@@ -4,7 +4,7 @@
     <title>Building Web-Apps with R and SQL Server</title>
     <meta charset="utf-8" />
     <meta name="author" content="R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R." />
-    <meta name="date" content="2019-08-04" />
+    <meta name="date" content="2019-08-05" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
   </head>
@@ -14,7 +14,7 @@ class: center, middle, inverse, title-slide
 
 # Building Web-Apps with R and SQL Server
 ### R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R.
-### 2019-08-04
+### 2019-08-05
 
 ---
 
@@ -38,81 +38,33 @@ class: center, middle, inverse, title-slide
 &lt;img src="./Images/matthew_sharkey.JPG" alt="me" width="300" height="267"&gt;
 ]
 
+---
+## Session Overview
+&lt;img src="./Images/61-web-app-visualized.png" alt="webapp" width="520" height="500"&gt;
 
+---
+## Data Science Delivery
 
+-  What does a Data Engineer do?
+
+![](./Images/quinten-de-graaf-L4gN0aeaPY4-unsplash.jpg)
 
 
 ---
 
-class: center, middle
+# Sharing across the organization
 
-![](./Images/silver.JPG)
-
----
-
-
-class: center, middle
-
-![](./Images/gold.JPG)
-
-
----
-
-class: center, middle
-
-![](./Images/rockstar.JPG)
-
-
----
-
-## From IT to Data science
-
-- DBA 
-
-
----
-
-## From IT to Data science
-
-- DBA -&gt; Data Engineer
-
-
----
-
-## From IT to Data science
-
-- DBA -&gt; Data Engineer
-
-- Data Engineer
-
----
-
-## From IT to Data science
-
-- DBA -&gt; Data Engineer
-
-- Data Engineer -&gt; Web Developer?
+- Requirements for user interaction, going beyond static reports
 
 --
 
-![](./Images/mark-de-rooij-k59C8rWwPAo-unsplash.jpg)
+- Users need to create, read, update, delete data used in analysis
+
+--
+
+- 200 GB tables as data source
 
 ---
-
-.pull-left[
-![](./Images/76-debugging.png)
-
-]
-
-.pull-right[
-
-![](./Images/127-end-of-the-line.png)
-
-]
-
-
-
-
 
 
 # Web Development Simplified
@@ -178,24 +130,19 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/&gt;
 
 
 
-
 ---
-
-
 
 ## Pros
 
-- Familiar 
+- Familiarity
 
 --
 
-- Supportability
+- Supportability 
 
 --
 
 - Hosting Options https://www.shinyapps.io/
-
-
 
 ---
 
@@ -205,7 +152,7 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/&gt;
 
 ---
 
-## Concerns
+## Production Concerns
 
 
 - Functionality?
@@ -227,6 +174,7 @@ class: inverse, center, middle
 ## Architecture
 
 ---
+
 
 ![](./Images/ShinyArc2.png)
 
@@ -324,36 +272,6 @@ class: inverse, center, middle
 
 ---
 
-## Demo Recap
-
-- Built a user slider control
-
---
-
-- Defined space for plot output
-
---
-
-- Added source query text
-
---
-
-- Executed query
-
---
-
-- Plotted results
-
---
-
-- Bound user input to query string
-
----
-
-
-
----
-
 ```r
 Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) &gt;=
 *  DATEADD(minute,-",input$cpu_slider,",Getdate())
@@ -402,6 +320,43 @@ if(!is.na(str_match(usr_email, emailwhitelist))){
 
 ---
 
+## Demo Recap
+
+- Built a user slider control
+
+--
+
+- Defined space for plot output
+
+--
+
+- Added source query text
+
+--
+
+- Executed query
+
+--
+
+- Plotted results
+
+--
+
+- Bound user input to query string
+
+--
+
+- Replaced input var with parameter
+
+---
+
+class: inverse, center, middle
+
+
+## Building and Managing Connections
+
+---
+
 
 ## Building and Managing Connections
 
@@ -439,6 +394,10 @@ my_server &lt;- function(input, output) {
 
 ---
 
+![](./Images/boxplot-1.png)
+
+---
+
 class: inverse, center, middle
 
 
@@ -464,7 +423,7 @@ class: inverse, center, middle
 ## Error Handling
 
 
-&lt;iframe src="https://giphy.com/embed/WhFfFPCEDXpBe" width="480" height="360" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;p&gt;&lt;a href="https://giphy.com/gifs/error-WhFfFPCEDXpBe"&gt;via GIPHY&lt;/a&gt;&lt;/p&gt;
+&lt;iframe src="https://giphy.com/embed/1RkDDoIVs3ntm" width="480" height="480" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;p&gt;&lt;a href="https://giphy.com/gifs/1RkDDoIVs3ntm"&gt;via GIPHY&lt;/a&gt;&lt;/p&gt;
 
 
 --
@@ -506,7 +465,7 @@ tryCatch({
 
 ---
 
-## Handling Deadlocks Client Side
+## Handling Deadlocks
 
 
 ```r
@@ -601,23 +560,6 @@ class: inverse, center, middle
 
 ---
 
-
-## Recap
-
-- Recorded an typical user session
-
---
-
-- Ran load test with shinycannon
-
---
-
-- Analyzed test results
-
-
-
----
-
 ## Caching
 
 
@@ -647,9 +589,6 @@ class: inverse, center, middle
 
 ## Demo Recap
 
-- Removed OPTION recompile hint from query
-
---
 
 - Configured app for plot caching
 
@@ -663,6 +602,8 @@ class: inverse, center, middle
 
 ## Session Recap
 
+- Built a sample app from the template
+
 
 ```r
 con &lt;- dbConnect(drv = odbc(),
@@ -675,9 +616,6 @@ my_server &lt;- function(input, output) {}
 shinyApp(ui = my_ui, server = my_server)
 ```
 
---
-
-- Built a sample app from the template
 
 --
 
@@ -722,6 +660,27 @@ https://amzn.to/32qbna4
 People to follow
 @jcheng,@xieyihui,@hadleywickham,@drob
 
+
+
+---
+
+class: center, middle
+
+![](./Images/silver.JPG)
+
+---
+
+
+class: center, middle
+
+![](./Images/gold.JPG)
+
+
+---
+
+class: center, middle
+
+![](./Images/rockstar.JPG)
 
 
 ---

@@ -1,9 +1,9 @@
 
 library(DBI)
 
-dbConnect <- function(drv,Driver,Server,Database,Trusted_Connection){
-  Sys.sleep(2) 
-  conn <<- DBI::dbConnect(drv = drv,  Driver = Driver ,Server = Server,Database = Database,Trusted_Connection=Trusted_Connection)
+dbConnect <- function(drv,Driver,Server,Database){
+  Sys.sleep(1.5) 
+  conn <<- DBI::dbConnect(drv = drv,  Driver = Driver ,Server = Server,Database = Database)
    return(conn)
   }
 

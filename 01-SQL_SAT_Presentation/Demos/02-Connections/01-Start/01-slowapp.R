@@ -10,7 +10,7 @@ my_server <- function(input, output) {
   
   output$cpuPlot <- renderPlot({
   
-    con <-  dbConnect(drv = odbc::odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test',Trusted_Connection='yes')
+    con <-  dbConnect(drv = odbc::odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test')
  
     myquery <- paste0("DECLARE @ts_now bigint = (SELECT cpu_ticks/(cpu_ticks/ms_ticks) FROM sys.dm_os_sys_info WITH (NOLOCK)); 
    

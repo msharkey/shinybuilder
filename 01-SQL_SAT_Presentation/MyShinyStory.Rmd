@@ -126,7 +126,7 @@ shinyApp(ui = my_ui, server = my_server)
 
 ## Server and Database Integration
 
-The server object renders plots and returns them to UI.  The plot uses data extracted from SQL Server via a Glen Berry T-SQL query.
+The server object renders plots and returns them to UI.  The plot uses data extracted from SQL Server via a Glen Berry T-SQL query.  I'm wrapping the query text into a stored procedure.  There are a numerous benefits from using stored and I'll touch on a few.  First, logic is stored server side instead of inline on the front-end.  This means we can change the app logic on the database without having to take down the app.  Second, I can grant permissions to execute the stored procedure without granting permissions on the underlaying tables.  A security best practice is to grant access to interfaces and not implementations.  Tables are implementations and stored procedures are interfaces.  Finally, stored procs reduce the query string length.  This reduces the data transfered for each execution.  For high volume systems the savingt can add up.
 
 ```{r,echo=FALSE}
 library(odbc)
@@ -137,6 +137,12 @@ sqlcon <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',D
 
  
 ```{sql,eval=TRUE,connection=sqlcon}
+USE test
+GO
+CREATE OR ALTER PROCEDURE dbo.GetCPUutilization
+@minutes INT = 256
+AS
+SET NOCOUNT ON
 DECLARE @ts_now BIGINT = (
             SELECT cpu_ticks / (cpu_ticks / ms_ticks)
               FROM sys.dm_os_sys_info WITH (NOLOCK)
@@ -157,11 +163,22 @@ SELECT TOP (256) DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_
                AND record LIKE N'%<SystemHealth>%'
         ) AS x
   ) AS y
+  WHERE DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >= DateAdd(minute,-@minutes,Getdate())
  ORDER BY record_id DESC
 OPTION (RECOMPILE);
+
+GO
+
+EXECUTE dbo.GetCPUutilization
+
 ```
 
-We want users to filter the time frame with the slider input.  We should filter the results as soon as possible.  In this case, that means adding a predicate to the WHERE clause.
+
+```{sql,eval=TRUE,connection=sqlcon,echo=FALSE}
+DROP PROCEDURE IF EXISTS dbo.GetCPUutilization
+```
+
+So now our app can execute a stored procedure by referencing it in a dbGetQuery call.
 
 ```{r,eval=FALSE}
 library(odbc)
@@ -173,33 +190,15 @@ my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,25
 my_server <- function(input, output) {
   output$cpuPlot <- renderPlot({
     con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
-    myquery <- paste0("
-    DECLARE @ts_now BIGINT = (
-            SELECT cpu_ticks / (cpu_ticks / ms_ticks)
-              FROM sys.dm_os_sys_info WITH (NOLOCK)
-        );
-      SELECT TOP (256) DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time],
-                 100 - SystemIdle                                     AS [CPU_Utilization]
-      FROM (
-      SELECT record.value('(./Record/@id)[1]', 'int')                                                   AS record_id,
-             record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int')         AS [SystemIdle],
-             record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int') AS [SQLProcessUtilization],
-             [timestamp]
-        FROM (
-            SELECT [timestamp],
-                   CONVERT(XML, record) AS [record]
-              FROM sys.dm_os_ring_buffers WITH (NOLOCK)
-             WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR'
-               AND record LIKE N'%<SystemHealth>%'
-        ) AS x
-       ) AS y
-      ORDER BY record_id DESC
-      OPTION (RECOMPILE);
-     ")
+    myquery <- "EXECUTE dbo.GetCPUutilization"
+    mydata <- dbGetQuery(con,myquery)
 
+    dbDisconnect(con)
 ```
 
-Every time the slider input changes the query string updates with a new filter.  Every time the slider input changes all the code contained within the renderPlot() function re-runs.  In our app that means the query string updates then gets passed to dbGetQuery.  dbGetQuery executes the code and stores the result set to mydata.  Next, my data passes the data to ggplot() which generates the plot.  Finally, the updated contents of out$cpuplot render to the UI.  We now have a basic functioning app, but it has a few design flaws.
+We want users to filter the time frame with the slider input.  We should filter the results as soon as possible.  In this case, that means adding a predicate to the WHERE clause.  The WHERE clause contains a stored procedure parameter.  R can pass values to that parameter in the myquery string.
+
+Every time the slider input changes in the UI, the query string updates with the new input value.  dbGetQuery executes the code and stores the result set to mydata.  Next, my data passes the data to ggplot() which generates the plot.  Finally, the updated contents of out$cpuplot render to the UI.  
 
  
 ```{r,eval=FALSE}
@@ -213,21 +212,7 @@ my_server <- function(input, output) {
 
   output$cpuPlot <- renderPlot({
   con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
-  myquery <- paste0("DECLARE @ts_now bigint = (SELECT  cpu_ticks/ (cpu_ticks/ms_ticks) FROM sys.dm_os_sys_info WITH (NOLOCK));
-  SELECT TOP(256)   DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time] ,
-                 100 - SystemIdle AS [CPU_Utilization]
-  FROM (SELECT record.value('(./Record/@id)[1]', 'int') AS record_id,
-              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int')
-              AS [SystemIdle],
-              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int')
-              AS [SQLProcessUtilization], [timestamp]
-        FROM (SELECT [timestamp], CONVERT(xml, record) AS [record]
-              FROM sys.dm_os_ring_buffers WITH (NOLOCK)
-              WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR'
-              AND record LIKE N'%<SystemHealth>%') AS x) AS y
-              Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >= DATEADD(minute,-",input$cpu_slider,",Getdate())
-  ORDER BY record_id DESC OPTION (RECOMPILE);
-  ")
+  myquery <- paste0("Execute dbo.getCPUutilization ",input$cpu_slider)
 
 mydata <- dbGetQuery(con,myquery)
 
@@ -241,26 +226,15 @@ shinyApp(ui = my_ui, server = my_server)
 ```
 
 
+We now have a basic app!  It needs a little work before it is production ready.
+
 ### Security
 
 A pressing security issue is concatenating user input with the query string.  As a rule of thumb, never mix trusted data (in this case, the query string) with untrusted data (the user input).  If a user passed a string for the input, then they could execute arbitrary commands against the database.  Put another way; the app is vulnerable to injection attacks.  We can reduce the risk of injection attacks by sanitizing our inputs.  The sqlinterpolate function from DBI helps with this. It escapes single ticks and binds inputs to the parameters.
 
 
 ```{r,eval=FALSE}
-myquery <- "DECLARE @ts_now bigint = (SELECT cpu_ticks/(cpu_ticks/ms_ticks) FROM sys.dm_os_sys_info WITH (NOLOCK));
-  SELECT TOP(256)   DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time] ,
-                 100 - SystemIdle AS [CPU_Utilization]
-  FROM (SELECT record.value('(./Record/@id)[1]', 'int') AS record_id,
-              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int')
-              AS [SystemIdle],
-              record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int')
-              AS [SQLProcessUtilization], [timestamp]
-        FROM (SELECT [timestamp], CONVERT(xml, record) AS [record]
-              FROM sys.dm_os_ring_buffers WITH (NOLOCK)
-              WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR'
-              AND record LIKE N'%<SystemHealth>%') AS x) AS y
-              Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) >= DATEADD(minute,-?cpu_slider_param,Getdate())
-  ORDER BY record_id DESC OPTION (RECOMPILE);"
+myquery <- "EXECUTE dbo.getCPUutilization ?cpu_slider_param"
 
 myquery_param <- sqlInterpolate(con,myquery,.dots =c(cpu_slider_param <- input$cpu_slider))
 
@@ -407,10 +381,38 @@ Before we re-run the load test, I must point out that our app would not work wit
 htmltools::includeHTML("gantt-run-50workersCache.svg")
 ```
 
-Each event now executes in milliseconds, which improves concurrency.  The 50th user has a similar experience with the app as the first. It's a safe assumption the app can scale beyond 50 users.
+Each event now executes in milliseconds, which improves concurrency.  The 50th user has a similar experience with the app as the first. It's a safe assumption the app can scale beyond 50 users.  Here's the completed app.
+
+```{r,eval=False}
+library(DBI)
+library(ggplot2)
+library(pool)
+
+tryCatch({
+con <-  dbPool(drv = odbc::odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test',Trusted_Connection='yes')
+},error = function(e){showModal(modalDialog('Connection Error'))})
+
+my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))
+                   , mainPanel(plotOutput("cpuPlot")))
+
+my_server <- function(input, output) {
+  output$cpuPlot <- renderCachedPlot({
+    myquery <- paste0("Execute dbo.getCPUutilization ?minRange")
+    myqueryint <- sqlInterpolate(con,myquery,.dots=c(minRange=input$cpu_slider))
+    tryCatch({
+      mydata <- dbGetQuery(con,myqueryint)
+      ggplot(mydata,aes(Event_Time,CPU_Utilization)) + geom_line()},
+      error = function(e){
+        showModal(modalDialog('There was an error.'))
+      }
+    )
+  },cacheKeyExpr = input$cpu_slider)
+}
+shinyApp(ui = my_ui, server = my_server)
+```
  
 ### Summary
 
 I had a tough problem at my last job.  I took responsibility for a web-app written in a unfamiliar  stack.  I used the R package Shiny which helped simplify the development process.  So, instead of codding Html, I spent time on things I'm good at like solving problems and sharing the results.  I had concerns about scale and functionality.  However, I learned with proper design, a Shiny app can serve 50 users easily.  I used R functions for improving security, connection management, error handling, and caching.
 
- If a Data Science team needs to write a self -service web-app then R is a good choice.
+I ended up using Shiny for several other Data Science projects.  Each project had unique requirements and challenges.  And each time my team and I found solutions in the R ecosystem.  If a Data Science team needs to write a self -service web-app then R is a good choice.
