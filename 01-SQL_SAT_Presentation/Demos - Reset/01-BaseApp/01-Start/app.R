@@ -3,10 +3,10 @@
 library(shiny)
 library(DBI)
 library(odbc)
-
+myserver<- ifelse(Sys.info()["nodename"]=="INFRA035",'.','.\\snapman')
 con <- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = '.\\snapman',
+                 Server = myserver,
                  Database = 'Test')
 
 my_ui <- fluidPage()
