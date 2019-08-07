@@ -4,7 +4,7 @@
     <title>Building Web-Apps with R and SQL Server</title>
     <meta charset="utf-8" />
     <meta name="author" content="R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R." />
-    <meta name="date" content="2019-08-05" />
+    <meta name="date" content="2019-08-06" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
   </head>
@@ -14,7 +14,7 @@ class: center, middle, inverse, title-slide
 
 # Building Web-Apps with R and SQL Server
 ### R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R.
-### 2019-08-05
+### 2019-08-06
 
 ---
 
@@ -43,9 +43,8 @@ class: center, middle, inverse, title-slide
 &lt;img src="./Images/61-web-app-visualized.png" alt="webapp" width="520" height="500"&gt;
 
 ---
-## Data Science Delivery
+## What does a Data Engineer do?
 
--  What does a Data Engineer do?
 
 ![](./Images/quinten-de-graaf-L4gN0aeaPY4-unsplash.jpg)
 
@@ -273,15 +272,13 @@ class: inverse, center, middle
 ---
 
 ```r
-Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) &gt;=
-*  DATEADD(minute,-",input$cpu_slider,",Getdate())
+  myquery &lt;- paste0("Execute dbo.GetCPUutilization ",input$cpuInput)
 ```
 
 --
 
 ```r
-Where DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) &gt;=
-*  DATEADD(minute,-?cpu_slider_param,Getdate())
+  myquery &lt;- "Execute dbo.GetCPUutilization ?cpu_slider_param"
 ```
 --
 
@@ -392,9 +389,7 @@ my_server &lt;- function(input, output) {
 ```
 
 
----
 
-![](./Images/boxplot-1.png)
 
 ---
 

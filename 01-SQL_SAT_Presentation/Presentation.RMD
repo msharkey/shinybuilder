@@ -36,9 +36,8 @@ output:
 <img src="./Images/61-web-app-visualized.png" alt="webapp" width="520" height="500">
 
 ---
-## Data Science Delivery
+## What does a Data Engineer do?
 
--  What does a Data Engineer do?
 
 ![](./Images/quinten-de-graaf-L4gN0aeaPY4-unsplash.jpg)
 
@@ -373,9 +372,7 @@ my_server <- function(input, output) {
 ```
 
 
----
 
-![](./Images/boxplot-1.png)
 
 ---
 

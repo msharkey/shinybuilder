@@ -1,21 +1,23 @@
 ---
 title: "My Shiny Story"
 author: "Matt Sharkey"
-date: "7/13/2019"
-output: html_document
+date: "8/6/2019"
+output:
+  word_document: default
+  pdf_document: default
 ---
 
 ## From IT to Data Science
 
-At my previous employer, I worked in IT operations as a Database Administrator.  In March of 2018, a colleague on the Data Science team approached me about an internal job posting.  His team was looking for a Data Engineer to support its data pipeline.   I had already worked with the team on an IT project, so I had an approximate idea of what skills they needed.  Also, I was about to graduate with a Masters in  Analytics, and the opportunity seemed relevant.  After thinking things over, I decided the best route forward was to take the job.
+At my previous employer, I worked in IT operations as a Database Administrator.  In March of 2018, a colleague on the Data Science team approached me about an internal job posting.  His team was looking for a Data Engineer to support its data pipeline.   I had already worked with the team on a IT project and fe support tickets, so I had an approximate idea of what skills they needed.  I was about to graduate with a Masters in  Analytics, and the opportunity seemed relevant.  After thinking things over, I decided the best route forward was to take the job.
 
-Shortly after I started a team member resigned.  I took on some of his projects, including the development of a web-app.  I had barely changed my email signature before I started getting feature requests on the app.  I couldn't speak to the feasibility of the requests because I didn't have experience in the application stack.  In fact, I didn't have much web-app experience in general as I've been a database specialist my entire career.  After several discussions with stakeholders,  I pressed the reset button.
+A team member resigned shortly after I signed on.  I took on some of his projects, including the development of a web-app.  I had barely changed my email signature before I started getting feature requests on the app.  I couldn't speak to the feasibility of the requests because I didn't have experience in the application stack.  In fact, I didn't have much web-app experience in general as I've been a database specialist my entire career.  After several discussions with stakeholders,  I pressed the reset button.
 
 ## R you serious?
 
-I decided to re-write the app using R with a SQL Server back-end.  At that point, I had hundreds of hours of R coding experience from grad school and side projects.  Also, my coworkers were all Data Scientists and knew R like a DBA knows SQL Server.  If I had any gaps in my knowledge, they could help.  My strategy was to push as much logic and data processing to the database as possible.  I felt this was the best route because, again, most of my experience is on the database side. 
+I decided to re-write the app using R with a SQL Server back-end.  At that point, I had hundreds of hours of R coding experience from grad school and side projects.  Also, most of my coworkers were Data Scientists and had strong R programming skills.  If I had any gaps in my knowledge, they could help. 
 
-Before starting the re-write, I had concerns about R performance. R by default runs on one thread whereas SQL server by default can multi-thread.  The Shiny package in R generates about 95% of the  HTML, CSS, and JavaScript needed to build a web-app.  For example, if I wanted "Hello World!" to appear in the browser, I would have needed to declare it inside of &lt;h2> tags.  However, with Shiny I called the h2() function.
+The Shiny package in R generates about 95% of the  HTML, CSS, and JavaScript needed to build a web-app.  For example, if I wanted "Hello World!" to appear in the browser, I would have needed to declare it inside of &lt;h2> tags.  However, with Shiny I called the h2() function.
 
 
 ```{r,eval=FALSE,echo=TRUE}
@@ -60,6 +62,10 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
   </div></div>
 ```
 
+## The Gameplan
+
+My strategy was to push as much logic and data processing to the database as possible.  I felt this was the best route because, again, most of my experience is on the database side.  I also had concerns about R performance. R by default runs on one thread whereas SQL server by default can multi-thread.  
+
 I knew code generators were great for productivity but often at the cost of performance and functionality.  It wasn't clear to me how the app would handle database connections, application errors, or perform with multiple user sessions.   As I progressed on the project, I learned a few techniques that put those concerns to rest.  It's my goal in this post to share those techniques.
 
 ## App Architecture
@@ -78,7 +84,7 @@ library(shiny)
 library(DBI)
 library(odbc)
 
-con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
+con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test')
 
 my_ui <- fluidPage()
  
@@ -100,7 +106,7 @@ The slider helps users determine how far back the plot should display data up to
 ```{r,eval=FALSE}
 library(shiny)
 
-con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
+con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test')
 
 my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))
 
@@ -109,12 +115,12 @@ my_server <- function(input, output) {}
 shinyApp(ui = my_ui, server = my_server)
 ```
 
-Now we need to add a function for our plot.  The plotOutput() currently references a nonexistent plot called "cpuPlot."  We are ready to create cpuPlot in the server object.
+Now we need to add a function for our plot.  The plotOutput() currently references a plot called "cpuPlot."  cpuPlot does not exist so the main panel is nothing but a placeholder at the momenment.
 
 ```{r,eval=FALSE}
 library(shiny)
 
-con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
+con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test')
 
 my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))
                    , mainPanel(plotOutput("cpuPlot")))
@@ -126,19 +132,18 @@ shinyApp(ui = my_ui, server = my_server)
 
 ## Server and Database Integration
 
-The server object renders plots and returns them to UI.  The plot uses data extracted from SQL Server via a Glen Berry T-SQL query.  I'm wrapping the query text into a stored procedure.  There are a numerous benefits from using stored and I'll touch on a few.  First, logic is stored server side instead of inline on the front-end.  This means we can change the app logic on the database without having to take down the app.  Second, I can grant permissions to execute the stored procedure without granting permissions on the underlaying tables.  A security best practice is to grant access to interfaces and not implementations.  Tables are implementations and stored procedures are interfaces.  Finally, stored procs reduce the query string length.  This reduces the data transfered for each execution.  For high volume systems the savingt can add up.
+The server object renders plots and returns them to UI.  The plot uses data extracted from SQL Server via a Glen Berry T-SQL query.  I'm wrapping the query text into a stored procedure.  There are a numerous benefits from using stored and I'll touch on a few.  First, logic is stored server side instead of inline on the front-end.  This means we can change the app logic on the database without having to take down the app.  Second, I can grant permissions to execute the stored procedure without granting permissions on the underlying tables.  A security best practice is to grant access to interfaces and not implementations.  Tables are implementations and stored procedures are interfaces.  Finally, stored procs reduce the query string length.  This reduces the data transferred for each execution.  For high volume systems the savings can add up.
 
 ```{r,echo=FALSE}
 library(odbc)
 library(DBI)
-
-sqlcon <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
+myserver<- ifelse(Sys.info()["nodename"]=="INFRA035",'.','.\\snapman')
+sqlcon <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = myserver,Database = 'Test')
 ```
 
  
-```{sql,eval=TRUE,connection=sqlcon}
-USE test
-GO
+```{sql,eval=FALSE,connection=sqlcon}
+
 CREATE OR ALTER PROCEDURE dbo.GetCPUutilization
 @minutes INT = 256
 AS
@@ -151,10 +156,13 @@ DECLARE @ts_now BIGINT = (
 SELECT TOP (256) DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_Time],
                  100 - SystemIdle                                     AS [CPU_Utilization]
   FROM (
-      SELECT record.value('(./Record/@id)[1]', 'int')                                                   AS record_id,
-             record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int')         AS [SystemIdle],
-             record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int') AS [SQLProcessUtilization],
-             [timestamp]
+      SELECT 
+record.value('(./Record/@id)[1]', 'int') AS record_id,
+record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]'
+, 'int')         AS [SystemIdle],
+record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]'
+, 'int') AS [SQLProcessUtilization],
+[timestamp]
         FROM (
             SELECT [timestamp],
                    CONVERT(XML, record) AS [record]
@@ -168,14 +176,9 @@ SELECT TOP (256) DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS [Event_
 OPTION (RECOMPILE);
 
 GO
-
-EXECUTE dbo.GetCPUutilization
-
 ```
-
-
-```{sql,eval=TRUE,connection=sqlcon,echo=FALSE}
-DROP PROCEDURE IF EXISTS dbo.GetCPUutilization
+```{sql,connection=sqlcon}
+EXECUTE dbo.GetCPUutilization
 ```
 
 So now our app can execute a stored procedure by referencing it in a dbGetQuery call.
@@ -189,9 +192,9 @@ my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,25
 
 my_server <- function(input, output) {
   output$cpuPlot <- renderPlot({
-    con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
-    myquery <- "EXECUTE dbo.GetCPUutilization"
-    mydata <- dbGetQuery(con,myquery)
+  con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test')
+  myquery <- "EXECUTE dbo.GetCPUutilization"
+  mydata <- dbGetQuery(con,myquery)
 
     dbDisconnect(con)
 ```
@@ -211,7 +214,8 @@ my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,25
 my_server <- function(input, output) {
 
   output$cpuPlot <- renderPlot({
-  con <- dbConnect(drv = odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' ,Trusted_Connection='yes')
+  con <- dbConnect(drv = odbc(),
+                   Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test' )
   myquery <- paste0("Execute dbo.getCPUutilization ",input$cpu_slider)
 
 mydata <- dbGetQuery(con,myquery)
@@ -271,11 +275,11 @@ The profile session reveals dbConnect() accounts for most of the execution time.
 
 ```{r,eval = FALSE}
 library(pool)
-pool <- dbPool(drv = odbc(),Driver = mydriver,Server = myserver,Database = myDatabase,Trusted_Connection='yes')
+pool <- dbPool(drv = odbc(),Driver = mydriver,Server = myserver,Database = myDatabase)
   results <- dbGetQuery(pool,myquery)
 ```
 
-Besides making our session faster, pool also helps the app scale.  Pool opens and closes connections as needed without developer intervention.    So as users start to increase more open connection become available.
+Besides making our session faster, pool also helps the app scale.  Pool opens and closes connections as needed without developer intervention.  So as the workload start to increase more open connection become available.
 
 ### Error Handling
 
@@ -290,7 +294,7 @@ When the user adjusts the slider, the query attempts to re-run but fails.  R dis
 
 ![](./Images/ErrorMessage.JPG)
 
-We can avoid this issue with a tryCatch function wrapped around the query execution.  If an error occurs, code in error function executes.
+We can avoid this issue with a tryCatch function wrapped around the query execution.  If an error occurs, code in the error function executes.
 
 ```{r,eval=FALSE}
       tryCatch({
@@ -383,13 +387,14 @@ htmltools::includeHTML("gantt-run-50workersCache.svg")
 
 Each event now executes in milliseconds, which improves concurrency.  The 50th user has a similar experience with the app as the first. It's a safe assumption the app can scale beyond 50 users.  Here's the completed app.
 
-```{r,eval=False}
+```{r,eval=FALSE}
 library(DBI)
 library(ggplot2)
 library(pool)
 
 tryCatch({
-con <-  dbPool(drv = odbc::odbc(),  Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test',Trusted_Connection='yes')
+con <-  dbPool(drv = odbc::odbc(),
+               Driver = 'Sql Server',Server = '.\\snapman',Database = 'Test')
 },error = function(e){showModal(modalDialog('Connection Error'))})
 
 my_ui <- fluidPage(sidebarPanel(sliderInput("cpu_slider","Minutes Back",0,256,256))
@@ -413,6 +418,6 @@ shinyApp(ui = my_ui, server = my_server)
  
 ### Summary
 
-I had a tough problem at my last job.  I took responsibility for a web-app written in a unfamiliar  stack.  I used the R package Shiny which helped simplify the development process.  So, instead of codding Html, I spent time on things I'm good at like solving problems and sharing the results.  I had concerns about scale and functionality.  However, I learned with proper design, a Shiny app can serve 50 users easily.  I used R functions for improving security, connection management, error handling, and caching.
+I had a tough problem at my last job.  I took responsibility for a web-app written in a unfamiliar  stack.  I re-wrote the app using the R package Shiny which helped simplify the development process.  I had concerns about scale and functionality.  However, I learned with proper design, a Shiny app can serve 50 users easily.  I used R functions for improving security, connection management, error handling, and caching.
 
-I ended up using Shiny for several other Data Science projects.  Each project had unique requirements and challenges.  And each time my team and I found solutions in the R ecosystem.  If a Data Science team needs to write a self -service web-app then R is a good choice.
+I ended up using Shiny for several other Data Science projects.  Each project had unique requirements and challenges.  And each time R had an answer.  If a Data Science team needs to write a self-service web-app then R is a good choice.
