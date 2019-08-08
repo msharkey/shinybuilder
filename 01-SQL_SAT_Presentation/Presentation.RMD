@@ -32,11 +32,8 @@ output:
 ]
 
 ---
-## Session Overview
-<img src="./Images/61-web-app-visualized.png" alt="webapp" width="520" height="500">
 
----
-## What does a Data Engineer do?
+## Data Science Delivery
 
 
 ![](./Images/quinten-de-graaf-L4gN0aeaPY4-unsplash.jpg)
@@ -44,22 +41,30 @@ output:
 
 ---
 
-# Sharing across the organization
+## Challenges
 
-- Requirements for user interaction, going beyond static reports
+- Users not satisfied with static reports/dashboards, want to interact
 
 --
 
-- Users need to create, read, update, delete data used in analysis
+- Users want to modify data used in analysis, perform complex what-if analysis
 
 --
 
 - 200 GB tables as data source
 
+--
+
+- A web-based application is an appropriate solution but..
+
+--
+
+- Compentencies are specific to database and data-analysis
+
 ---
 
 
-# Web Development Simplified
+## Web Development Simplified
 
 - Shiny -> R package for building web apps
 
@@ -116,21 +121,6 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
 ```
 
 
-
----
-
-## Pros
-
-- Familiarity
-
---
-
-- Supportability 
-
---
-
-- Hosting Options https://www.shinyapps.io/
-
 ---
 
 <center>
@@ -139,26 +129,30 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
 
 ---
 
-## Production Concerns
+## More Examples
 
-
-- Functionality?
-
---
-
-- Performance?
-
---
-
-- "R is not real programming"
+[Shiny Gallery](https://shiny.rstudio.com/gallery/see-more.html)
 
 
 ---
 
+## Production Concerns
+
+- "R is not real programming"
+
+--
+
+  - Functionality?
+
+--
+
+  - Performance?
+
+---
 
 class: inverse, center, middle
 
-## Architecture
+## Architecture Model
 
 ---
 
@@ -174,6 +168,12 @@ class: inverse, center, middle
 ![](./Images/ShinyArc.png)
 
 ---
+
+## Better Architecture Model
+<img src="./Images/61-web-app-visualized.png" alt="webapp" width="520" height="500">
+
+---
+
 
 ```{r,eval=FALSE}
 library(shiny)
@@ -244,9 +244,6 @@ my_server <- function(input, output) {}
 {{shinyApp(ui = my_ui, server = my_server)}}
 ```
 
---
-
-[Shiny Gallery](https://shiny.rstudio.com/gallery/see-more.html)
 
 
 
@@ -259,6 +256,15 @@ class: inverse, center, middle
 
 
 ---
+
+
+## Injection Risk
+
+![](./Images/shinybuilderInjection.gif)
+
+
+---
+
 ```{r,eval=FALSE}
   myquery <- paste0("Execute dbo.GetCPUutilization ",input$cpuInput)
 ```
@@ -276,13 +282,6 @@ myquery <- sqlInterpolate(con,myquery,
 ```{r,eval=FALSE}
 mydata <- dbGetQuery(con,myquery)
 ```
-
----
-
-## Injection Risk
-
-![](./Images/shinybuilderInjection.gif)
-
 
 ---
 
@@ -398,99 +397,6 @@ class: inverse, center, middle
 
 ---
 
-## Error Handling
-
-
-<iframe src="https://giphy.com/embed/1RkDDoIVs3ntm" width="480" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/1RkDDoIVs3ntm">via GIPHY</a></p>
-
-
---
-
----
-
-How would the app respond to a database error?
-
-![](./Images/ErrorMessage.JPG)
-
----
-
-```{r,eval=FALSE}
-results <- dbGetQuery(pool,myquery)
-ggplot(results,aes(Event_Time,CPU_Utilization)) + geom_line()
-    
-```
-
---
-
-```{r,eval=FALSE}
-tryCatch({
-{{ results <- dbGetQuery(pool,myquery)}}
-{{ggplot(results,aes(Event_Time,CPU_Utilization))+ geom_line()}}
- },error =function(e) {
-    showModal(modalDialog(
-    h5('There was an error.  Please contact the system admin.")
-      )
-      )
-  })
-```
-
-
---
-
-![](./Images/ModalError.JPG)
-
-
----
-
-## Handling Deadlocks
-
-```{r,eval=FALSE}
-tryCatch({
-    dbGetQuery(con,myquery)
-}
-,error = function(e){
-  {{if(grep('1205',e$message)==1){}}
-    while (x<4){
-      tryCatch({
-        dbGetQuery(con,myquery)
-        break
-        }
-      ,error=function(e){
-      x<<- x+1
-      })
-    }
-  }
-})
-```
-
----
-
-
-
-class: inverse, center, middle
-
-
-## 03 - Error Handling Demo
-
-
----
-
-
-## Demo Recap
-
-- Forced database offline during active session
-
---
-
-- No error handling displayed errors at the client and crashed session
-
---
-
-- Added tryCatch around connection attempt and query attempt
-
-
----
-
 ## Load Testing 
 
 
@@ -509,8 +415,7 @@ shinyloadtest::record_session('http://127.0.0.1:6696/')
 --
 
 ```{sh,eval=FALSE}
-$ shinycannon recording.log http://127.0.0.1:6696/ 
---workers 50 --loaded-duration-minutes 2
+java -jar shinycannon-1.0.0-c9c02cb.jar recording.log http://127.0.0.1:4978/ --workers 50 --loaded-duration-minutes 2
 ```
 
 --
@@ -522,8 +427,9 @@ shinyloadtest::shinyloadtest_report(df, "run1.html")
 ```
 
 ---
+class: inverse, center, middle
 
-<iframe src="C:/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/01-SQL_SAT_Presentation/Images/2019-08-06_23-34-51.mp4" width="480" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+<iframe src="C:/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/01-SQL_SAT_Presentation/Images/2019-08-06_23-34-51.mp4" width="540" height="540" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
 
 
 ---
@@ -531,18 +437,13 @@ shinyloadtest::shinyloadtest_report(df, "run1.html")
 class: inverse, center, middle
 
 
-## 04 - Review Load Test Results
+## 03 - Review Load Test Results
 
 
 ---
 
 ## Caching
 
-```{r,eval=FALSE}
---OPTION (RECOMPILE);
-```
-
---
 
 renderPlot -> renderCachedPlot
 
@@ -556,7 +457,7 @@ renderPlot -> renderCachedPlot
 
 class: inverse, center, middle
 
-## 05 - Caching Demo
+## 04 - Caching Demo
 
 ---
 
@@ -592,19 +493,19 @@ shinyApp(ui = my_ui, server = my_server)
 
 --
 
-- Fortified the app
-
-  - Connection Pooling
-  
-  - Error Handling
+- Profiled an App Session
 
 --
 
-- Scaled the app
-
-  - Load Testing
+- Connection Pooling
   
-  - Caching
+--
+
+- Ran a Load Test
+
+--
+
+- Implemented Caching
   
 
 ---

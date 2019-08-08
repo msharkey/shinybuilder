@@ -348,7 +348,7 @@ shinyloadtest::record_session('http://127.0.0.1:6696/')
 The record_session function launches the app in a browser.  Once the browser closes,  Shinycannon writes the session actions to recording.log.  Shinycannon replays recording.log for as long and in as many user sessions specified.  The second required argument is the app URL.  We'll see how the app performs with 50 users for two minutes of load. The following code runs in a terminal.
 
 ```{sh,eval=FALSE}
-$ shinycannon recording.log http://127.0.0.1:6696/ --workers 50 --loaded-duration-minutes 2
+java -jar shinycannon-1.0.0-c9c02cb.jar recording.log http://127.0.0.1:4978/ --workers 50 --loaded-duration-minutes 2
 ```
 
 After the load test finishes, we can view the results through shinyloadtest.
