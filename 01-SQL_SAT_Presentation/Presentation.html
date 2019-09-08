@@ -4,7 +4,7 @@
     <title>Building Web-Apps with R and SQL Server</title>
     <meta charset="utf-8" />
     <meta name="author" content="R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R." />
-    <meta name="date" content="2019-08-07" />
+    <meta name="date" content="2019-08-10" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
   </head>
@@ -14,7 +14,7 @@ class: center, middle, inverse, title-slide
 
 # Building Web-Apps with R and SQL Server
 ### R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R.
-### 2019-08-07
+### 2019-08-10
 
 ---
 
@@ -62,11 +62,15 @@ class: center, middle, inverse, title-slide
 
 --
 
+- Need to share results
+
+--
+
 - A web-based application is an appropriate solution but..
 
 --
 
-- Compentencies are specific to database and data-analysis
+- Team competencies are specific to database and data-analysis
 
 ---
 
@@ -150,13 +154,15 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/&gt;
 
 ## Production Concerns
 
-- "R is not real programming"
+- "R is not real programming."
 
 --
 
-  - Functionality?
+- Functionality?
 
 --
+
+- "Abstraction is great until something stops working."
 
   - Performance?
 
@@ -276,6 +282,24 @@ class: inverse, center, middle
 
 ---
 
+## Whitelist
+
+
+```r
+emailwhitelist &lt;- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
+
+if(!is.na(str_match(usr_email, emailwhitelist))){
+  ##Run query
+} else
+{
+  ## Reject input
+}
+```
+
+---
+
+## Parameterized 
+
 
 ```r
   myquery &lt;- paste0("Execute dbo.GetCPUutilization ",input$cpuInput)
@@ -300,51 +324,8 @@ mydata &lt;- dbGetQuery(con,myquery)
 
 ---
 
-## Whitelist
 
 
-```r
-emailwhitelist &lt;- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
-
-if(!is.na(str_match(usr_email, emailwhitelist))){
-  ##Run query
-} else
-{
-  ## Reject input
-}
-```
-
----
-
-## Demo Recap
-
-- Built a user slider control
-
---
-
-- Defined space for plot output
-
---
-
-- Added source query text
-
---
-
-- Executed query
-
---
-
-- Plotted results
-
---
-
-- Bound user input to query string
-
---
-
-- Replaced input var with parameter
-
----
 
 class: inverse, center, middle
 
@@ -399,20 +380,6 @@ class: inverse, center, middle
 
 ---
 
-## Demo Recap
-
-- Profiled session with profvis
-
---
-
-- Identified bottleneck 
-
-
---
-
-- Switched app to connection pooling
-
----
 
 ## Load Testing 
 
@@ -459,39 +426,11 @@ class: inverse, center, middle
 
 ## 03 - Review Load Test Results
 
-
----
-
-## Caching
-
-
-renderPlot -&gt; renderCachedPlot
-
---
-
-
-```r
-  },cacheKeyExpr = {input$cpu_slider})
-```
-
 ---
 
 class: inverse, center, middle
 
 ## 04 - Caching Demo
-
----
-
-
-## Demo Recap
-
-
-- Configured app for plot caching
-
---
-
-- Analyzed load test results with caching
-
 
 ---
 

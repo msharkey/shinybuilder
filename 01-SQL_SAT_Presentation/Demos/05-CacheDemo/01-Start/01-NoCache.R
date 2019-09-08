@@ -23,12 +23,12 @@ my_ui <- fluidPage(
 
 my_server <- function(input, output) {
   
-  output$cpuPlot <- renderCachedPlot({
+  output$cpuPlot <- renderPlot({
     myquery <- "Execute dbo.getCpuUtilization ?cpu_slider_param"
     myqueryint <- sqlInterpolate(con,myquery,.dots=c(cpu_slider_param=input$cpuSlider))
     mydata <- dbGetQuery(con,myqueryint)
     ggplot(mydata,aes(Event_Time,CPU_Utilization))+geom_line()
-  }, input$cpuSlider)
+  })
   
 }
 

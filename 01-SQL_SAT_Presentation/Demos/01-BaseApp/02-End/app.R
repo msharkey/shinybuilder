@@ -3,6 +3,7 @@
 library(shiny)
 library(DBI)
 library(odbc)
+library(ggplot2)
 myserver<- ifelse(Sys.info()["nodename"]=="INFRA035",'.','.\\snapman')
 
 

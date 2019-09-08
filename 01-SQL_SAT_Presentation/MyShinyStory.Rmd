@@ -9,13 +9,13 @@ output:
 
 ## From IT to Data Science
 
-At my previous employer, I worked in IT operations as a Database Administrator.  In March of 2018, a colleague on the Data Science team approached me about an internal job posting.  His team was looking for a Data Engineer to support its data pipeline.   I had already worked with the team on a IT project and fe support tickets, so I had an approximate idea of what skills they needed.  I was about to graduate with a Masters in  Analytics, and the opportunity seemed relevant.  After thinking things over, I decided the best route forward was to take the job.
+At my previous employer, I worked in IT operations as a Database Administrator.  In March of 2018, a colleague on the Data Science team approached me about an internal job posting.  His team was looking for a Data Engineer to support its data pipeline.   I had already worked with the team on an IT project and few support tickets, so I had an approximate idea of what skills they needed.  I was about to graduate with a Masters in  Analytics, and the opportunity seemed relevant.  After thinking things over, I decided the best route forward was to take the job.
 
-A team member resigned shortly after I signed on.  I took on some of his projects, including the development of a web-app.  I had barely changed my email signature before I started getting feature requests on the app.  I couldn't speak to the feasibility of the requests because I didn't have experience in the application stack.  In fact, I didn't have much web-app experience in general as I've been a database specialist my entire career.  After several discussions with stakeholders,  I pressed the reset button.
+A team member resigned a few weeks after I signed on.  I took on some of his projects, including the development of a web-app.  I had barely changed my email signature before I started getting feature requests on the app.  I couldn't speak to the feasibility of the requests because I didn't have experience in the application stack.  In fact, I didn't have much web-app experience in general as I had been a database specialist my entire career.  After several discussions with stakeholders,  I pressed the reset button.
 
 ## R you serious?
 
-I decided to re-write the app using R with a SQL Server back-end.  At that point, I had hundreds of hours of R coding experience from grad school and side projects.  Also, most of my coworkers were Data Scientists and had strong R programming skills.  If I had any gaps in my knowledge, they could help. 
+I decided to re-write the app using R with a SQL Server back-end.  At that point, I had hundreds of hours of R coding experience from grad school and side projects.  Also, most of my coworkers were Data Scientists with strong R programming skills.  If I had any gaps in my knowledge, they could help. 
 
 The Shiny package in R generates about 95% of the  HTML, CSS, and JavaScript needed to build a web-app.  For example, if I wanted "Hello World!" to appear in the browser, I would have needed to declare it inside of &lt;h2> tags.  However, with Shiny I called the h2() function.
 
@@ -62,7 +62,7 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
   </div></div>
 ```
 
-## The Gameplan
+## The Game Plan
 
 My strategy was to push as much logic and data processing to the database as possible.  I felt this was the best route because, again, most of my experience is on the database side.  I also had concerns about R performance. R by default runs on one thread whereas SQL server by default can multi-thread.  
 
@@ -115,7 +115,7 @@ my_server <- function(input, output) {}
 shinyApp(ui = my_ui, server = my_server)
 ```
 
-Now we need to add a function for our plot.  The plotOutput() currently references a plot called "cpuPlot."  cpuPlot does not exist so the main panel is nothing but a placeholder at the momenment.
+Now we need to add a function for our plot.  The plotOutput() currently references a plot called "cpuPlot."  cpuPlot does not exist, so the main panel is nothing but a placeholder at the moment.
 
 ```{r,eval=FALSE}
 library(shiny)
@@ -132,7 +132,7 @@ shinyApp(ui = my_ui, server = my_server)
 
 ## Server and Database Integration
 
-The server object renders plots and returns them to UI.  The plot uses data extracted from SQL Server via a Glen Berry T-SQL query.  I'm wrapping the query text into a stored procedure.  There are a numerous benefits from using stored and I'll touch on a few.  First, logic is stored server side instead of inline on the front-end.  This means we can change the app logic on the database without having to take down the app.  Second, I can grant permissions to execute the stored procedure without granting permissions on the underlying tables.  A security best practice is to grant access to interfaces and not implementations.  Tables are implementations and stored procedures are interfaces.  Finally, stored procs reduce the query string length.  This reduces the data transferred for each execution.  For high volume systems the savings can add up.
+The server object renders the plot and returns it to UI.  The plot uses a stored procedure based on a Glen Berry SQL Server monitoring query.    There are numerous benefits of using stored procs, and I'll touch on a few.  First,  stored means logic lives server-side instead of inline on the front-end.  We can change the app logic on the database without having to take down the app.  Second, I can grant permissions to execute the stored procedure without granting permissions on the underlying tables.  A security best practice is to grant access to interfaces and not implementations.  Tables are implementations, and stored procedures are interfaces.  Finally, stored procs reduce the query string length, which means less data transferred for each execution.  For high volume systems, the savings can add up.
 
 ```{r,echo=FALSE}
 library(odbc)
@@ -181,7 +181,7 @@ GO
 EXECUTE dbo.GetCPUutilization
 ```
 
-So now our app can execute a stored procedure by referencing it in a dbGetQuery call.
+Now our app can execute a stored procedure by referencing it in a dbGetQuery call.
 
 ```{r,eval=FALSE}
 library(odbc)
@@ -201,7 +201,7 @@ my_server <- function(input, output) {
 
 We want users to filter the time frame with the slider input.  We should filter the results as soon as possible.  In this case, that means adding a predicate to the WHERE clause.  The WHERE clause contains a stored procedure parameter.  R can pass values to that parameter in the myquery string.
 
-Every time the slider input changes in the UI, the query string updates with the new input value.  dbGetQuery executes the code and stores the result set to mydata.  Next, my data passes the data to ggplot() which generates the plot.  Finally, the updated contents of out$cpuplot render to the UI.  
+The input control modifies the query string for each user interaction. dbGetQuery executes the code and stores the result set to mydata.  Next, my data passes the data to ggplot() which generates the plot.  Finally, the updated contents of out$cpuplot render to the UI.  
 
  
 ```{r,eval=FALSE}
@@ -230,11 +230,11 @@ shinyApp(ui = my_ui, server = my_server)
 ```
 
 
-We now have a basic app!  It needs a little work before it is production ready.
+We now have a basic app!  It needs a little work before it is production-ready.
 
 ### Security
 
-A pressing security issue is concatenating user input with the query string.  As a rule of thumb, never mix trusted data (in this case, the query string) with untrusted data (the user input).  If a user passed a string for the input, then they could execute arbitrary commands against the database.  Put another way; the app is vulnerable to injection attacks.  We can reduce the risk of injection attacks by sanitizing our inputs.  The sqlinterpolate function from DBI helps with this. It escapes single ticks and binds inputs to the parameters.
+A pressing security issue is concatenating user input with the query string.  As a rule of thumb, never mix trusted data (in this case, the query string) with untrusted data (the user input).  If a user passed a string for the input, then they could execute arbitrary commands against the database.  Put another way; the app is vulnerable to injection attacks.  Parameterization reduces the risk of injection attacks by separating trusted data (the query) with untrusted data (user input).  The sqlinterpolate function from DBI implements parametrization.  With the change, the user cannot modify the query string at runtime.
 
 
 ```{r,eval=FALSE}
@@ -245,7 +245,7 @@ myquery_param <- sqlInterpolate(con,myquery,.dots =c(cpu_slider_param <- input$c
 mydata <- dbGetQuery(con,myquery_param)
 ```
 
-It might make sense to use white lists certain inputs.  For example, check that an email input field follows a specified pattern.  The code below populates emailistwhitelist with a regex pattern of a valid email.  The if() function checks if the input matches the pattern.  If it doesn't match, then query won't touch the database.
+It's a good idea to validate inputs with whitelists.  For example, check that an email input field follows a specified pattern.  The code below populates emailistwhitelist with a regex pattern of a valid email.  The if() function checks if the input matches the pattern.  If it doesn't match, then query won't touch the database.
 
 ```{r,eval=FALSE}
 emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
@@ -271,7 +271,7 @@ profvis(runApp("C:/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/01-SQL_SAT_Prese
 
 ![](./Images/Flame.JPG)
 
-The profile session reveals dbConnect() accounts for most of the execution time.  The app makes a connection to our database each time the user adjusts the slider input.  Instead of opening and closing a connection for each query we could grab an open connection from a pool.  The pool library allows us to use pooling with a few code changes.  First we replace the dbConnect() with dbPool().  We don't need to close the pool when the application is running so dbDisconnect() gets removed. Finally, we move dbPool() outside of the server object completely.
+The profile session reveals dbConnect() accounts for most of the execution time.  The app makes a connection to our database each time the user adjusts the slider input.  Instead of opening and closing a connection for each query, we could grab an open connection from a pool.  The pool library allows us to use pooling with a few code changes.  First we replace the dbConnect() with dbPool().  We don't need to close the pool when the application is running so dbDisconnect() gets removed. Finally, we move dbPool() outside of the server object completely.
 
 ```{r,eval = FALSE}
 library(pool)
@@ -279,7 +279,7 @@ pool <- dbPool(drv = odbc(),Driver = mydriver,Server = myserver,Database = myDat
   results <- dbGetQuery(pool,myquery)
 ```
 
-Besides making our session faster, pool also helps the app scale.  Pool opens and closes connections as needed without developer intervention.  So as the workload start to increase more open connection become available.
+Besides making our session faster, pool also helps the app scale.  Pool opens and closes connections as needed without developer intervention.  So as the workload starts to increase more open connection become available.
 
 ### Error Handling
 
@@ -290,7 +290,7 @@ ALTER Database Test Set SINGLE_USER WITH ROLLBACK IMMEDIATE;
 ALTER Database Test Set OFFLINE;
 ```
 
-When the user adjusts the slider, the query attempts to re-run but fails.  R displays an error containing the query text where the plot should be.  This error is not helpful to the average user.  Also, the app shouldn't expose implementation details like table names to end-users.
+When the user adjusts the slider, the query attempts to re-run but fails.  R displays an error containing the query text where the plot should be.  This error is not helpful to the average user.  Also, the app shouldn't expose implementation details like table names to end-users.  The information in the error messages could be used in a SQL Injection attack.
 
 ![](./Images/ErrorMessage.JPG)
 
@@ -337,7 +337,7 @@ tryCatch({
 
 ### Load Testing
 
-The app has reached acceptable performance for one user session.  But how does the app handle concurrent user sessions?  We can find out using a load test.  Load tests depend on the shinyload package, the shinycannon program, and Java.
+The app has reached acceptable performance for one user session.  But, how does the app handle concurrent user sessions?  We can find out using a load test.  Load tests depend on the shinyload package, the shinycannon program, and Java.
 
 The first step of a load test is recording a typical user session.  I record the session with the app hosted on my local machine.  I start two instances of Rstudio. One runs the Shiny app, and the other runs the recording function record_session().
 
@@ -363,7 +363,7 @@ shinyloadtest::shinyloadtest_report(df, "run1.html")
 htmltools::includeHTML("gantt-run-50workers.svg")
 ```
 
-The X-Axis represents elapsed time, and the Y-axis represents displays each session.  The black dots show the app under full load.  Full load in this specific test means 50 concurrent users.  At ten concurrent users, session performance plummets.  The 11th app user would be waiting seconds for plots to render.  Interrupting workflow for this long makes for unhappy users. We need a go-faster button.
+The X-Axis represents elapsed time, and the Y-axis displays the user number.  The black dots show the app under full load.  Full load in this specific test means 50 concurrent users.  At ten concurrent users, session performance plummets.  The 11th app user would be waiting seconds for plots to render.  Interrupting workflow for this long makes for unhappy users. We need a go-faster button.
 
 ### Caching
 
@@ -379,7 +379,7 @@ We can also enable plot caching with minor app code changes.  First, the renderC
   },cacheKeyExpr = {input$cpu_slider})
 ```
 
-Before we re-run the load test, I must point out that our app would not work with caching in its current state.  The query returns a sliding window and is not deterministic. Say, for example, I submit a query with a slider input value of 256.  Then five minutes later, I submit the same query.  The data would change, but if we pulled the plot from cache, it would reflect stale data.  We could persist the results of the query in a table and update the input control to a timestamp or numeric field.  This change makes the app compatible with plot caching.  For the demo, we not add the change as the focus is on performance implications.  With plot caching, the load test reveals a significant performance enhancement.
+Before we re-run the load test, I must point out that our app would not work with caching in its current state.  The query returns a sliding window and is not deterministic. Say, for example, I submit a query with a slider input value of 256.  Then five minutes later, I submit the same query.  The data would change, but if we pulled the plot from cache, it would reflect stale data.  We could persist the results of the query in a table and update the input control to a timestamp or numeric field.  This change makes the app compatible with plot caching.  For the demo, we do not add the change as the focus is on performance implications.  With plot caching, the load test reveals a significant performance enhancement.
 
 ```{r echo=FALSE}
 htmltools::includeHTML("gantt-run-50workersCache.svg")
@@ -418,6 +418,6 @@ shinyApp(ui = my_ui, server = my_server)
  
 ### Summary
 
-I had a tough problem at my last job.  I took responsibility for a web-app written in a unfamiliar  stack.  I re-wrote the app using the R package Shiny which helped simplify the development process.  I had concerns about scale and functionality.  However, I learned with proper design, a Shiny app can serve 50 users easily.  I used R functions for improving security, connection management, error handling, and caching.
+At my last job, I took responsibility for a web-app written in an unfamiliar stack.  I re-wrote the app using the R package Shiny, which helped simplify the development process.  I had concerns about scale and functionality.  I learned with proper design; a Shiny app can serve 50 users efficiently.  I used R functions for improving security, connection management, error handling, and caching.
 
-I ended up using Shiny for several other Data Science projects.  Each project had unique requirements and challenges.  And each time R had an answer.  If a Data Science team needs to write a self-service web-app then R is a good choice.
+I ended up using Shiny for several other Data Science projects.  Each project had unique requirements and challenges.  And each time R had an answer.  If a Data Science team needs to write a self-service web-app, then R is a solid choice.
