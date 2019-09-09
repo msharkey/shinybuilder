@@ -10,7 +10,7 @@ myserver<- ifelse(Sys.info()["nodename"]=="INFRA035",'.','.\\snapman')
 my_ui <- fluidPage(
   sidebarLayout( 
     sidebarPanel( sliderInput("cpuSlider","Minutes",min = 0,max = 256,value = 256))
-    ,mainPanel(plotOutput('cpuPlot'))
+    ,mainPanel(plotOutput('cpuPlot'),htmlOutput("frame"))
     )
   
 )
@@ -26,6 +26,18 @@ my_server <- function(input, output) {
   mydata <- dbGetQuery(con,myquery)
   dbDisconnect(con)
   ggplot(mydata,aes(Event_Time,CPU_Utilization))+geom_line()
+  })
+  
+  
+  observe({ 
+   
+    test <<- "https://stackoverflow.com/questions/33020558/embed-iframe-inside-shiny-app"
+  })
+  output$frame <- renderUI({
+    input$Member
+    my_test <- tags$iframe(src=test, height=600, width=535)
+    print(my_test)
+    my_test
   })
   
 }

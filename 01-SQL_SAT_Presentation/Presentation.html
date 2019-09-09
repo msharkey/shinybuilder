@@ -4,7 +4,7 @@
     <title>Building Web-Apps with R and SQL Server</title>
     <meta charset="utf-8" />
     <meta name="author" content="R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R." />
-    <meta name="date" content="2019-08-10" />
+    <meta name="date" content="2019-09-08" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
   </head>
@@ -14,7 +14,7 @@ class: center, middle, inverse, title-slide
 
 # Building Web-Apps with R and SQL Server
 ### R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R.
-### 2019-08-10
+### 2019-09-08
 
 ---
 
@@ -31,14 +31,16 @@ class: center, middle, inverse, title-slide
 
 - Omaha, NE
 
-- Hometown - Winner, SD
-
 ]
 .pull-right[
 &lt;img src="./Images/matthew_sharkey.JPG" alt="me" width="300" height="267"&gt;
 ]
 
+
+
+
 ---
+
 
 ## Data Science Delivery
 
@@ -70,7 +72,7 @@ class: center, middle, inverse, title-slide
 
 --
 
-- Team competencies are specific to database and data-analysis
+- Team competencies are specific to database and data-analysis, R
 
 ---
 
@@ -192,6 +194,84 @@ class: inverse, center, middle
 
 ---
 
+## R Language Primer
+
+- Everything is Data or a Function
+
+
+```r
+x &lt;- 1
+
+1+x
+```
+
+```
+## [1] 2
+```
+
+
+--
+
+
+```r
+addFunction &lt;- function(x,x1){
+  x+x1
+}
+
+addFunction(x,1)
+```
+
+```
+## [1] 2
+```
+
+---
+
+- Reference functions outside of base R with packages
+
+
+```r
+library(DBI)
+```
+--
+
+- Checks for a folder name "DBI" in library location
+
+
+```r
+.libPaths()[1]
+```
+
+```
+## [1] "C:/Users/mshar/OneDrive/Old/Documents/R/win-library/3.6"
+```
+
+--
+
+
+
+```r
+help(DBI)
+```
+
+
+&lt;center&gt;
+&lt;iframe src="https://cran.r-project.org/web/packages/DBI/README.html"  height="300" width="800"&gt;&lt;/iframe&gt;
+&lt;/center&gt;
+
+--
+
+
+```r
+Driver  &lt;- "Sql Server"
+Server &lt;- ".\\snapman"
+Database &lt;- 'Test'
+```
+
+
+
+---
+
 
 
 ```r
@@ -208,6 +288,9 @@ con &lt;- dbConnect(drv = odbc(),
 
 
 ---
+
+
+
 
 
 ```r

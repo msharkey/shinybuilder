@@ -24,14 +24,16 @@ output:
 
 - Omaha, NE
 
-- Hometown - Winner, SD
-
 ]
 .pull-right[
 <img src="./Images/matthew_sharkey.JPG" alt="me" width="300" height="267">
 ]
 
+
+
+
 ---
+
 
 ## Data Science Delivery
 
@@ -63,7 +65,7 @@ output:
 
 --
 
-- Team competencies are specific to database and data-analysis
+- Team competencies are specific to database and data-analysis, R
 
 ---
 
@@ -180,6 +182,62 @@ class: inverse, center, middle
 
 ---
 
+## R Language Primer
+
+- Everything is Data or a Function
+
+```{r,eval=TRUE}
+
+x <- 1
+
+1+x
+
+```
+
+
+--
+
+```{r,eval=TRUE}
+
+addFunction <- function(x,x1){
+  x+x1
+}
+
+addFunction(x,1)
+
+```
+
+---
+
+- Reference functions outside of base R with packages
+
+```{r,eval=TRUE}
+library(DBI)
+```
+--
+
+- Checks for a folder name "DBI" in library location
+
+```{r}
+.libPaths()[1]
+```
+
+--
+
+
+```{r,eval=FALSE}
+help(DBI)
+```
+
+
+<center>
+<iframe src="https://cran.r-project.org/web/packages/DBI/README.html"  height="300" width="800"></iframe>
+</center>
+
+
+
+---
+
 
 ```{r,eval=FALSE}
 library(shiny)
@@ -197,6 +255,9 @@ con <- dbConnect(drv = odbc(),
 
 
 ---
+
+
+
 
 ```{r,eval=FALSE}
 library(shiny)
