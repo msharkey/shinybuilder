@@ -1,12 +1,14 @@
 
 
+options(shiny.host = "192.0.0.XX")
+
 library(shiny)
 library(DBI)
 library(odbc)
-myserver<- ifelse(Sys.info()["nodename"]=="INFRA035",'.','.\\snapman')
+
 con <- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = myserver,
+                 Server = '.\\oldsnapper',
                  Database = 'Test')
 
 my_ui <- fluidPage()

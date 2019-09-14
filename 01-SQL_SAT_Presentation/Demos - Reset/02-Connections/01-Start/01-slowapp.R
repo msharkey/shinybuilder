@@ -5,7 +5,6 @@ library(DBI)
 library(odbc)
 library(ggplot2)
 source("C:/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/01-SQL_SAT_Presentation/SampleApps/slowdbConnect.R")
-myserver<- ifelse(Sys.info()["nodename"]=="INFRA035",'.','.\\snapman')
 
 
 my_ui <- fluidPage(
@@ -22,7 +21,7 @@ my_server <- function(input, output) {
   myquery <- "Execute getCpuUtilization ?cpuParam"
   con <- dbConnect(drv = odbc(),
                    Driver = 'Sql Server',
-                   Server = myserver,
+                   Server = '.\\oldsnapper',
                    Database = 'Test')
   myqueryint <- sqlInterpolate(con,myquery,.dots = c(cpuParam=input$cpuSlider))
   mydata <- dbGetQuery(con,myqueryint)

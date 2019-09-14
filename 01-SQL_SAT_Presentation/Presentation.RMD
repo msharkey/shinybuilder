@@ -148,13 +148,54 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
 
 --
 
-- Functionality?
+ <iframe src="https://giphy.com/embed/3o6ZtpRoYe9wbyfcBi" width="480" height="360" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/family-guy-fox-family-guy-foxtv-3o6ZtpRoYe9wbyfcBi">via GIPHY</a></p>
 
 --
 
 - "Abstraction is great until something stops working."
 
-  - Performance?
+
+---
+
+## Agenda
+
+- Architecture of a Shiny App
+
+--
+
+- R Primer
+
+--
+
+- Write Sample App
+
+--
+
+ - Security
+ 
+--
+
+ - Connection Management
+
+--
+
+ - Profiling
+ 
+--
+
+ - Load Testing
+ 
+--
+
+ - Caching
+
+
+---
+
+## Throwing the Kitchen Sink
+<img src="./Images/61-web-app-visualized.png" alt="webapp" width="520" height="500">
+
+
 
 ---
 
@@ -174,11 +215,6 @@ class: inverse, center, middle
 ---
 
 ![](./Images/ShinyArc.png)
-
----
-
-## Better Architecture Model
-<img src="./Images/61-web-app-visualized.png" alt="webapp" width="520" height="500">
 
 ---
 
@@ -238,6 +274,7 @@ help(DBI)
 
 ---
 
+## Shiny Template
 
 ```{r,eval=FALSE}
 library(shiny)
@@ -246,7 +283,7 @@ library(odbc)
 
 con <- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = '.\\snapman',
+                 Server = '.\',
                  Database = 'Test')
 
 
@@ -256,7 +293,7 @@ con <- dbConnect(drv = odbc(),
 
 ---
 
-
+## Shiny Template
 
 
 ```{r,eval=FALSE}
@@ -266,7 +303,7 @@ library(odbc)
 
 con <- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = '.\\snapman',
+                 Server = '.\\oldsnapper',
                  Database = 'Test')
 
 {{my_ui <- fluidPage()}}
@@ -276,6 +313,8 @@ con <- dbConnect(drv = odbc(),
 
 ---
 
+## Shiny Template
+
 ```{r,eval=FALSE}
 library(shiny)
 library(DBI)
@@ -283,7 +322,7 @@ library(odbc)
 
 con <- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = '.\\snapman',
+                 Server = '.\\oldsnapper',
                  Database = 'Test')
 
 my_ui <- fluidPage()
@@ -294,6 +333,8 @@ my_ui <- fluidPage()
 
 ---
 
+## Shiny Template
+
 ```{r,eval=FALSE}
 library(shiny)
 library(DBI)
@@ -301,7 +342,7 @@ library(odbc)
 
 con <- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = '.\\snapman',
+                 Server = '.\\oldsnapper',
                  Database = 'Test')
 
 my_ui <- fluidPage()
@@ -329,21 +370,6 @@ class: inverse, center, middle
 
 ![](./Images/shinybuilderInjection.gif)
 
-
----
-
-## Whitelist
-
-```{r,eval=FALSE}
-emailwhitelist <- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
-
-if(!is.na(str_match(usr_email, emailwhitelist))){
-  ##Run query
-} else
-{
-  ## Reject input
-}
-```
 
 ---
 
@@ -385,7 +411,7 @@ class: inverse, center, middle
 ```{r,eval=FALSE}
 {{con <-  dbConnect(drv = odbc::odbc(), }}
                     Driver = 'Sql Server',
-                    Server = '.\\snapman',
+                    Server = '.\\oldsnapper',
                     Database = 'Test',
                     Trusted_Connection='yes')
     myquery <- ...
@@ -401,7 +427,7 @@ class: inverse, center, middle
 ```{r,eval=FALSE}
 {{pool <- dbPool(drv = odbc::odbc(),}}
                Driver = 'Sql Server',
-               Server = '.\\snapman',
+               Server = '.\\oldsnapper',
                Database = 'Test')
 my_ui <- ....
 my_server <- function(input, output) {
@@ -483,7 +509,7 @@ class: inverse, center, middle
 ```{r,eval=FALSE}
 con <- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = '.\\snapman',
+                 Server = '.\\oldsnapper',
                  Database = 'Test')
 
 my_ui <- fluidPage()
@@ -536,32 +562,7 @@ People to follow
 @jcheng,@xieyihui,@hadleywickham,@drob
 
 
-
 ---
-
-class: center, middle
-
-![](./Images/silver.JPG)
-
----
-
-
-class: center, middle
-
-![](./Images/gold.JPG)
-
-
----
-
-class: center, middle
-
-![](./Images/rockstar.JPG)
-
-
----
-
-
-class: center, middle
 
 ## Thank You
 

@@ -4,7 +4,7 @@
     <title>Building Web-Apps with R and SQL Server</title>
     <meta charset="utf-8" />
     <meta name="author" content="R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R." />
-    <meta name="date" content="2019-09-08" />
+    <meta name="date" content="2019-09-12" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
   </head>
@@ -14,7 +14,7 @@ class: center, middle, inverse, title-slide
 
 # Building Web-Apps with R and SQL Server
 ### R isn’t well known for enterprise Web Applications. However, recent advancements in the R ecosystem aim to change that. In this presentation, I will introduce what you need to know for building a production-ready web-app in R.
-### 2019-09-08
+### 2019-09-12
 
 ---
 
@@ -160,13 +160,54 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/&gt;
 
 --
 
-- Functionality?
+ &lt;iframe src="https://giphy.com/embed/3o6ZtpRoYe9wbyfcBi" width="480" height="360" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;p&gt;&lt;a href="https://giphy.com/gifs/family-guy-fox-family-guy-foxtv-3o6ZtpRoYe9wbyfcBi"&gt;via GIPHY&lt;/a&gt;&lt;/p&gt;
 
 --
 
 - "Abstraction is great until something stops working."
 
-  - Performance?
+
+---
+
+## Agenda
+
+- Architecture of a Shiny App
+
+--
+
+- R Primer
+
+--
+
+- Write Sample App
+
+--
+
+ - Security
+ 
+--
+
+ - Connection Management
+
+--
+
+ - Profiling
+ 
+--
+
+ - Load Testing
+ 
+--
+
+ - Caching
+
+
+---
+
+## Throwing the Kitchen Sink
+&lt;img src="./Images/61-web-app-visualized.png" alt="webapp" width="520" height="500"&gt;
+
+
 
 ---
 
@@ -186,11 +227,6 @@ class: inverse, center, middle
 ---
 
 ![](./Images/ShinyArc.png)
-
----
-
-## Better Architecture Model
-&lt;img src="./Images/61-web-app-visualized.png" alt="webapp" width="520" height="500"&gt;
 
 ---
 
@@ -259,19 +295,11 @@ help(DBI)
 &lt;iframe src="https://cran.r-project.org/web/packages/DBI/README.html"  height="300" width="800"&gt;&lt;/iframe&gt;
 &lt;/center&gt;
 
---
-
-
-```r
-Driver  &lt;- "Sql Server"
-Server &lt;- ".\\snapman"
-Database &lt;- 'Test'
-```
-
 
 
 ---
 
+## Shiny Template
 
 
 ```r
@@ -281,7 +309,7 @@ library(odbc)
 
 con &lt;- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = '.\\snapman',
+                 Server = '.\',
                  Database = 'Test')
 ```
 
@@ -289,7 +317,7 @@ con &lt;- dbConnect(drv = odbc(),
 
 ---
 
-
+## Shiny Template
 
 
 
@@ -300,7 +328,7 @@ library(odbc)
 
 con &lt;- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = '.\\snapman',
+                 Server = '.\\oldsnapper',
                  Database = 'Test')
 
 *my_ui &lt;- fluidPage()
@@ -308,6 +336,8 @@ con &lt;- dbConnect(drv = odbc(),
 
 ---
 
+## Shiny Template
+
 
 ```r
 library(shiny)
@@ -316,7 +346,7 @@ library(odbc)
 
 con &lt;- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = '.\\snapman',
+                 Server = '.\\oldsnapper',
                  Database = 'Test')
 
 my_ui &lt;- fluidPage()
@@ -326,6 +356,8 @@ my_ui &lt;- fluidPage()
 
 ---
 
+## Shiny Template
+
 
 ```r
 library(shiny)
@@ -334,7 +366,7 @@ library(odbc)
 
 con &lt;- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = '.\\snapman',
+                 Server = '.\\oldsnapper',
                  Database = 'Test')
 
 my_ui &lt;- fluidPage()
@@ -362,22 +394,6 @@ class: inverse, center, middle
 
 ![](./Images/shinybuilderInjection.gif)
 
-
----
-
-## Whitelist
-
-
-```r
-emailwhitelist &lt;- "^[[:alnum:].-_]+@[[:alnum:].-]+$"
-
-if(!is.na(str_match(usr_email, emailwhitelist))){
-  ##Run query
-} else
-{
-  ## Reject input
-}
-```
 
 ---
 
@@ -424,7 +440,7 @@ class: inverse, center, middle
 ```r
 *con &lt;-  dbConnect(drv = odbc::odbc(), 
                     Driver = 'Sql Server',
-                    Server = '.\\snapman',
+                    Server = '.\\oldsnapper',
                     Database = 'Test',
                     Trusted_Connection='yes')
     myquery &lt;- ...
@@ -441,7 +457,7 @@ class: inverse, center, middle
 ```r
 *pool &lt;- dbPool(drv = odbc::odbc(),
                Driver = 'Sql Server',
-               Server = '.\\snapman',
+               Server = '.\\oldsnapper',
                Database = 'Test')
 my_ui &lt;- ....
 my_server &lt;- function(input, output) {
@@ -526,7 +542,7 @@ class: inverse, center, middle
 ```r
 con &lt;- dbConnect(drv = odbc(),
                  Driver = 'Sql Server',
-                 Server = '.\\snapman',
+                 Server = '.\\oldsnapper',
                  Database = 'Test')
 
 my_ui &lt;- fluidPage()
@@ -579,32 +595,7 @@ People to follow
 @jcheng,@xieyihui,@hadleywickham,@drob
 
 
-
 ---
-
-class: center, middle
-
-![](./Images/silver.JPG)
-
----
-
-
-class: center, middle
-
-![](./Images/gold.JPG)
-
-
----
-
-class: center, middle
-
-![](./Images/rockstar.JPG)
-
-
----
-
-
-class: center, middle
 
 ## Thank You
 
