@@ -4,7 +4,6 @@ library(shiny)
 library(DBI)
 library(odbc)
 library(ggplot2)
-source("C:/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/01-SQL_SAT_Presentation/SampleApps/slowdbConnect.R")
 
 
 my_ui <- fluidPage(

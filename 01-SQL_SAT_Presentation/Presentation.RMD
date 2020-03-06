@@ -1,6 +1,6 @@
 ---
 title: "Building Web-Apps with R and SQL Server"
-author: "R isn't well known for enterprise Web Applications.  However, recent advancements in the R ecosystem aim to change that.  In this presentation, I will introduce what you need to know for building a production-ready web-app in R."
+author: "R can do more than just statistics and data viz!  In this session I will demonstrate the packages and techniques for building reactive web dashboards with R and SQL Server."
 date: "`r Sys.Date()`"
 bibliography: ["citation.bib"]
 output:
@@ -20,7 +20,7 @@ output:
 .pull-left[
 - Matt Sharkey, MBA, MS-BIA, MCSE
 
-- DBA @ BuilderTrend
+- DBA / Data Engineer / Data Analyst
 
 - Omaha, NE
 
@@ -141,6 +141,11 @@ data-min-date="2007-01-01" data-max-date="2017-07-31"/>
 
 
 ---
+
+## Reactivity 
+
+---
+
 
 ## Production Concerns
 

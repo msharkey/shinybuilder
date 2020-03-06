@@ -6,7 +6,7 @@ library(odbc)
 library(ggplot2)
 library(pool)
 
-myserver<- ifelse(Sys.info()["nodename"]=="INFRA035",'.','.\\snapman')
+myserver<- ifelse(Sys.info()["nodename"]=="INFRA035",'.','.\\oldsnapper')
 
 con <- dbPool(drv = odbc(),
                  Driver = 'Sql Server',

@@ -10,6 +10,6 @@ dbConnect <- function(drv,Driver,Server,Database){
 
 #verify IP
 
-options(shiny.host = "192.168.1.4")
+options(shiny.host = "172.25.194.131")
 
 #profvis(runApp("C:/Users/mshar/OneDrive/Old/Documents/R_UG_Demo/01-SQL_SAT_Presentation/slowapp.R"))

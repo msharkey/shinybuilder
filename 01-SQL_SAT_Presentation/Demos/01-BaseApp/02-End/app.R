@@ -3,7 +3,8 @@
 library(shiny)
 library(DBI)
 library(odbc)
-myserver<- ifelse(Sys.info()["nodename"]=="INFRA035",'.','.\\snapman')
+library(ggplot2)
+myserver<- ifelse(Sys.info()["nodename"]=="INFRA035",'.','.\\oldsnapper')
 
 
 my_ui <- fluidPage(
